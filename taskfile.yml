@@ -1,0 +1,42 @@
+version: '3'
+
+tasks:
+  default:
+    aliases:
+      - list
+    desc: タスク一覧
+    cmd: task -l
+
+  install:
+    desc: プロジェクトの依存関係をまとめてインストール
+    deps:
+      - task: backend:install-deps
+      - task: frontend:install-deps
+  
+  dev:
+    desc: プロジェクトの開発サーバーをまとめて起動
+    deps:
+      - task: dev:backend
+      - task: dev:frontend
+  
+  dev:backend:
+    desc: バックエンドの開発サーバーを起動
+    dir: ./backend
+    cmd: bundle exec rails server
+
+  dev:frontend:
+    desc: フロントエンドの開発サーバーを起動
+    dir: ./frontend
+    deps:
+      - frontend:install-deps
+    cmd: pnpm run dev
+  
+  backend:install-deps:
+    desc: バックエンドの依存関係をインストール
+    dir: ./backend
+    cmd: bundle install
+
+  frontend:install-deps:
+    desc: フロントエンドの依存関係をインストール
+    dir: ./frontend
+    cmd: pnpm install --frozen-lockfile
