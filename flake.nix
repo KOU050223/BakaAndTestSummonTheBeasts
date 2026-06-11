@@ -35,7 +35,6 @@
             pkgs.libxslt
             pkgs.zlib
             pkgs.openssl
-            pkgs.postgresql
           ];
 
           shellHook = ''
