@@ -24,6 +24,17 @@ class UserTest < ActiveSupport::TestCase
     assert_not user.valid?
   end
 
+  test "大文字小文字違いのemailも重複として扱う" do
+    User.create!(name: "先着", email: "dup@example.com", password: "password", role: "student")
+    user = User.new(name: "後着", email: "DUP@EXAMPLE.COM", password: "password", role: "student")
+    assert_not user.valid?
+  end
+
+  test "保存時にemailが小文字に正規化される" do
+    user = User.create!(name: "テスト", email: "UPPER@EXAMPLE.COM", password: "password", role: "student")
+    assert_equal "upper@example.com", user.email
+  end
+
   test "不正なメールフォーマットは無効" do
     %w[notanemail @missing-local.com user@].each do |bad_email|
       user = User.new(name: "テスト", email: bad_email, password: "password", role: "student")
