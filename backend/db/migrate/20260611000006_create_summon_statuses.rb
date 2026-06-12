@@ -12,6 +12,6 @@ class CreateSummonStatuses < ActiveRecord::Migration[8.1]
     end
 
     # 1生徒1科目につき1レコード（点数登録ごとに上書き）
-    add_index :summon_statuses, [:student_id, :subject], unique: true
+    add_index :summon_statuses, [ :student_id, :subject ], unique: true
   end
 end
