@@ -23,6 +23,16 @@ class Api::AuthControllerTest < ActionDispatch::IntegrationTest
     assert json["error"].present?
   end
 
+  test "大文字小文字混在のメールアドレスでもログインできる" do
+    post api_auth_login_url,
+      params: { email: "Student@EXAMPLE.com", password: "password123" },
+      as: :json
+
+    assert_response :ok
+    json = JSON.parse(response.body)
+    assert json["token"].present?
+  end
+
   test "存在しないメールアドレスではログインできない" do
     post api_auth_login_url,
       params: { email: "notexist@example.com", password: "password123" },
