@@ -5,10 +5,10 @@ includes:
     taskfile: ./backend/Taskfile.yml
     dir: ./backend
     internal: true
-  # frontend:
-  #   taskfile: ./frontend/Taskfile.yml
-  #   dir: ./frontend
-  #   internal: true
+  frontend:
+    taskfile: ./frontend/Taskfile.yml
+    dir: ./frontend
+    internal: true
 
 tasks:
   default:
@@ -21,31 +21,29 @@ tasks:
     desc: 全サービスの依存関係をまとめてインストール
     deps:
       - task: backend:install-deps
-      # - task: frontend:install-deps
+      - task: frontend:install-deps
 
   dev:
     desc: 全サービスの開発サーバーをまとめて起動
     deps:
       - task: backend:dev
-      # - task: frontend:dev
+      - task: frontend:dev
 
   lint:
     desc: 全サービスのlintをまとめて実行する
     deps:
       - task: backend:lint
-      # - task: frontend:lint
+      - task: frontend:lint
 
   lint:fix:
     desc: 全サービスのlintを自動修正する
     deps:
       - task: backend:lint:fix
-      # - task: frontend:lint:fix
 
   test:
     desc: 全サービスのテストをまとめて実行する
     deps:
       - task: backend:test
-      # - task: frontend:test
 
   scan:
     desc: 全サービスのセキュリティスキャンをまとめて実行する
@@ -56,7 +54,7 @@ tasks:
     desc: 全サービスのCIチェックをローカルで全て実行する
     cmds:
       - task: backend:ci
-      # - task: frontend:ci
+      - task: frontend:ci
 
   db:start:
     desc: PostgreSQLをdocker-composeで起動し、healthyになるまで待つ
