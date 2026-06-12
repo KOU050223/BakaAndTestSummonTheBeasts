@@ -1,8 +1,8 @@
 require "test_helper"
 
-class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
+class Api::AuthControllerTest < ActionDispatch::IntegrationTest
   test "正しい認証情報でログインできる" do
-    post api_v1_auth_login_url,
+    post api_auth_login_url,
       params: { email: "student@example.com", password: "password123" },
       as: :json
 
@@ -14,7 +14,7 @@ class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "誤ったパスワードではログインできない" do
-    post api_v1_auth_login_url,
+    post api_auth_login_url,
       params: { email: "student@example.com", password: "wrongpassword" },
       as: :json
 
@@ -24,7 +24,7 @@ class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "存在しないメールアドレスではログインできない" do
-    post api_v1_auth_login_url,
+    post api_auth_login_url,
       params: { email: "notexist@example.com", password: "password123" },
       as: :json
 
