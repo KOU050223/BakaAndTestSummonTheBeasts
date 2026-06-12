@@ -1,7 +1,7 @@
 module Api
   class AuthController < ActionController::API
     def login
-      user = User.find_by(email: params[:email])
+      user = User.find_by(email: params[:email].to_s.downcase.strip)
 
       if user&.authenticate(params[:password])
         token = JwtService.encode(user_id: user.id)
