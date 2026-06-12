@@ -16,7 +16,7 @@ class ScoreTest < ActiveSupport::TestCase
   test "負の点数は無効" do
     score = Score.new(score: -1, exam: @exam, student: @student)
     assert_not score.valid?
-    assert_includes score.errors[:score], "must be greater than or equal to 0"
+    assert_includes score.errors.details[:score], { error: :greater_than_or_equal_to, value: -1, count: 0 }
   end
 
   test "同じ生徒が同じ試験に2回登録できない" do
