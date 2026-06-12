@@ -67,6 +67,7 @@ tasks:
     cmds:
       - task: lint
       - task: test
+      - task: test:system
       - task: scan
 
   db:create:
