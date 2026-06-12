@@ -7,6 +7,7 @@ class JwtServiceTest < ActiveSupport::TestCase
     decoded = JwtService.decode(token)
 
     assert_equal 1, decoded["user_id"]
+    assert_equal({ user_id: 1 }, payload)
   end
 
   test "エンコードしたトークンにexpが含まれる" do
