@@ -65,30 +65,3 @@ tasks:
     desc: PostgreSQLを停止する
     cmd: docker compose stop db
 
-  db:create:
-    desc: データベースを作成する
-    cmd: task backend:db:create
-
-  db:migrate:
-    desc: マイグレーションを実行する
-    cmd: task backend:db:migrate
-
-  db:seed:
-    desc: シードデータを投入する
-    cmd: task backend:db:seed
-
-  db:setup:
-    desc: DB作成・マイグレーション・シードをまとめて実行する
-    cmd: task backend:db:setup
-
-  db:reset:
-    desc: DBをリセットして再セットアップする（開発用）
-    cmd: task backend:db:reset
-
-  db:rollback:
-    desc: 直近のマイグレーションをロールバックする
-    cmd: task backend:db:rollback
-
-  db:status:
-    desc: マイグレーションの状態を確認する
-    cmd: task backend:db:status
