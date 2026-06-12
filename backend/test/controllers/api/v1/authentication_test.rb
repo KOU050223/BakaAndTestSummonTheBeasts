@@ -46,7 +46,7 @@ class Api::V1::AuthenticationTest < ActionDispatch::IntegrationTest
   end
 
   test "存在しないユーザーIDのトークンでは401を返す" do
-    token = JwtService.encode(user_id: 999999)
+    token = JwtService.encode(user_id: User.maximum(:id).to_i + 1)
 
     get api_v1_me_url, headers: { "Authorization" => "Bearer #{token}" }
 
