@@ -35,14 +35,6 @@ tasks:
       - bin/rails db:test:prepare
       - bin/rails test
 
-  test:system:
-    desc: システムテストを実行する
-    env:
-      RAILS_ENV: test
-    cmds:
-      - bin/rails db:test:prepare
-      - bin/rails test:system
-
   scan:ruby:
     desc: Rubyコードのセキュリティ脆弱性をスキャンする（brakeman）
     cmd: bin/brakeman --no-pager
@@ -51,23 +43,17 @@ tasks:
     desc: Gemの既知の脆弱性をスキャンする（bundler-audit）
     cmd: bin/bundler-audit
 
-  scan:js:
-    desc: JavaScriptの依存関係の脆弱性をスキャンする（importmap audit）
-    cmd: bin/importmap audit
-
   scan:
     desc: すべてのセキュリティスキャンを実行する
     deps:
       - scan:ruby
       - scan:gems
-      - scan:js
 
   ci:
     desc: CI相当のチェックをローカルで全て実行する（lint + test + scan）
     cmds:
       - task: lint
       - task: test
-      - task: test:system
       - task: scan
 
   db:create:

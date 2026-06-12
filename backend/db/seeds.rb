@@ -82,13 +82,13 @@ Score.find_or_create_by!(exam: exam_english, student: student_f2) { |s| s.score 
   { student: student_f1, subject: "math",    score: 42 },
   { student: student_f1, subject: "english", score: 38 },
   { student: student_f2, subject: "math",    score: 55 },
-  { student: student_f2, subject: "english", score: 61 },
+  { student: student_f2, subject: "english", score: 61 }
 ].each do |entry|
   SummonStatus.find_or_create_by!(student: entry[:student], subject: entry[:subject]) do |ss|
     ss.hp      = entry[:score] * 2
-    ss.attack  = [entry[:score] / 2, 1].max
-    ss.defense = [entry[:score] / 4, 1].max
-    ss.speed   = [entry[:score] / 5, 1].max
+    ss.attack  = [ entry[:score] / 2, 1 ].max
+    ss.defense = [ entry[:score] / 4, 1 ].max
+    ss.speed   = [ entry[:score] / 5, 1 ].max
   end
 end
 

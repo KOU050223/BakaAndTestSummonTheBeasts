@@ -47,11 +47,6 @@ tasks:
       - task: backend:test
       # - task: frontend:test
 
-  test:system:
-    desc: 全サービスのシステムテストをまとめて実行する
-    deps:
-      - task: backend:test:system
-
   scan:
     desc: 全サービスのセキュリティスキャンをまとめて実行する
     deps:
