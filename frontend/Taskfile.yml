@@ -1,0 +1,30 @@
+version: '3'
+
+tasks:
+  default:
+    aliases:
+      - list
+    desc: タスク一覧
+    cmd: task -l
+
+  install-deps:
+    desc: フロントエンドの依存関係をインストール
+    cmd: pnpm install --frozen-lockfile
+
+  dev:
+    desc: フロントエンドの開発サーバーを起動
+    cmd: pnpm dev
+
+  build:
+    desc: フロントエンドをビルドする
+    cmd: pnpm build
+
+  lint:
+    desc: ESLintでコードスタイルをチェックする
+    cmd: pnpm lint
+
+  ci:
+    desc: CI相当のチェックをローカルで全て実行する（lint + build）
+    cmds:
+      - task: lint
+      - task: build

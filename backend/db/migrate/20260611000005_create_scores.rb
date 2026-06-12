@@ -9,6 +9,6 @@ class CreateScores < ActiveRecord::Migration[8.1]
     end
 
     # 1試験につき1生徒1レコード
-    add_index :scores, [:exam_id, :student_id], unique: true
+    add_index :scores, [ :exam_id, :student_id ], unique: true
   end
 end

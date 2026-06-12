@@ -1,0 +1,58 @@
+version: '3'
+
+tasks:
+  default:
+    aliases:
+      - list
+    desc: タスク一覧
+    cmd: task -l
+  
+  install-deps:
+    desc: バックエンドの依存関係をインストール
+    cmd: bundle install
+  
+  dev:
+    desc: バックエンドの開発サーバーを起動
+    cmd: bundle exec rails server
+
+  lint:
+    desc: RuboCopでコードスタイルをチェックする
+    env:
+      RUBOCOP_CACHE_ROOT: tmp/rubocop
+    cmd: bin/rubocop -f github
+
+  lint:fix:
+    desc: RuboCopで自動修正可能な問題を修正する
+    env:
+      RUBOCOP_CACHE_ROOT: tmp/rubocop
+    cmd: bin/rubocop -A
+
+  test:
+    desc: テストを実行する
+    env:
+      RAILS_ENV: test
+    cmds:
+      - bin/rails db:test:prepare
+      - bin/rails test
+
+  scan:ruby:
+    desc: Rubyコードのセキュリティ脆弱性をスキャンする（brakeman）
+    cmd: bin/brakeman --no-pager
+
+  scan:gems:
+    desc: Gemの既知の脆弱性をスキャンする（bundler-audit）
+    cmd: bin/bundler-audit
+
+  scan:
+    desc: すべてのセキュリティスキャンを実行する
+    deps:
+      - scan:ruby
+      - scan:gems
+
+  ci:
+    desc: CI相当のチェックをローカルで全て実行する（lint + test + scan）
+    cmds:
+      - task: lint
+      - task: test
+      - task: scan
+

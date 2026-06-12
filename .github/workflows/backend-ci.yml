@@ -1,0 +1,98 @@
+name: Backend CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  scan_ruby:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          working-directory: backend
+
+      - name: Set up Task
+        uses: arduino/setup-task@v2
+
+      - name: Scan for security vulnerabilities
+        run: task scan
+
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      RUBOCOP_CACHE_ROOT: tmp/rubocop
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          working-directory: backend
+
+      - name: Set up Task
+        uses: arduino/setup-task@v2
+
+      - name: Prepare RuboCop cache
+        uses: actions/cache@v4
+        env:
+          DEPENDENCIES_HASH: ${{ hashFiles('backend/.ruby-version', 'backend/**/.rubocop.yml', 'backend/**/.rubocop_todo.yml', 'backend/Gemfile.lock') }}
+        with:
+          path: backend/${{ env.RUBOCOP_CACHE_ROOT }}
+          key: rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-${{ github.ref_name == github.event.repository.default_branch && github.run_id || 'default' }}
+          restore-keys: |
+            rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-
+
+      - name: Lint code for consistent style
+        run: task lint
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: app_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libvips
+        working-directory: .
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          working-directory: backend
+
+      - name: Set up Task
+        uses: arduino/setup-task@v2
+
+      - name: Run tests
+        env:
+          RAILS_ENV: test
+          DATABASE_URL: postgres://postgres:password@localhost:5432/app_test
+        run: task test

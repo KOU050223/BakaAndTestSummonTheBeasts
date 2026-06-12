@@ -12,6 +12,6 @@ class CreateBattlePlayers < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :battle_players, [:battle_id, :student_id], unique: true
+    add_index :battle_players, [ :battle_id, :student_id ], unique: true
   end
 end

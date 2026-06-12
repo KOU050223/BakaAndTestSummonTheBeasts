@@ -11,6 +11,6 @@ class CreateBattleLogs < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :battle_logs, [:battle_id, :turn]
+    add_index :battle_logs, [ :battle_id, :turn ]
   end
 end
