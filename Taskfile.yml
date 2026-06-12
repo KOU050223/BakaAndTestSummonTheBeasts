@@ -65,3 +65,38 @@ tasks:
     desc: PostgreSQLを停止する
     cmd: docker compose stop db
 
+  db:create:
+    desc: データベースを作成する
+    dir: ./backend
+    cmd: bundle exec rails db:create
+
+  db:migrate:
+    desc: マイグレーションを実行する
+    dir: ./backend
+    cmd: bundle exec rails db:migrate
+
+  db:seed:
+    desc: シードデータを投入する
+    dir: ./backend
+    cmd: bundle exec rails db:seed
+
+  db:setup:
+    desc: DB作成・マイグレーション・シードをまとめて実行する
+    dir: ./backend
+    cmd: bundle exec rails db:setup
+
+  db:reset:
+    desc: DBをリセットして再セットアップする（開発用）
+    dir: ./backend
+    cmd: bundle exec rails db:reset
+
+  db:rollback:
+    desc: 直近のマイグレーションをロールバックする
+    dir: ./backend
+    cmd: bundle exec rails db:rollback
+
+  db:status:
+    desc: マイグレーションの状態を確認する
+    dir: ./backend
+    cmd: bundle exec rails db:migrate:status
+
