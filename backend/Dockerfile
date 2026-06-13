@@ -2,7 +2,7 @@
 # check=error=true
 
 # This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
-# docker build -t backend .
+# docker build -t backend -f backend/Dockerfile .   ← リポジトリルートをコンテキストにして実行
 # docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name backend backend
 
 # For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html
@@ -36,16 +36,19 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems
-COPY vendor/* ./vendor/
-COPY Gemfile Gemfile.lock ./
+COPY backend/vendor/* ./vendor/
+COPY backend/Gemfile backend/Gemfile.lock ./
 
 RUN bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
     # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
     bundle exec bootsnap precompile -j 1 --gemfile
 
-# Copy application code
-COPY . .
+# Copy application code（コンテキストはリポジトリルート）
+COPY backend/ .
+# docs/openapi.yaml を Rails.root の一つ上（/docs）に配置
+# rswag_api.rb の openapi_root = Rails.root.join("../docs") に対応
+COPY docs/ /docs/
 
 # Precompile bootsnap code for faster boot times.
 # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
@@ -65,9 +68,10 @@ RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash
 USER 1000:1000
 
-# Copy built artifacts: gems, application
+# Copy built artifacts: gems, application, openapi docs
 COPY --chown=rails:rails --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --chown=rails:rails --from=build /rails /rails
+COPY --chown=rails:rails --from=build /docs /docs
 
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
