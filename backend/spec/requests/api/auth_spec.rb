@@ -33,20 +33,20 @@ RSpec.describe 'POST /api/auth/login', type: :request do
           },
           required: %w[token user]
 
-        let(:user) { create(:user, email: 'student@example.com', password: 'password123') }
+        let(:user) { create(:user, email: 'login_test@example.com', password: 'password123') }
         let(:body) { { email: user.email, password: 'password123' } }
 
         run_test! do |response|
           json = JSON.parse(response.body)
           expect(json['token']).to be_present
-          expect(json['user']['email']).to eq('student@example.com')
+          expect(json['user']['email']).to eq('login_test@example.com')
         end
       end
 
       response '401', '認証失敗' do
         schema '$ref' => '#/components/schemas/error'
 
-        let(:user) { create(:user, email: 'student@example.com', password: 'password123') }
+        let(:user) { create(:user, email: 'login_fail@example.com', password: 'password123') }
         let(:body) { { email: user.email, password: 'wrongpassword' } }
 
         run_test! do |response|
