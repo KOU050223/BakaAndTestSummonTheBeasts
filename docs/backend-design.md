@@ -168,7 +168,8 @@ app/
 | Controller | `Api::StudentsController#summon` | `GET /api/students/:id/summon` |
 | Serializer | `SummonStatusSerializer` | — |
 
-「該当科目で直近に受けたテストの点数」を使うため、`Score` を `exams.subject` で絞り `exams.created_at`（または `scores.created_at`）の最新を採る。
+「該当科目で直近に受けたテストの点数」を使うため、`Score` を `exams.subject` で絞り `exams.created_at` の最新を採る。
+`scores.created_at` は不採用（後追い入力・修正で過去試験が「最新」になるバックフィル問題を回避するため）。
 
 ### 6.5 Battle
 
@@ -201,7 +202,7 @@ app/
 | 項目 | 内容 | 影響 |
 |---|---|---|
 | Internal API認証 | Go-Rails間の共有シークレット方式（固定ヘッダ / 署名 / 短命トークン） | `Internal::BaseController` |
-| 最新点数の定義 | 「直近のテスト」を `exams.created_at` 基準にするか `scores.created_at` 基準にするか | `Summon::Recalculate` のクエリ |
+| ~~最新点数の定義~~ | ~~「直近のテスト」を `exams.created_at` 基準にするか `scores.created_at` 基準にするか~~ | **確定**：`exams.created_at` 基準で実装済み（`Summon::Recalculate`）。後追い入力時のバックフィル問題を回避するため。 |
 | バトル待機の見せ方 | 相手未入室時のポーリング有無（フロント主導だがAPI影響あり） | `GET /api/battles/:id` の要否 |
 | ターン行動順 | 素早さ反映 or 交互固定（主にGo側、Railsはstart-dataで素早さを渡すだけ） | start-data仕様 |
 
