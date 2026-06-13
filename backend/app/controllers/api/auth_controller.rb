@@ -31,6 +31,16 @@ module Api
     end
 
     def logout
+      header = request.headers["Authorization"]
+      unless header&.start_with?("Bearer ")
+        return render json: { error: "認証が必要です" }, status: :unauthorized
+      end
+
+      token = header.split(" ").last
+      if JwtService.decode(token).nil?
+        return render json: { error: "認証トークンが無効です" }, status: :unauthorized
+      end
+
       render json: { message: "ログアウトしました" }, status: :ok
     end
 
