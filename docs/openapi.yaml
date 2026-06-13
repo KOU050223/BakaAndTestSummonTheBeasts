@@ -77,6 +77,437 @@ paths:
               - email
               - password
         required: true
+  "/api/battles":
+    get:
+      summary: バトル一覧取得
+      tags:
+      - Battles
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: バトル一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  battles:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        battleId:
+                          type: string
+                        subjectId:
+                          type: string
+                        status:
+                          type: string
+                        opponentName:
+                          type: string
+                      required:
+                      - battleId
+                      - subjectId
+                      - status
+                      - opponentName
+                required:
+                - battles
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: バトル作成
+      tags:
+      - Battles
+      security:
+      - bearer_auth: []
+      parameters: []
+      responses:
+        '201':
+          description: バトル作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  battleId:
+                    type: string
+                  subjectId:
+                    type: string
+                  status:
+                    type: string
+                required:
+                - battleId
+                - subjectId
+                - status
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subjectId:
+                  type: string
+                  example: math
+              required:
+              - subjectId
+        required: true
+  "/api/battles/{id}/result":
+    get:
+      summary: バトル結果取得
+      tags:
+      - Battles
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: バトルID
+        schema:
+          type: string
+      responses:
+        '200':
+          description: バトル結果
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  battleId:
+                    type: string
+                  winnerId:
+                    type: string
+                  loserId:
+                    type: string
+                  turnCount:
+                    type: integer
+                  logs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        turn:
+                          type: integer
+                        actorId:
+                          type: string
+                        action:
+                          type: string
+                        targetId:
+                          type: string
+                        damage:
+                          type: integer
+                      required:
+                      - turn
+                      - actorId
+                      - action
+                      - targetId
+                      - damage
+                required:
+                - battleId
+                - winnerId
+                - loserId
+                - turnCount
+                - logs
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/api/classes":
+    get:
+      summary: クラス一覧取得
+      tags:
+      - Classes
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: クラス一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  classes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                      required:
+                      - id
+                      - name
+                required:
+                - classes
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/api/classes/{class_id}/students":
+    get:
+      summary: クラス内生徒一覧取得
+      tags:
+      - Classes
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: class_id
+        in: path
+        required: true
+        description: クラスID
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 生徒一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  classId:
+                    type: string
+                  students:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                      required:
+                      - id
+                      - name
+                required:
+                - classId
+                - students
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/api/exams":
+    get:
+      summary: 試験一覧取得
+      tags:
+      - Exams
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: 試験一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exams:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        title:
+                          type: string
+                        subjectId:
+                          type: string
+                        createdBy:
+                          type: string
+                      required:
+                      - id
+                      - title
+                      - subjectId
+                      - createdBy
+                required:
+                - exams
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: 試験作成
+      tags:
+      - Exams
+      security:
+      - bearer_auth: []
+      parameters: []
+      responses:
+        '201':
+          description: 試験作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  subjectId:
+                    type: string
+                  classId:
+                    type: string
+                  maxScore:
+                    type: integer
+                required:
+                - id
+                - title
+                - subjectId
+                - classId
+                - maxScore
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: 数学 小テスト1
+                subjectId:
+                  type: string
+                  example: math
+                classId:
+                  type: string
+                  example: class_a
+                maxScore:
+                  type: integer
+                  example: 100
+              required:
+              - title
+              - subjectId
+              - classId
+              - maxScore
+        required: true
+  "/api/exams/{exam_id}/scores":
+    get:
+      summary: 試験別スコア一覧取得
+      tags:
+      - Exams
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: exam_id
+        in: path
+        required: true
+        description: 試験ID
+        schema:
+          type: string
+      responses:
+        '200':
+          description: スコア一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  examId:
+                    type: string
+                  scores:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        studentId:
+                          type: string
+                        name:
+                          type: string
+                        score:
+                          type: integer
+                      required:
+                      - studentId
+                      - name
+                      - score
+                required:
+                - examId
+                - scores
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/api/scores":
+    post:
+      summary: 点数一括登録
+      tags:
+      - Scores
+      security:
+      - bearer_auth: []
+      parameters: []
+      responses:
+        '201':
+          description: 登録成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  examId:
+                    type: string
+                  registeredCount:
+                    type: integer
+                required:
+                - examId
+                - registeredCount
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                examId:
+                  type: string
+                  example: exam_1
+                scores:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      studentId:
+                        type: string
+                      score:
+                        type: integer
+                    required:
+                    - studentId
+                    - score
+              required:
+              - examId
+              - scores
+        required: true
   "/api/students/{id}/summon":
     get:
       summary: 召喚獣ステータス取得
