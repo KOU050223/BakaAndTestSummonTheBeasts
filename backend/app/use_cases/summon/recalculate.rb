@@ -27,6 +27,7 @@ module Summon
     def self.latest_normalized_score(student:, subject:)
       score = Score
         .joins(:exam)
+        .includes(:exam)
         .where(student: student, exams: { subject: subject })
         .order("exams.created_at DESC")
         .first
