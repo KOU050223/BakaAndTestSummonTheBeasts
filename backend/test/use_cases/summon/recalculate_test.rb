@@ -28,12 +28,31 @@ class Summon::RecalculateTest < ActiveSupport::TestCase
     assert_equal Summon::StatusCalculator.call(82).hp, status.hp
   end
 
-  test "同一科目で直近に登録された点数を採用する" do
-    Score.create!(exam: @math_exam, student: @student, score: 40)
-    Score.create!(exam: @math_exam_200, student: @student, score: 200) # 100点換算、より新しい
+  test "同一科目で直近に実施された試験の点数を採用する（exams.created_atで判定）" do
+    # math_exam_200 を「より新しい試験」に設定
+    @math_exam.update_column(:created_at, 1.day.ago)
+    @math_exam_200.update_column(:created_at, Time.current)
+
+    Score.create!(exam: @math_exam,     student: @student, score: 40)
+    Score.create!(exam: @math_exam_200, student: @student, score: 200) # 100点換算
 
     status = Summon::Recalculate.call(student: @student, subject: "math")
 
+    assert_equal Summon::StatusCalculator.call(100).hp, status.hp
+  end
+
+  test "過去試験の点数を後追い入力しても新しい試験の点数を維持する" do
+    # math_exam_200 が新しい試験、math_exam が古い試験
+    @math_exam.update_column(:created_at, 1.day.ago)
+    @math_exam_200.update_column(:created_at, Time.current)
+
+    # 先に新しい試験の点数を入れてからを古い試験の点数を後追い入力
+    Score.create!(exam: @math_exam_200, student: @student, score: 200) # 100点換算
+    Score.create!(exam: @math_exam,     student: @student, score: 40)
+
+    status = Summon::Recalculate.call(student: @student, subject: "math")
+
+    # 古い試験の点数が後から入力されても新しい試験(math_exam_200)の点数が採用される
     assert_equal Summon::StatusCalculator.call(100).hp, status.hp
   end
 

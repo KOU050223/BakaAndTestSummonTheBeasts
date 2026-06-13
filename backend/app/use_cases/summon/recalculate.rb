@@ -21,12 +21,14 @@ module Summon
       end
     end
 
-    # 対象科目で直近に登録された点数を 100 点換算して返す。点数がなければ 0。
+    # 対象科目で直近に実施された試験の点数を 100 点換算して返す。点数がなければ 0。
+    # scores.created_at ではなく exams.created_at で並べることで、過去試験の点数を
+    # 後追い入力・修正しても「最も新しい試験」を正しく採用できる。
     def self.latest_normalized_score(student:, subject:)
       score = Score
         .joins(:exam)
         .where(student: student, exams: { subject: subject })
-        .order(created_at: :desc)
+        .order("exams.created_at DESC")
         .first
       return 0 if score.nil?
 
