@@ -75,21 +75,16 @@ Score.find_or_create_by!(exam: exam_english, student: student_f1) { |s| s.score 
 Score.find_or_create_by!(exam: exam_english, student: student_f2) { |s| s.score = 61 }
 
 # -----------------------------------------------
-# 召喚獣ステータス（点数から一次式で計算）
-# HP = 点数 * 2, 攻撃 = 点数 / 2, 防御 = 点数 / 4, 素早さ = 点数 / 5
+# 召喚獣ステータス（Summon::Recalculate で計算式を一元化）
+# Score#after_save でも再計算されるが、再シード時に最新の計算式を確実に反映するため明示的に呼ぶ。
 # -----------------------------------------------
 [
-  { student: student_f1, subject: "math",    score: 42 },
-  { student: student_f1, subject: "english", score: 38 },
-  { student: student_f2, subject: "math",    score: 55 },
-  { student: student_f2, subject: "english", score: 61 }
+  { student: student_f1, subject: "math" },
+  { student: student_f1, subject: "english" },
+  { student: student_f2, subject: "math" },
+  { student: student_f2, subject: "english" }
 ].each do |entry|
-  SummonStatus.find_or_create_by!(student: entry[:student], subject: entry[:subject]) do |ss|
-    ss.hp      = entry[:score] * 2
-    ss.attack  = [ entry[:score] / 2, 1 ].max
-    ss.defense = [ entry[:score] / 4, 1 ].max
-    ss.speed   = [ entry[:score] / 5, 1 ].max
-  end
+  Summon::Recalculate.call(student: entry[:student], subject: entry[:subject])
 end
 
 puts "Seed完了:"

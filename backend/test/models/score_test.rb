@@ -34,34 +34,37 @@ class ScoreTest < ActiveSupport::TestCase
 
   # --- recalculate_summon_status: ステータス計算式 ---
 
+  # 計算式は Summon::StatusCalculator に一元化（docs/backend-design.md §5.1）。
+  # hp=100+round(s*0.5), attack=round(s*0.4), defense=round(s*0.15), speed=round(s*0.1)
+
   test "100点満点で満点を取るとステータスが最大値になる" do
     Score.create!(score: 100, exam: @exam, student: @student)
     ss = SummonStatus.find_by(student: @student, subject: "math")
 
-    assert_equal 200, ss.hp
-    assert_equal 50,  ss.attack
-    assert_equal 25,  ss.defense
-    assert_equal 20,  ss.speed
+    assert_equal 150, ss.hp
+    assert_equal 40,  ss.attack
+    assert_equal 15,  ss.defense
+    assert_equal 10,  ss.speed
   end
 
-  test "0点のときHPは0だがattack/defense/speedは最低値1になる" do
+  test "0点のときHPは下限100で他は0になる" do
     Score.create!(score: 0, exam: @exam, student: @student)
     ss = SummonStatus.find_by(student: @student, subject: "math")
 
-    assert_equal 0, ss.hp
-    assert_equal 1, ss.attack
-    assert_equal 1, ss.defense
-    assert_equal 1, ss.speed
+    assert_equal 100, ss.hp
+    assert_equal 0, ss.attack
+    assert_equal 0, ss.defense
+    assert_equal 0, ss.speed
   end
 
   test "50点（50%）のときステータスが正しく計算される" do
     Score.create!(score: 50, exam: @exam, student: @student)
     ss = SummonStatus.find_by(student: @student, subject: "math")
 
-    assert_equal 100, ss.hp
-    assert_equal 25,  ss.attack
-    assert_equal 12,  ss.defense
-    assert_equal 10,  ss.speed
+    assert_equal 125, ss.hp
+    assert_equal 20,  ss.attack
+    assert_equal 8,   ss.defense
+    assert_equal 5,   ss.speed
   end
 
   test "200点満点で100点を取ると50%換算になる" do
@@ -69,10 +72,10 @@ class ScoreTest < ActiveSupport::TestCase
     Score.create!(score: 100, exam: exam_200, student: @student)
     ss = SummonStatus.find_by(student: @student, subject: "math")
 
-    assert_equal 100, ss.hp
-    assert_equal 25,  ss.attack
-    assert_equal 12,  ss.defense
-    assert_equal 10,  ss.speed
+    assert_equal 125, ss.hp
+    assert_equal 20,  ss.attack
+    assert_equal 8,   ss.defense
+    assert_equal 5,   ss.speed
   end
 
   # --- recalculate_summon_status: upsert挙動 ---
@@ -91,7 +94,7 @@ class ScoreTest < ActiveSupport::TestCase
     end
 
     ss = SummonStatus.find_by(student: @student, subject: "math")
-    assert_equal 120, ss.hp
+    assert_equal 130, ss.hp # score 60 => 100 + round(60*0.5)
   end
 
   test "異なる教科のスコアはそれぞれ独立したSummonStatusを持つ" do
@@ -102,7 +105,7 @@ class ScoreTest < ActiveSupport::TestCase
     math_ss    = SummonStatus.find_by(student: @student, subject: "math")
     english_ss = SummonStatus.find_by(student: @student, subject: "english")
 
-    assert_equal 160, math_ss.hp
-    assert_equal 120, english_ss.hp
+    assert_equal 140, math_ss.hp    # score 80 => 100 + round(80*0.5)
+    assert_equal 130, english_ss.hp # score 60 => 100 + round(60*0.5)
   end
 end
