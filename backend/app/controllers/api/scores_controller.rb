@@ -9,7 +9,7 @@ module Api
       render json: {
         examId: params[:examId] || "exam_1",
         registeredCount: scores.size
-      }, status: :ok
+      }, status: :created
     end
   end
 end
