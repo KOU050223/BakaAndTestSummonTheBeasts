@@ -1,0 +1,181 @@
+---
+openapi: 3.0.1
+info:
+  title: バカとテストと召喚獣 API
+  description: 学力バトルゲームのバックエンドAPI
+  version: v1
+paths:
+  "/api/auth/login":
+    post:
+      summary: ログイン
+      tags:
+      - Auth
+      parameters: []
+      responses:
+        '200':
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      email:
+                        type: string
+                      name:
+                        type: string
+                      role:
+                        type: string
+                    required:
+                    - id
+                    - email
+                    - name
+                    - role
+                required:
+                - token
+                - user
+        '401':
+          description: 認証失敗
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+                required:
+                - errors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: student@example.com
+                password:
+                  type: string
+                  example: password123
+              required:
+              - email
+              - password
+        required: true
+  "/api/students/{id}/summon":
+    get:
+      summary: 召喚獣ステータス取得
+      tags:
+      - Students
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: 生徒ID
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: 召喚獣ステータス一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  studentId:
+                    type: string
+                  summons:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        hp:
+                          type: integer
+                        attack:
+                          type: integer
+                        defense:
+                          type: integer
+                        speed:
+                          type: integer
+                      required:
+                      - hp
+                      - attack
+                      - defense
+                      - speed
+                required:
+                - studentId
+                - summons
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/api/me":
+    get:
+      summary: 認証ユーザー情報取得
+      tags:
+      - Users
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: 自分のユーザー情報
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  email:
+                    type: string
+                  name:
+                    type: string
+                  role:
+                    type: string
+                required:
+                - id
+                - email
+                - name
+                - role
+        '401':
+          description: Authorizationヘッダーなし
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+servers:
+- url: http://localhost:8000
+  description: ローカル開発環境
+components:
+  securitySchemes:
+    bearer_auth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    error:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
