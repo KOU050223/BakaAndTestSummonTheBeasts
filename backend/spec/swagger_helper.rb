@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.configure do |config|
-  config.openapi_root = Rails.root.to_s
+  config.openapi_root = Rails.root.join('../docs').to_s
 
   config.openapi_specs = {
     'openapi.yaml' => {
