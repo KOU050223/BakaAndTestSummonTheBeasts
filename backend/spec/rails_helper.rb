@@ -41,10 +41,6 @@ RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
   config.include ActiveSupport::Testing::TimeHelpers
 
-  config.fixture_paths = [
-    Rails.root.join('spec/fixtures')
-  ]
-
   config.use_transactional_fixtures = true
 
   # ファイルの場所から spec type を自動推定（spec/models → type: :model など）

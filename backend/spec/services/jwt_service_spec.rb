@@ -3,8 +3,7 @@ require 'rails_helper'
 RSpec.describe JwtService do
   describe '.encode / .decode' do
     it 'ペイロードをエンコードしてデコードできる' do
-      payload = { user_id: 1 }
-      token = JwtService.encode(payload)
+      token = JwtService.encode({ user_id: 1 })
       decoded = JwtService.decode(token)
 
       expect(decoded['user_id']).to eq(1)
@@ -28,8 +27,7 @@ RSpec.describe JwtService do
     end
 
     it '複数のペイロードフィールドを保持できる' do
-      payload = { user_id: 42, role: 'teacher' }
-      token = JwtService.encode(payload)
+      token = JwtService.encode({ user_id: 42, role: 'teacher' })
       decoded = JwtService.decode(token)
 
       expect(decoded['user_id']).to eq(42)

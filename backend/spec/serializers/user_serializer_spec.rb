@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe UserSerializer do
-  let(:user) { users(:student_one) }
+  let(:user) { create(:user) }
   subject(:json) { UserSerializer.new(user).as_json }
 
   it '必要なフィールドをJSON形式で返す' do

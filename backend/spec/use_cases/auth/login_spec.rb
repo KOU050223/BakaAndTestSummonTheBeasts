@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Auth::Login do
-  let(:user) { users(:student_one) }
+  let(:user) { create(:user, email: 'login@example.com', password: 'password123') }
 
   it '正しい認証情報でtokenとuserを返す' do
     input = Auth::LoginInput.new(email: user.email, password: 'password123')
@@ -17,7 +17,7 @@ RSpec.describe Auth::Login do
   end
 
   it '大文字小文字混在のメールアドレスでも認証できる' do
-    input = Auth::LoginInput.new(email: 'Student@EXAMPLE.com', password: 'password123')
+    input = Auth::LoginInput.new(email: user.email.upcase, password: 'password123')
     result = Auth::Login.call(input)
 
     expect(result[:token]).to be_present
