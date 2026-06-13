@@ -9,14 +9,9 @@ class Score < ApplicationRecord
 
   private
 
+  # 点数保存後、該当科目の召喚獣ステータスを再計算する。
+  # 計算式の一元化のため Summon::Recalculate（→ Summon::StatusCalculator）へ委譲する。
   def recalculate_summon_status
-    normalized = (score.to_f / exam.max_score * 100).round
-    SummonStatus.find_or_initialize_by(student: student, subject: exam.subject).tap do |ss|
-      ss.hp      = normalized * 2
-      ss.attack  = [ normalized / 2, 1 ].max
-      ss.defense = [ normalized / 4, 1 ].max
-      ss.speed   = [ normalized / 5, 1 ].max
-      ss.save!
-    end
+    Summon::Recalculate.call(student: student, subject: exam.subject)
   end
 end
