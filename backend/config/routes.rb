@@ -1,8 +1,39 @@
 Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
+  # MVP REST API。認証(auth/login, me)以外は apiSpec.md 準拠の固定モックJSONを返すスタブ。
+  # フロントエンドが本番と同じURL・レスポンス形で全画面に着手できることを目的とする。
+  # Rails本実装が進むにつれてスタブを順次差し替える。
   namespace :api do
     post "auth/login", to: "auth#login"
     get "me", to: "users#me"
+
+    # クラス編成
+    resources :classes, only: [ :index ] do
+      resources :students, only: [ :index ], module: :classes
+    end
+
+    # 試験・点数
+    resources :exams, only: [ :index, :create ] do
+      resources :scores, only: [ :index ], module: :exams
+    end
+    resources :scores, only: [ :create ]
+
+    # 召喚獣
+    get "students/:id/summon", to: "students#summon"
+
+    # バトル（Go Game Server連携部はモック）
+    resources :battles, only: [ :index, :create ] do
+      member do
+        get :result
+      end
+    end
+  end
+
+  # Go Game Server 専用 internal API（モック）。
+  # 本実装では共有シークレット認証を入れる（docs/backend-design.md §8）。
+  namespace :internal do
+    get "battles/:battle_id/start-data", to: "battles#start_data"
+    post "battles/:battle_id/finish", to: "battles#finish"
   end
 end
