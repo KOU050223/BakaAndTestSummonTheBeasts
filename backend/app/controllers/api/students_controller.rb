@@ -9,16 +9,10 @@ module Api
 
     def summon
       subjects = MOCK_SCORES.transform_values { |s| Summon::StatusCalculator.call(s) }
-      math = subjects.fetch("math")
 
       render json: {
         studentId: params[:id],
-        summon: {
-          hp: math.hp,
-          attack: math.attack,
-          defense: math.defense,
-          speed: math.speed
-        }
+        summons: subjects.transform_values { |s| { hp: s.hp, attack: s.attack, defense: s.defense, speed: s.speed } }
       }, status: :ok
     end
   end
