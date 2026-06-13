@@ -1,22 +1,24 @@
 module Api
   class AuthController < ActionController::API
     def login
-      user = User.find_by(email: params[:email].to_s.downcase.strip)
-
-      if user&.authenticate(params[:password])
-        token = JwtService.encode(user_id: user.id)
-        render json: {
-          token: token,
-          user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role
-          }
-        }, status: :ok
-      else
-        render json: { error: "メールアドレスまたはパスワードが正しくありません" }, status: :unauthorized
+      input = Auth::LoginInput.new(login_params)
+      unless input.valid?
+        return render json: { errors: input.errors.to_hash }, status: :unprocessable_entity
       end
+
+      result = Auth::Login.call(input)
+      render json: {
+        token: result[:token],
+        user: UserSerializer.new(result[:user]).as_json
+      }, status: :ok
+    rescue Auth::Login::AuthenticationError
+      render json: { error: "メールアドレスまたはパスワードが正しくありません" }, status: :unauthorized
+    end
+
+    private
+
+    def login_params
+      params.permit(:email, :password)
     end
   end
 end
