@@ -26,6 +26,9 @@ gem "jwt", "~> 3.2"
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
+# CVE-2026-47240, CVE-2026-47241 対応: net-imap >= 0.6.4.1 で修正済み
+gem "net-imap", ">= 0.6.4.1"
+
 # Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
 gem "solid_cache"
 gem "solid_queue"

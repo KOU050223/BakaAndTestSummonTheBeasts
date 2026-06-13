@@ -159,7 +159,7 @@ GEM
       drb (~> 2.0)
       prism (~> 1.5)
     msgpack (1.8.1)
-    net-imap (0.6.4)
+    net-imap (0.6.4.1)
       date
       net-protocol
     net-pop (0.1.2)
@@ -375,6 +375,7 @@ DEPENDENCIES
   importmap-rails
   jbuilder
   jwt (~> 3.2)
+  net-imap (>= 0.6.4.1)
   pg (~> 1.5)
   propshaft
   puma (>= 5.0)
