@@ -1,0 +1,14 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Mass Assignment",
+      "warning_code": 105,
+      "fingerprint": "04a32a6d59ce1e9fdde1f12602a99e91fc1fe5d40e9d8c441aec58583f746979",
+      "check_name": "PermitAttributes",
+      "message": "Potentially dangerous key allowed for mass assignment",
+      "file": "app/controllers/api/admin/users_controller.rb",
+      "line": 21,
+      "note": "school_admin のみアクセス可能なエンドポイントで role を指定するため意図的"
+    }
+  ]
+}

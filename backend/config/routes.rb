@@ -8,6 +8,12 @@ Rails.application.routes.draw do
   # Rails本実装が進むにつれてスタブを順次差し替える。
   namespace :api do
     post "auth/login", to: "auth#login"
+    post "auth/signup", to: "auth#signup"
+    delete "auth/logout", to: "auth#logout"
+
+    namespace :admin do
+      resources :users, only: [ :create ]
+    end
     get "me", to: "users#me"
 
     # クラス編成

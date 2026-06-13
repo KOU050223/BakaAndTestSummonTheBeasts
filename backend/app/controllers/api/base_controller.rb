@@ -20,5 +20,9 @@ module Api
     def current_user
       @current_user
     end
+
+    def authorize_school_admin!
+      render json: { error: "権限がありません" }, status: :forbidden unless current_user&.role == "school_admin"
+    end
   end
 end

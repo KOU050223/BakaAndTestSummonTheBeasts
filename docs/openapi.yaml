@@ -5,6 +5,196 @@ info:
   description: 学力バトルゲームのバックエンドAPI
   version: v1
 paths:
+  "/api/admin/users":
+    post:
+      summary: 管理者によるユーザー作成
+      tags:
+      - Admin
+      security:
+      - bearer_auth: []
+      parameters: []
+      responses:
+        '201':
+          description: ユーザー作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      email:
+                        type: string
+                      name:
+                        type: string
+                      role:
+                        type: string
+                    required:
+                    - id
+                    - email
+                    - name
+                    - role
+                required:
+                - user
+        '403':
+          description: 権限なし（school_admin 以外）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '409':
+          description: メールアドレス重複
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+                required:
+                - errors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: 鈴木先生
+                email:
+                  type: string
+                  example: teacher@example.com
+                password:
+                  type: string
+                  example: password123
+                role:
+                  type: string
+                  example: teacher
+                  enum:
+                  - student
+                  - teacher
+                  - school_admin
+              required:
+              - name
+              - email
+              - password
+              - role
+        required: true
+  "/api/auth/logout":
+    delete:
+      summary: ログアウト
+      tags:
+      - Auth
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: ログアウト成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                - message
+        '401':
+          description: 認証なし
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/api/auth/signup":
+    post:
+      summary: ユーザー登録
+      tags:
+      - Auth
+      parameters: []
+      responses:
+        '201':
+          description: 登録成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      email:
+                        type: string
+                      name:
+                        type: string
+                      role:
+                        type: string
+                    required:
+                    - id
+                    - email
+                    - name
+                    - role
+                required:
+                - token
+                - user
+        '409':
+          description: メールアドレス重複
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+                required:
+                - errors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: 山田太郎
+                email:
+                  type: string
+                  example: newuser@example.com
+                password:
+                  type: string
+                  example: password123
+              required:
+              - name
+              - email
+              - password
+        required: true
   "/api/auth/login":
     post:
       summary: ログイン

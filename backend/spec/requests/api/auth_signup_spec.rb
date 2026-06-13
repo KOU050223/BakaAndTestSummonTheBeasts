@@ -1,0 +1,77 @@
+require 'swagger_helper'
+
+RSpec.describe 'POST /api/auth/signup', type: :request do
+  path '/api/auth/signup' do
+    post 'ユーザー登録' do
+      tags 'Auth'
+      consumes 'application/json'
+      produces 'application/json'
+
+      parameter name: :body, in: :body, required: true, schema: {
+        type: :object,
+        properties: {
+          name: { type: :string, example: '山田太郎' },
+          email: { type: :string, example: 'newuser@example.com' },
+          password: { type: :string, example: 'password123' }
+        },
+        required: %w[ name email password ]
+      }
+
+      response '201', '登録成功' do
+        schema type: :object,
+          properties: {
+            token: { type: :string },
+            user: {
+              type: :object,
+              properties: {
+                id: { type: :integer },
+                email: { type: :string },
+                name: { type: :string },
+                role: { type: :string }
+              },
+              required: %w[id email name role]
+            }
+          },
+          required: %w[token user]
+
+        let(:body) { { name: '山田太郎', email: 'signup_test@example.com', password: 'password123' } }
+
+        run_test! do |response|
+          json = JSON.parse(response.body)
+          expect(json['token']).to be_present
+          expect(json['user']['email']).to eq('signup_test@example.com')
+        end
+      end
+
+      response '409', 'メールアドレス重複' do
+        schema '$ref' => '#/components/schemas/error'
+
+        let!(:existing_user) { create(:user, email: 'duplicate@example.com', password: 'password123') }
+        let(:body) { { name: '重複太郎', email: 'duplicate@example.com', password: 'password123' } }
+
+        run_test! do |response|
+          json = JSON.parse(response.body)
+          expect(json['error']).to be_present
+        end
+      end
+
+      response '422', 'バリデーションエラー' do
+        schema type: :object,
+          properties: {
+            errors: {
+              type: :object,
+              additionalProperties: {
+                type: :array,
+                items: { type: :string }
+              }
+            }
+          },
+          required: [ 'errors' ]
+
+        let(:body) { { name: '', email: '', password: '' } }
+
+        run_test!
+      end
+    end
+  end
+end
