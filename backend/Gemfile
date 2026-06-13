@@ -60,6 +60,12 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  # RSpec for Rails
+  gem "rspec-rails", "~> 8.0"
+
+  # rswag: OpenAPI仕様をRSpecテストから自動生成
+  gem "rswag-specs"
 end
 
 group :development do
@@ -71,4 +77,14 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+
+  gem "factory_bot_rails"
+  gem "faker"
 end
+
+# Ruby 4.0 で標準ライブラリから外れた ostruct (rswag-ui が依存)
+gem "ostruct"
+
+# rswag: Swagger UI と API middleware を本番含む全環境で提供
+gem "rswag-api"
+gem "rswag-ui"

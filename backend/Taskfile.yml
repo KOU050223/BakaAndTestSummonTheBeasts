@@ -28,12 +28,20 @@ tasks:
     cmd: bin/rubocop -A
 
   test:
-    desc: テストを実行する
+    desc: RSpec でテストを実行する
     env:
       RAILS_ENV: test
     cmds:
       - bin/rails db:test:prepare
-      - bin/rails test
+      - bundle exec rspec
+
+  openapi:generate:
+    desc: OpenAPI 仕様（swagger/v1/openapi.yaml）を rswag から再生成する
+    env:
+      RAILS_ENV: test
+    cmds:
+      - bin/rails db:test:prepare
+      - bundle exec rake rswag:specs:swaggerize
 
   scan:ruby:
     desc: Rubyコードのセキュリティ脆弱性をスキャンする（brakeman）

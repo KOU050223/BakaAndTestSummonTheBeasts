@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  mount Rswag::Ui::Engine => "/api-docs"
+  mount Rswag::Api::Engine => "/api-docs"
   get "up" => "rails/health#show", as: :rails_health_check
 
   # MVP REST API。認証(auth/login, me)以外は apiSpec.md 準拠の固定モックJSONを返すスタブ。
