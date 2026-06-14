@@ -22,16 +22,7 @@ RSpec.describe 'POST /api/admin/users', type: :request do
       response '201', 'ユーザー作成成功' do
         schema type: :object,
           properties: {
-            user: {
-              type: :object,
-              properties: {
-                id: { type: :integer },
-                email: { type: :string },
-                name: { type: :string },
-                role: { type: :string }
-              },
-              required: %w[ id email name role ]
-            }
+            user: { '$ref' => '#/components/schemas/User' }
           },
           required: [ 'user' ]
 

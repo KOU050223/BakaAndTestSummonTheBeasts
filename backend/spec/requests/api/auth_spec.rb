@@ -20,16 +20,7 @@ RSpec.describe 'POST /api/auth/login', type: :request do
         schema type: :object,
           properties: {
             token: { type: :string },
-            user: {
-              type: :object,
-              properties: {
-                id: { type: :integer },
-                email: { type: :string },
-                name: { type: :string },
-                role: { type: :string }
-              },
-              required: %w[id email name role]
-            }
+            user: { '$ref' => '#/components/schemas/User' }
           },
           required: %w[token user]
 

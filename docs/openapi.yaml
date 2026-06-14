@@ -22,21 +22,7 @@ paths:
                 type: object
                 properties:
                   user:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                      email:
-                        type: string
-                      name:
-                        type: string
-                      role:
-                        type: string
-                    required:
-                    - id
-                    - email
-                    - name
-                    - role
+                    "$ref": "#/components/schemas/User"
                 required:
                 - user
         '403':
@@ -127,21 +113,7 @@ paths:
                   token:
                     type: string
                   user:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                      email:
-                        type: string
-                      name:
-                        type: string
-                      role:
-                        type: string
-                    required:
-                    - id
-                    - email
-                    - name
-                    - role
+                    "$ref": "#/components/schemas/User"
                 required:
                 - token
                 - user
@@ -194,21 +166,7 @@ paths:
                   token:
                     type: string
                   user:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                      email:
-                        type: string
-                      name:
-                        type: string
-                      role:
-                        type: string
-                    required:
-                    - id
-                    - email
-                    - name
-                    - role
+                    "$ref": "#/components/schemas/User"
                 required:
                 - token
                 - user
@@ -281,6 +239,12 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: 権限なし（school_admin は禁止）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
     post:
       summary: バトル作成
       tags:
@@ -290,7 +254,7 @@ paths:
       parameters: []
       responses:
         '201':
-          description: バトル作成成功
+          description: 教師もバトル作成できる
           content:
             application/json:
               schema:
@@ -308,6 +272,12 @@ paths:
                 - status
         '401':
           description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: 権限なし（school_admin は禁止）
           content:
             application/json:
               schema:
@@ -387,6 +357,12 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: 権限なし（school_admin は禁止）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/api/classes":
     get:
       summary: クラス一覧取得
@@ -396,7 +372,7 @@ paths:
       - bearer_auth: []
       responses:
         '200':
-          description: クラス一覧
+          description: school_admin もクラス一覧を取得できる
           content:
             application/json:
               schema:
@@ -422,6 +398,12 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: 権限なし（student は禁止）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/api/classes/{class_id}/students":
     get:
       summary: クラス内生徒一覧取得
@@ -438,7 +420,7 @@ paths:
           type: string
       responses:
         '200':
-          description: 生徒一覧
+          description: school_admin もクラス内生徒一覧を取得できる
           content:
             application/json:
               schema:
@@ -467,6 +449,12 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: 権限なし（student は禁止）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/api/exams":
     get:
       summary: 試験一覧取得
@@ -476,7 +464,7 @@ paths:
       - bearer_auth: []
       responses:
         '200':
-          description: 試験一覧
+          description: school_admin も試験一覧を取得できる
           content:
             application/json:
               schema:
@@ -508,6 +496,12 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: 権限なし（student は禁止）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
     post:
       summary: 試験作成
       tags:
@@ -517,7 +511,7 @@ paths:
       parameters: []
       responses:
         '201':
-          description: 試験作成成功
+          description: school_admin も試験を作成できる
           content:
             application/json:
               schema:
@@ -541,6 +535,12 @@ paths:
                 - maxScore
         '401':
           description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: 権限なし（student は禁止）
           content:
             application/json:
               schema:
@@ -585,7 +585,7 @@ paths:
           type: string
       responses:
         '200':
-          description: スコア一覧
+          description: school_admin も試験別スコアを取得できる
           content:
             application/json:
               schema:
@@ -617,6 +617,12 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: 権限なし（student は禁止）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/api/scores":
     post:
       summary: 点数一括登録
@@ -627,7 +633,7 @@ paths:
       parameters: []
       responses:
         '201':
-          description: 登録成功
+          description: school_admin も点数を登録できる
           content:
             application/json:
               schema:
@@ -642,6 +648,12 @@ paths:
                 - registeredCount
         '401':
           description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: 権限なし（student は禁止）
           content:
             application/json:
               schema:
@@ -687,7 +699,7 @@ paths:
           type: integer
       responses:
         '200':
-          description: 召喚獣ステータス一覧
+          description: school_admin が他の生徒のステータスを参照できる
           content:
             application/json:
               schema:
@@ -722,6 +734,12 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: 権限なし（他の生徒による参照は禁止）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/api/me":
     get:
       summary: 認証ユーザー情報取得
@@ -735,21 +753,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  email:
-                    type: string
-                  name:
-                    type: string
-                  role:
-                    type: string
-                required:
-                - id
-                - email
-                - name
-                - role
+                "$ref": "#/components/schemas/User"
         '401':
           description: Authorizationヘッダーなし
           content:
@@ -766,6 +770,30 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum:
+          - student
+          - teacher
+          - school_admin
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - name
+      - email
+      - role
+      - created_at
     error:
       type: object
       properties:
