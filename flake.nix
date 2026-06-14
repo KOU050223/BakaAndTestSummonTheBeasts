@@ -18,6 +18,7 @@
           packages = [
             pkgs.git
             pkgs.go-task
+            pkgs.lefthook
 
             # frontend
             pkgs.nodejs_24
