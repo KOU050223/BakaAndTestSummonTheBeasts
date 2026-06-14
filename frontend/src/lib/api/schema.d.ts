@@ -169,7 +169,6 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            token: string;
                             user: components["schemas"]["User"];
                         };
                     };
@@ -235,7 +234,6 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            token: string;
                             user: components["schemas"]["User"];
                         };
                     };
