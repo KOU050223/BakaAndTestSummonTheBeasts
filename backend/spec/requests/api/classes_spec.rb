@@ -28,6 +28,27 @@ RSpec.describe "GET /api/classes", type: :request do
         run_test!
       end
 
+      response "200", "school_admin もクラス一覧を取得できる" do
+        schema type: :object,
+          properties: {
+            classes: {
+              type: :array,
+              items: {
+                type: :object,
+                properties: {
+                  id:   { type: :string },
+                  name: { type: :string }
+                },
+                required: %w[id name]
+              }
+            }
+          },
+          required: %w[classes]
+
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :school_admin).id)}" }
+        run_test!
+      end
+
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
         let(:Authorization) { nil }
@@ -69,6 +90,29 @@ RSpec.describe "GET /api/classes", type: :request do
           required: %w[classId students]
 
         let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :teacher).id)}" }
+        let(:class_id) { "class_a" }
+        run_test!
+      end
+
+      response "200", "school_admin もクラス内生徒一覧を取得できる" do
+        schema type: :object,
+          properties: {
+            classId:  { type: :string },
+            students: {
+              type: :array,
+              items: {
+                type: :object,
+                properties: {
+                  id:   { type: :string },
+                  name: { type: :string }
+                },
+                required: %w[id name]
+              }
+            }
+          },
+          required: %w[classId students]
+
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :school_admin).id)}" }
         let(:class_id) { "class_a" }
         run_test!
       end
