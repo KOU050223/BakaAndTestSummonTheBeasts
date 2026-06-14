@@ -40,11 +40,49 @@ RSpec.describe 'GET /api/students/:id/summon', type: :request do
         end
       end
 
+      response '200', 'teacher が他の生徒のステータスを参照できる' do
+        schema type: :object,
+          properties: {
+            studentId: { type: :string },
+            summons: {
+              type: :object,
+              additionalProperties: {
+                type: :object,
+                properties: {
+                  hp: { type: :integer },
+                  attack: { type: :integer },
+                  defense: { type: :integer },
+                  speed: { type: :integer }
+                },
+                required: %w[hp attack defense speed]
+              }
+            }
+          },
+          required: %w[studentId summons]
+
+        let(:teacher) { create(:user, :teacher) }
+        let(:student) { create(:user) }
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: teacher.id)}" }
+        let(:id) { student.id }
+        run_test!
+      end
+
       response '401', '未認証' do
         schema '$ref' => '#/components/schemas/error'
 
         let(:Authorization) { nil }
         let(:id) { 1 }
+
+        run_test!
+      end
+
+      response '403', '権限なし（他の生徒による参照は禁止）' do
+        schema '$ref' => '#/components/schemas/error'
+
+        let(:other_student) { create(:user) }
+        let(:target_student) { create(:user) }
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: other_student.id)}" }
+        let(:id) { target_student.id }
 
         run_test!
       end

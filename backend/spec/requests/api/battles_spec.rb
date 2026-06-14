@@ -35,6 +35,12 @@ RSpec.describe "Battles API", type: :request do
         let(:Authorization) { nil }
         run_test!
       end
+
+      response "403", "権限なし（teacher は禁止）" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :teacher).id)}" }
+        run_test!
+      end
     end
 
     post "バトル作成" do
@@ -68,6 +74,13 @@ RSpec.describe "Battles API", type: :request do
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
         let(:Authorization) { nil }
+        let(:body) { {} }
+        run_test!
+      end
+
+      response "403", "権限なし（teacher は禁止）" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :teacher).id)}" }
         let(:body) { {} }
         run_test!
       end
@@ -114,6 +127,13 @@ RSpec.describe "Battles API", type: :request do
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
         let(:Authorization) { nil }
+        let(:id) { "battle_1" }
+        run_test!
+      end
+
+      response "403", "権限なし（school_admin は禁止）" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :school_admin).id)}" }
         let(:id) { "battle_1" }
         run_test!
       end

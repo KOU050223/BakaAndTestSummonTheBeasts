@@ -35,7 +35,7 @@ RSpec.describe "POST /api/scores", type: :request do
           },
           required: %w[examId registeredCount]
 
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user).id)}" }
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :teacher).id)}" }
         let(:body) do
           {
             examId: "exam_1",
@@ -51,6 +51,13 @@ RSpec.describe "POST /api/scores", type: :request do
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
         let(:Authorization) { nil }
+        let(:body) { {} }
+        run_test!
+      end
+
+      response "403", "権限なし（student は禁止）" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user).id)}" }
         let(:body) { {} }
         run_test!
       end

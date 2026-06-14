@@ -24,13 +24,19 @@ RSpec.describe "GET /api/classes", type: :request do
           },
           required: %w[classes]
 
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user).id)}" }
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :teacher).id)}" }
         run_test!
       end
 
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
         let(:Authorization) { nil }
+        run_test!
+      end
+
+      response "403", "権限なし（student は禁止）" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user).id)}" }
         run_test!
       end
     end
@@ -62,7 +68,7 @@ RSpec.describe "GET /api/classes", type: :request do
           },
           required: %w[classId students]
 
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user).id)}" }
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :teacher).id)}" }
         let(:class_id) { "class_a" }
         run_test!
       end
@@ -70,6 +76,13 @@ RSpec.describe "GET /api/classes", type: :request do
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
         let(:Authorization) { nil }
+        let(:class_id) { "class_a" }
+        run_test!
+      end
+
+      response "403", "権限なし（student は禁止）" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user).id)}" }
         let(:class_id) { "class_a" }
         run_test!
       end
