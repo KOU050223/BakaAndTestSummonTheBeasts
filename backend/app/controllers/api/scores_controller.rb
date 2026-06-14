@@ -4,6 +4,8 @@ module Api
   # トランザクションで一括処理する（docs/backend-design.md §6.3）。
   # TODO: 実保存・再計算に差し替える。
   class ScoresController < BaseController
+    before_action -> { require_role!(:teacher, :school_admin) }, only: :create
+
     def create
       scores = params[:scores] || []
       render json: {

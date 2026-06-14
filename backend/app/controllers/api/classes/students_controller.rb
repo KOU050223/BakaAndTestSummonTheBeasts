@@ -3,6 +3,8 @@ module Api
     # クラス内生徒一覧のスタブ。点数入力画面（教師）が叩く。
     # TODO: 指定クラスの所属生徒の実データ取得に差し替える。
     class StudentsController < BaseController
+      before_action -> { require_role!(:teacher, :school_admin) }, only: :index
+
       def index
         render json: {
           classId: params[:class_id],

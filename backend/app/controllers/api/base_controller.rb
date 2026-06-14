@@ -24,5 +24,9 @@ module Api
     def authorize_school_admin!
       render json: { error: "権限がありません" }, status: :forbidden unless current_user&.role == "school_admin"
     end
+
+    def require_role!(*roles)
+      render json: { error: "権限がありません" }, status: :forbidden unless roles.map(&:to_s).include?(current_user&.role)
+    end
   end
 end
