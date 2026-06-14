@@ -36,9 +36,9 @@ RSpec.describe "Battles API", type: :request do
         run_test!
       end
 
-      response "403", "権限なし（teacher は禁止）" do
+      response "403", "権限なし（school_admin は禁止）" do
         schema "$ref" => "#/components/schemas/error"
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :teacher).id)}" }
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :school_admin).id)}" }
         run_test!
       end
     end
@@ -71,6 +71,20 @@ RSpec.describe "Battles API", type: :request do
         run_test!
       end
 
+      response "201", "教師もバトル作成できる" do
+        schema type: :object,
+          properties: {
+            battleId:  { type: :string },
+            subjectId: { type: :string },
+            status:    { type: :string }
+          },
+          required: %w[battleId subjectId status]
+
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :teacher).id)}" }
+        let(:body) { { subjectId: "math" } }
+        run_test!
+      end
+
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
         let(:Authorization) { nil }
@@ -78,9 +92,9 @@ RSpec.describe "Battles API", type: :request do
         run_test!
       end
 
-      response "403", "権限なし（teacher は禁止）" do
+      response "403", "権限なし（school_admin は禁止）" do
         schema "$ref" => "#/components/schemas/error"
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :teacher).id)}" }
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :school_admin).id)}" }
         let(:body) { {} }
         run_test!
       end

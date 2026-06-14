@@ -4,7 +4,7 @@ module Api
   # TODO: Battle::Create UseCase（開始時ステータスのスナップショット保存）と
   #       結果取得の実データ化に差し替える（docs/backend-design.md §6.5）。
   class BattlesController < BaseController
-    before_action -> { require_role!(:student) }, only: %i[index create]
+    before_action -> { require_role!(:student, :teacher) }, only: %i[index create]
     before_action -> { require_role!(:student, :teacher) }, only: :result
 
     # 生徒ダッシュボードの「参加可能なバトル」バッジ表示用の一覧（screen-flow.md）。
