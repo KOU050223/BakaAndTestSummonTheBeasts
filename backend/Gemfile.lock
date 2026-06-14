@@ -134,6 +134,7 @@ GEM
     jwt (3.2.0)
       base64
     language_server-protocol (3.17.0.5)
+    lefthook (2.1.9)
     lint_roller (1.1.0)
     logger (1.7.0)
     loofah (2.25.1)
@@ -147,7 +148,6 @@ GEM
       net-smtp
     marcel (1.2.1)
     mini_mime (1.1.5)
-    mini_portile2 (2.8.9)
     minitest (6.0.6)
       drb (~> 2.0)
       prism (~> 1.5)
@@ -162,9 +162,6 @@ GEM
     net-smtp (0.5.1)
       net-protocol
     nio4r (2.7.5)
-    nokogiri (1.19.3)
-      mini_portile2 (~> 2.8.2)
-      racc (~> 1.4)
     nokogiri (1.19.3-aarch64-linux-gnu)
       racc (~> 1.4)
     nokogiri (1.19.3-aarch64-linux-musl)
@@ -354,7 +351,6 @@ PLATFORMS
   arm-linux-gnu
   arm-linux-musl
   arm64-darwin
-  ruby
   x86_64-darwin
   x86_64-linux
   x86_64-linux-gnu
@@ -370,6 +366,7 @@ DEPENDENCIES
   factory_bot_rails
   faker
   jwt (~> 3.2)
+  lefthook
   net-imap (>= 0.6.4.1)
   ostruct
   pg (~> 1.5)
