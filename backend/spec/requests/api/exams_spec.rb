@@ -26,13 +26,42 @@ RSpec.describe "Exams API", type: :request do
           },
           required: %w[exams]
 
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user).id)}" }
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :teacher).id)}" }
+        run_test!
+      end
+
+      response "200", "school_admin も試験一覧を取得できる" do
+        schema type: :object,
+          properties: {
+            exams: {
+              type: :array,
+              items: {
+                type: :object,
+                properties: {
+                  id:        { type: :string },
+                  title:     { type: :string },
+                  subjectId: { type: :string },
+                  createdBy: { type: :string }
+                },
+                required: %w[id title subjectId createdBy]
+              }
+            }
+          },
+          required: %w[exams]
+
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :school_admin).id)}" }
         run_test!
       end
 
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
         let(:Authorization) { nil }
+        run_test!
+      end
+
+      response "403", "権限なし（student は禁止）" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user).id)}" }
         run_test!
       end
     end
@@ -65,7 +94,23 @@ RSpec.describe "Exams API", type: :request do
           },
           required: %w[id title subjectId classId maxScore]
 
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user).id)}" }
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :teacher).id)}" }
+        let(:body) { { title: "数学 小テスト1", subjectId: "math", classId: "class_a", maxScore: 100 } }
+        run_test!
+      end
+
+      response "201", "school_admin も試験を作成できる" do
+        schema type: :object,
+          properties: {
+            id:        { type: :string },
+            title:     { type: :string },
+            subjectId: { type: :string },
+            classId:   { type: :string },
+            maxScore:  { type: :integer }
+          },
+          required: %w[id title subjectId classId maxScore]
+
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :school_admin).id)}" }
         let(:body) { { title: "数学 小テスト1", subjectId: "math", classId: "class_a", maxScore: 100 } }
         run_test!
       end
@@ -73,6 +118,13 @@ RSpec.describe "Exams API", type: :request do
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
         let(:Authorization) { nil }
+        let(:body) { {} }
+        run_test!
+      end
+
+      response "403", "権限なし（student は禁止）" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user).id)}" }
         let(:body) { {} }
         run_test!
       end
@@ -106,7 +158,31 @@ RSpec.describe "Exams API", type: :request do
           },
           required: %w[examId scores]
 
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user).id)}" }
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :teacher).id)}" }
+        let(:exam_id) { "exam_1" }
+        run_test!
+      end
+
+      response "200", "school_admin も試験別スコアを取得できる" do
+        schema type: :object,
+          properties: {
+            examId: { type: :string },
+            scores: {
+              type: :array,
+              items: {
+                type: :object,
+                properties: {
+                  studentId: { type: :string },
+                  name:      { type: :string },
+                  score:     { type: :integer }
+                },
+                required: %w[studentId name score]
+              }
+            }
+          },
+          required: %w[examId scores]
+
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :school_admin).id)}" }
         let(:exam_id) { "exam_1" }
         run_test!
       end
@@ -114,6 +190,13 @@ RSpec.describe "Exams API", type: :request do
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
         let(:Authorization) { nil }
+        let(:exam_id) { "exam_1" }
+        run_test!
+      end
+
+      response "403", "権限なし（student は禁止）" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user).id)}" }
         let(:exam_id) { "exam_1" }
         run_test!
       end

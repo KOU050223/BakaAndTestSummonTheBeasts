@@ -2,6 +2,8 @@ module Api
   # 試験一覧・作成のスタブ。apiSpec.md §3.3, §3.4 準拠の固定モックを返す。
   # TODO: Exam の実データ取得・Exam::Create UseCase に差し替える。
   class ExamsController < BaseController
+    before_action -> { require_role!(:teacher, :school_admin) }
+
     def index
       render json: {
         exams: [

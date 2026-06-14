@@ -3,6 +3,8 @@ module Api
     # 試験別スコア取得のスタブ。点数入力画面（教師）が既存点数の表示に使う。
     # TODO: 指定試験のScore実データ取得に差し替える。
     class ScoresController < BaseController
+      before_action -> { require_role!(:teacher, :school_admin) }, only: :index
+
       def index
         render json: {
           examId: params[:exam_id],
