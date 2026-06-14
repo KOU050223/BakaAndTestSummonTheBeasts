@@ -11,7 +11,7 @@ pre-commit:
     frontend-lint:
       root: frontend
       glob: "frontend/**/*.{ts,tsx,js,jsx}"
-      run: pnpm lint
+      run: nix develop "$(git rev-parse --show-toplevel)" --command pnpm lint
 
 pre-push:
   commands:
