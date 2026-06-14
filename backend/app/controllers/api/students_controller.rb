@@ -24,7 +24,7 @@ module Api
       return if %w[teacher school_admin].include?(current_user&.role)
       return if current_user&.id.to_s == params[:id].to_s
 
-      render json: { error: "権限がありません" }, status: :forbidden
+      render_error(code: "forbidden", message: "権限がありません", status: :forbidden) and return
     end
   end
 end

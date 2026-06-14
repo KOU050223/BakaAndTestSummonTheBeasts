@@ -56,16 +56,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  errors:
-                    type: object
-                    additionalProperties:
-                      type: array
-                      items:
-                        type: string
-                required:
-                - errors
+                "$ref": "#/components/schemas/error"
       requestBody:
         content:
           application/json:
@@ -165,16 +156,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  errors:
-                    type: object
-                    additionalProperties:
-                      type: array
-                      items:
-                        type: string
-                required:
-                - errors
+                "$ref": "#/components/schemas/error"
       requestBody:
         content:
           application/json:
@@ -241,16 +223,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  errors:
-                    type: object
-                    additionalProperties:
-                      type: array
-                      items:
-                        type: string
-                required:
-                - errors
+                "$ref": "#/components/schemas/error"
       requestBody:
         content:
           application/json:
@@ -797,6 +770,17 @@ components:
       type: object
       properties:
         error:
-          type: string
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+          required:
+          - code
+          - message
+          - details
       required:
       - error

@@ -29,7 +29,15 @@ RSpec.configure do |config|
           error: {
             type: :object,
             properties: {
-              error: { type: :string }
+              error: {
+                type: :object,
+                properties: {
+                  code: { type: :string },
+                  message: { type: :string },
+                  details: { type: :object }
+                },
+                required: %w[code message details]
+              }
             },
             required: [ 'error' ]
           }

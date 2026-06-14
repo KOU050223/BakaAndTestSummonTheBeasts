@@ -33,7 +33,9 @@ RSpec.describe 'GET /api/me', type: :request do
 
         run_test! do |response|
           json = JSON.parse(response.body)
-          expect(json['error']).to eq('認証が必要です')
+          expect(json['error']['code']).to eq('unauthorized')
+          expect(json['error']['message']).to eq('認証が必要です')
+          expect(json['error']['details']).to be_a(Hash)
         end
       end
     end

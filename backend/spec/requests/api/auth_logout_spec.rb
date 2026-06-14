@@ -30,7 +30,9 @@ RSpec.describe 'DELETE /api/auth/logout', type: :request do
 
         run_test! do |response|
           json = JSON.parse(response.body)
-          expect(json['error']).to be_present
+          expect(json['error']['code']).to eq('unauthorized')
+          expect(json['error']['message']).to be_present
+          expect(json['error']['details']).to be_a(Hash)
         end
       end
     end
