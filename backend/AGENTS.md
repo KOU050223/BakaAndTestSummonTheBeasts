@@ -17,7 +17,6 @@
 1. `spec/swagger_helper.rb` の `components.schemas` に定義を追加
 2. 各 spec で `schema '$ref' => '#/components/schemas/型名'` と参照
 3. `bundle exec rswag` を実行して `docs/openapi.yaml` を再生成
-4. `Task gen:types` でフロントエンドの型を再生成
 
 ### openapi.yaml は手動編集禁止
 
@@ -43,37 +42,8 @@ end
 
 ### 新しいエンドポイントを追加したら再生成する
 
-spec を追加・変更したら必ず以下を実行して `docs/openapi.yaml` を最新化し、フロントエンド型も更新する：
+spec を追加・変更したら必ず以下を実行して `docs/openapi.yaml` を最新化する：
 
 ```bash
-bundle exec rswag    # openapi.yaml を再生成
-task gen:types       # frontend/src/types/api.ts を再生成
-```
-
-## フロントエンド型自動生成
-
-`openapi-typescript` を使って `docs/openapi.yaml` から TypeScript 型を自動生成する。
-
-### 生成コマンド
-
-```bash
-task gen:types
-# 内部的に以下を実行:
-# pnpm exec openapi-typescript ../docs/openapi.yaml -o src/types/api.ts
-```
-
-### 生成ファイル
-
-- 出力先: `frontend/src/types/api.ts`
-- このファイルは **手動編集禁止**。`task gen:types` で再生成する
-
-### 型の使い方
-
-生成された型は `components["schemas"]["型名"]` で参照できる：
-
-```typescript
-import type { components } from '@/types/api'
-
-type User = components['schemas']['User']
-type ErrorResponse = components['schemas']['error']
+bundle exec rswag
 ```
