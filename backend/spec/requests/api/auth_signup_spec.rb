@@ -20,17 +20,16 @@ RSpec.describe 'POST /api/auth/signup', type: :request do
       response '201', '登録成功' do
         schema type: :object,
           properties: {
-            token: { type: :string },
             user: { '$ref' => '#/components/schemas/User' }
           },
-          required: %w[token user]
+          required: %w[user]
 
         let(:body) { { name: '山田太郎', email: 'signup_test@example.com', password: 'password123' } }
 
         run_test! do |response|
           json = JSON.parse(response.body)
-          expect(json['token']).to be_present
           expect(json['user']['email']).to eq('signup_test@example.com')
+          expect(response.cookies['token']).to be_present
         end
       end
 

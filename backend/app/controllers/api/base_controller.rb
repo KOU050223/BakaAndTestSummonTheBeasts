@@ -1,5 +1,6 @@
 module Api
   class BaseController < ActionController::API
+    include ActionController::Cookies
     include Api::ErrorRenderable
 
     before_action :authenticate!
@@ -7,10 +8,8 @@ module Api
     private
 
     def authenticate!
-      header = request.headers["Authorization"]
-      render_error(code: "unauthorized", message: "認証が必要です", status: :unauthorized) and return unless header&.start_with?("Bearer ")
-
-      token = header.split(" ").last
+      token = cookies[:token]
+      render_error(code: "unauthorized", message: "認証が必要です", status: :unauthorized) and return if token.blank?
 
       payload = JwtService.decode(token)
       render_error(code: "unauthorized", message: "認証トークンが無効です", status: :unauthorized) and return if payload.nil?

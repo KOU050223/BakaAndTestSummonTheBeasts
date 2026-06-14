@@ -5,7 +5,7 @@ RSpec.describe "Exams API", type: :request do
     get "試験一覧取得" do
       tags "Exams"
       produces "application/json"
-      security [ bearer_auth: [] ]
+      security [ cookie_auth: [] ]
 
       response "200", "試験一覧" do
         schema type: :object,
@@ -26,7 +26,7 @@ RSpec.describe "Exams API", type: :request do
           },
           required: %w[exams]
 
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :teacher).id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user, :teacher).id) }
         run_test!
       end
 
@@ -49,19 +49,18 @@ RSpec.describe "Exams API", type: :request do
           },
           required: %w[exams]
 
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :school_admin).id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user, :school_admin).id) }
         run_test!
       end
 
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
-        let(:Authorization) { nil }
         run_test!
       end
 
       response "403", "権限なし（student は禁止）" do
         schema "$ref" => "#/components/schemas/error"
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user).id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
         run_test!
       end
     end
@@ -70,7 +69,7 @@ RSpec.describe "Exams API", type: :request do
       tags "Exams"
       consumes "application/json"
       produces "application/json"
-      security [ bearer_auth: [] ]
+      security [ cookie_auth: [] ]
 
       parameter name: :body, in: :body, required: true, schema: {
         type: :object,
@@ -94,7 +93,7 @@ RSpec.describe "Exams API", type: :request do
           },
           required: %w[id title subjectId classId maxScore]
 
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :teacher).id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user, :teacher).id) }
         let(:body) { { title: "数学 小テスト1", subjectId: "math", classId: "class_a", maxScore: 100 } }
         run_test!
       end
@@ -110,21 +109,20 @@ RSpec.describe "Exams API", type: :request do
           },
           required: %w[id title subjectId classId maxScore]
 
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :school_admin).id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user, :school_admin).id) }
         let(:body) { { title: "数学 小テスト1", subjectId: "math", classId: "class_a", maxScore: 100 } }
         run_test!
       end
 
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
-        let(:Authorization) { nil }
         let(:body) { {} }
         run_test!
       end
 
       response "403", "権限なし（student は禁止）" do
         schema "$ref" => "#/components/schemas/error"
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user).id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
         let(:body) { {} }
         run_test!
       end
@@ -135,7 +133,7 @@ RSpec.describe "Exams API", type: :request do
     get "試験別スコア一覧取得" do
       tags "Exams"
       produces "application/json"
-      security [ bearer_auth: [] ]
+      security [ cookie_auth: [] ]
 
       parameter name: :exam_id, in: :path, type: :string, required: true, description: "試験ID"
 
@@ -158,7 +156,7 @@ RSpec.describe "Exams API", type: :request do
           },
           required: %w[examId scores]
 
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :teacher).id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user, :teacher).id) }
         let(:exam_id) { "exam_1" }
         run_test!
       end
@@ -182,21 +180,20 @@ RSpec.describe "Exams API", type: :request do
           },
           required: %w[examId scores]
 
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :school_admin).id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user, :school_admin).id) }
         let(:exam_id) { "exam_1" }
         run_test!
       end
 
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
-        let(:Authorization) { nil }
         let(:exam_id) { "exam_1" }
         run_test!
       end
 
       response "403", "権限なし（student は禁止）" do
         schema "$ref" => "#/components/schemas/error"
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user).id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
         let(:exam_id) { "exam_1" }
         run_test!
       end

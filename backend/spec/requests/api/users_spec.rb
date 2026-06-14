@@ -5,13 +5,13 @@ RSpec.describe 'GET /api/me', type: :request do
     get '認証ユーザー情報取得' do
       tags 'Users'
       produces 'application/json'
-      security [ bearer_auth: [] ]
+      security [ cookie_auth: [] ]
 
       response '200', '自分のユーザー情報' do
         schema '$ref' => '#/components/schemas/User'
 
         let(:user) { create(:user) }
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: user.id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: user.id) }
 
         run_test! do |response|
           json = JSON.parse(response.body)
@@ -22,7 +22,6 @@ RSpec.describe 'GET /api/me', type: :request do
       response '401', 'Authorizationヘッダーなし' do
         schema '$ref' => '#/components/schemas/error'
 
-        let(:Authorization) { nil }
 
         run_test! do |response|
           json = JSON.parse(response.body)

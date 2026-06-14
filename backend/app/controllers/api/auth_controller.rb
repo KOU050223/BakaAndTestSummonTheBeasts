@@ -1,6 +1,8 @@
 module Api
   class AuthController < ActionController::API
+    include ActionController::Cookies
     include Api::ErrorRenderable
+
     def login
       input = Auth::LoginInput.new(login_params)
       unless input.valid?
@@ -13,10 +15,8 @@ module Api
       end
 
       result = Auth::Login.call(input)
-      render json: {
-        token: result[:token],
-        user: UserSerializer.new(result[:user]).as_json
-      }, status: :ok
+      set_auth_cookie(result[:token])
+      render json: { user: UserSerializer.new(result[:user]).as_json }, status: :ok
     rescue Auth::Login::AuthenticationError
       render_error(code: "unauthorized", message: "メールアドレスまたはパスワードが正しくありません", status: :unauthorized)
     end
@@ -33,25 +33,15 @@ module Api
       end
 
       result = Auth::Signup.call(input)
-      render json: {
-        token: result[:token],
-        user: UserSerializer.new(result[:user]).as_json
-      }, status: :created
+      set_auth_cookie(result[:token])
+      render json: { user: UserSerializer.new(result[:user]).as_json }, status: :created
     rescue Auth::Signup::EmailTakenError
       render_error(code: "conflict", message: "このメールアドレスはすでに使用されています", status: :conflict)
     end
 
     def logout
-      header = request.headers["Authorization"]
-      unless header&.start_with?("Bearer ")
-        return render_error(code: "unauthorized", message: "認証が必要です", status: :unauthorized)
-      end
-
-      token = header.split(" ").last
-      if JwtService.decode(token).nil?
-        return render_error(code: "unauthorized", message: "認証トークンが無効です", status: :unauthorized)
-      end
-
+      # トークンの有効性に関わらず Cookie を削除する（HttpOnly なのでフロントから消せないため）
+      cookies.delete(:token)
       render json: { message: "ログアウトしました" }, status: :ok
     end
 
@@ -63,6 +53,15 @@ module Api
 
     def signup_params
       params.permit(:name, :email, :password).merge(role: "student")
+    end
+
+    def set_auth_cookie(token)
+      cookies[:token] = {
+        value: token,
+        httponly: true,
+        secure: Rails.env.production?,
+        same_site: Rails.env.production? ? :none : :lax
+      }
     end
   end
 end

@@ -20,5 +20,9 @@ module Backend
     config.api_only = true
 
     config.autoload_lib(ignore: %w[assets tasks])
+
+    # httpOnly Cookie を API モードで使用するために必要
+    config.middleware.use ActionDispatch::Cookies
+    config.middleware.use ActionDispatch::Session::CookieStore
   end
 end

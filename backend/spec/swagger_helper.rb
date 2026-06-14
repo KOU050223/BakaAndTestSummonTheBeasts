@@ -19,10 +19,10 @@ RSpec.configure do |config|
       ],
       components: {
         securitySchemes: {
-          bearer_auth: {
-            type: :http,
-            scheme: :bearer,
-            bearerFormat: 'JWT'
+          cookie_auth: {
+            type: :apiKey,
+            in: :cookie,
+            name: :token
           }
         },
         schemas: {

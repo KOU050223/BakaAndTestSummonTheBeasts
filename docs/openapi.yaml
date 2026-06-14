@@ -11,7 +11,7 @@ paths:
       tags:
       - Admin
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       parameters: []
       responses:
         '201':
@@ -77,7 +77,7 @@ paths:
       tags:
       - Auth
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       responses:
         '200':
           description: ログアウト成功
@@ -110,12 +110,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  token:
-                    type: string
                   user:
                     "$ref": "#/components/schemas/User"
                 required:
-                - token
                 - user
         '409':
           description: メールアドレス重複
@@ -163,12 +160,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  token:
-                    type: string
                   user:
                     "$ref": "#/components/schemas/User"
                 required:
-                - token
                 - user
         '401':
           description: 認証失敗
@@ -204,7 +198,7 @@ paths:
       tags:
       - Battles
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       responses:
         '200':
           description: バトル一覧
@@ -250,7 +244,7 @@ paths:
       tags:
       - Battles
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       parameters: []
       responses:
         '201':
@@ -300,7 +294,7 @@ paths:
       tags:
       - Battles
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       parameters:
       - name: id
         in: path
@@ -369,7 +363,7 @@ paths:
       tags:
       - Classes
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       responses:
         '200':
           description: school_admin もクラス一覧を取得できる
@@ -410,7 +404,7 @@ paths:
       tags:
       - Classes
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       parameters:
       - name: class_id
         in: path
@@ -461,7 +455,7 @@ paths:
       tags:
       - Exams
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       responses:
         '200':
           description: school_admin も試験一覧を取得できる
@@ -507,7 +501,7 @@ paths:
       tags:
       - Exams
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       parameters: []
       responses:
         '201':
@@ -575,7 +569,7 @@ paths:
       tags:
       - Exams
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       parameters:
       - name: exam_id
         in: path
@@ -629,7 +623,7 @@ paths:
       tags:
       - Scores
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       parameters: []
       responses:
         '201':
@@ -689,7 +683,7 @@ paths:
       tags:
       - Students
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       parameters:
       - name: id
         in: path
@@ -746,7 +740,7 @@ paths:
       tags:
       - Users
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       responses:
         '200':
           description: 自分のユーザー情報
@@ -765,10 +759,10 @@ servers:
   description: ローカル開発環境
 components:
   securitySchemes:
-    bearer_auth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+    cookie_auth:
+      type: apiKey
+      in: cookie
+      name: token
   schemas:
     User:
       type: object
