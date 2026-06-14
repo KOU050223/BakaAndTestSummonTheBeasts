@@ -35,6 +35,15 @@ TODO: E2Eで自身の作業を自己検証できる手段を確保する
 - モバイル: iOS/Android シミュレータ MCP
 - バックエンド: フルウェブサーバーまたはサービスを起動する手段
 
+## OpenAPI スキーマ運用ルール
+
+詳細は `backend/AGENTS.md` を参照。要点：
+
+- `docs/openapi.yaml` は **手動編集禁止**。必ず `bundle exec rswag` で再生成する
+- 複数エンドポイントで使う型は `spec/swagger_helper.rb` の `components.schemas` に共通定義し `$ref` で参照する
+- エラーレスポンスは必ず `$ref: '#/components/schemas/error'` を使う（インライン定義禁止）
+- spec 変更後は `bundle exec rswag` → `task gen:types` の順で実行してフロントエンド型も更新する
+
 ## コミット規約
 
 指摘事項の修正をする時にまとめてコミットするのではなく、対応事項1点ごとにコミットするようにしてください。
