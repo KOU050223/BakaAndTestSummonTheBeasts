@@ -28,3 +28,7 @@ tasks:
     cmds:
       - task: lint
       - task: build
+
+  generate:
+    desc: OpenAPIスキーマからTypeScriptの型定義を生成する
+    cmd: pnpm run generate
