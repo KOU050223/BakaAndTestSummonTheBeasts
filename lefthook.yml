@@ -3,22 +3,26 @@ pre-commit:
   commands:
     backend-lint:
       root: backend
-      run: nix develop "$(git rev-parse --show-toplevel)" --command bin/rubocop -f github
+      glob: "backend/**/*.rb"
+      run: nix develop "$(git rev-parse --show-toplevel)" --command bin/rubocop -f github {staged_files}
       env:
         RUBOCOP_CACHE_ROOT: tmp/rubocop
 
     frontend-lint:
       root: frontend
+      glob: "frontend/**/*.{ts,tsx,js,jsx}"
       run: pnpm lint
 
 pre-push:
   commands:
     backend-test:
       root: backend
+      glob: "backend/**/*"
       run: nix develop "$(git rev-parse --show-toplevel)" --command bundle exec rspec
       env:
         RAILS_ENV: test
 
     backend-scan:
       root: backend
+      glob: "backend/**/*"
       run: nix develop "$(git rev-parse --show-toplevel)" --command sh -c "bin/brakeman --no-pager && bin/bundler-audit"
