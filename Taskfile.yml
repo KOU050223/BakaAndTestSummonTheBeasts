@@ -61,6 +61,11 @@ tasks:
       - task: backend:ci
       - task: frontend:ci
 
+  gen:types:
+    desc: "openapi.yaml からフロントエンド型を生成"
+    dir: ./frontend
+    cmd: pnpm exec openapi-typescript ../docs/openapi.yaml -o src/types/api.ts
+
   db:start:
     desc: PostgreSQLをdocker-composeで起動し、healthyになるまで待つ
     dotenv: [".env"]
