@@ -6,13 +6,18 @@ module Api
       def create
         input = ::Admin::CreateUserInput.new(create_user_params)
         unless input.valid?
-          return render json: { errors: input.errors.to_hash }, status: :unprocessable_entity
+          return render_error(
+            code: "validation_error",
+            message: "入力内容を確認してください",
+            status: :unprocessable_entity,
+            details: input.errors.to_hash
+          )
         end
 
         result = ::Admin::CreateUser.call(input)
         render json: { user: UserSerializer.new(result[:user]).as_json }, status: :created
       rescue ::Admin::CreateUser::EmailTakenError
-        render json: { error: "このメールアドレスはすでに使用されています" }, status: :conflict
+        render_error(code: "conflict", message: "このメールアドレスはすでに使用されています", status: :conflict)
       end
 
       private
