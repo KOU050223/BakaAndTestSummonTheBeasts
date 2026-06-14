@@ -1,0 +1,24 @@
+pre-commit:
+  parallel: true
+  commands:
+    backend-lint:
+      root: backend
+      run: bin/rubocop -f github
+      env:
+        RUBOCOP_CACHE_ROOT: tmp/rubocop
+
+    frontend-lint:
+      root: frontend
+      run: pnpm lint
+
+pre-push:
+  commands:
+    backend-test:
+      root: backend
+      run: bundle exec rspec
+      env:
+        RAILS_ENV: test
+
+    backend-scan:
+      root: backend
+      run: bin/brakeman --no-pager && bin/bundler-audit
