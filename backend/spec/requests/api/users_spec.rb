@@ -8,14 +8,7 @@ RSpec.describe 'GET /api/me', type: :request do
       security [ bearer_auth: [] ]
 
       response '200', '自分のユーザー情報' do
-        schema type: :object,
-          properties: {
-            id: { type: :integer },
-            email: { type: :string },
-            name: { type: :string },
-            role: { type: :string }
-          },
-          required: %w[id email name role]
+        schema '$ref' => '#/components/schemas/User'
 
         let(:user) { create(:user) }
         let(:Authorization) { "Bearer #{JwtService.encode(user_id: user.id)}" }

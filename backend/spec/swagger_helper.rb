@@ -26,6 +26,17 @@ RSpec.configure do |config|
           }
         },
         schemas: {
+          User: {
+            type: :object,
+            properties: {
+              id:         { type: :integer },
+              name:       { type: :string },
+              email:      { type: :string },
+              role:       { type: :string, enum: %w[student teacher school_admin] },
+              created_at: { type: :string, format: 'date-time' }
+            },
+            required: %w[id name email role created_at]
+          },
           error: {
             type: :object,
             properties: {
