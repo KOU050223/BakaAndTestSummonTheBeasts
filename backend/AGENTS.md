@@ -16,7 +16,7 @@
 
 1. `spec/swagger_helper.rb` の `components.schemas` に定義を追加
 2. 各 spec で `schema '$ref' => '#/components/schemas/型名'` と参照
-3. `bundle exec rswag` を実行して `docs/openapi.yaml` を再生成
+3. `task openapi:generate` を実行して `docs/openapi.yaml` を再生成
 
 ### openapi.yaml は手動編集禁止
 
@@ -45,5 +45,6 @@ end
 spec を追加・変更したら必ず以下を実行して `docs/openapi.yaml` を最新化する：
 
 ```bash
-bundle exec rswag
+task openapi:generate
+# 内部的に bin/rails db:test:prepare && bundle exec rake rswag:specs:swaggerize を実行する
 ```
