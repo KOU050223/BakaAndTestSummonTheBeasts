@@ -22,6 +22,12 @@ tasks:
     deps:
       - task: backend:install-deps
       - task: frontend:install-deps
+    cmds:
+      - lefthook install
+
+  hooks:install:
+    desc: lefthookのgitフックをインストールする
+    cmd: lefthook install
 
   dev:
     desc: 全サービスの開発サーバーをまとめて起動

@@ -3,7 +3,7 @@ pre-commit:
   commands:
     backend-lint:
       root: backend
-      run: bin/rubocop -f github
+      run: nix develop "$(git rev-parse --show-toplevel)" --command bin/rubocop -f github
       env:
         RUBOCOP_CACHE_ROOT: tmp/rubocop
 
@@ -15,10 +15,10 @@ pre-push:
   commands:
     backend-test:
       root: backend
-      run: bundle exec rspec
+      run: nix develop "$(git rev-parse --show-toplevel)" --command bundle exec rspec
       env:
         RAILS_ENV: test
 
     backend-scan:
       root: backend
-      run: bin/brakeman --no-pager && bin/bundler-audit
+      run: nix develop "$(git rev-parse --show-toplevel)" --command sh -c "bin/brakeman --no-pager && bin/bundler-audit"
