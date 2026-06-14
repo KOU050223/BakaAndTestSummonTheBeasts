@@ -51,26 +51,22 @@ RSpec.describe 'POST /api/auth/signup', type: :request do
 
         run_test! do |response|
           json = JSON.parse(response.body)
-          expect(json['error']).to be_present
+          expect(json['error']['code']).to eq('conflict')
+          expect(json['error']['message']).to be_present
+          expect(json['error']['details']).to be_a(Hash)
         end
       end
 
       response '422', 'バリデーションエラー' do
-        schema type: :object,
-          properties: {
-            errors: {
-              type: :object,
-              additionalProperties: {
-                type: :array,
-                items: { type: :string }
-              }
-            }
-          },
-          required: [ 'errors' ]
+        schema '$ref' => '#/components/schemas/error'
 
         let(:body) { { name: '', email: '', password: '' } }
 
-        run_test!
+        run_test! do |response|
+          json = JSON.parse(response.body)
+          expect(json['error']['code']).to eq('validation_error')
+          expect(json['error']['details']).to be_a(Hash)
+        end
       end
     end
   end
