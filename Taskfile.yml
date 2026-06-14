@@ -22,8 +22,7 @@ tasks:
     deps:
       - task: backend:install-deps
       - task: frontend:install-deps
-    cmds:
-      - lefthook install
+      - task: hooks:install
 
   hooks:install:
     desc: lefthookのgitフックをインストールする
