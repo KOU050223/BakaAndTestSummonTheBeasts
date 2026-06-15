@@ -14,7 +14,7 @@ RSpec.describe 'POST /api/admin/users', type: :request do
           name: { type: :string, example: '鈴木先生' },
           email: { type: :string, example: 'teacher@example.com' },
           password: { type: :string, example: 'password123' },
-          role: { type: :string, example: 'teacher', enum: %w[ student teacher school_admin ] }
+          role: { '$ref' => '#/components/schemas/Role' }
         },
         required: %w[ name email password role ]
       }

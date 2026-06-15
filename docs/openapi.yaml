@@ -59,12 +59,7 @@ paths:
                   type: string
                   example: password123
                 role:
-                  type: string
-                  example: teacher
-                  enum:
-                  - student
-                  - teacher
-                  - school_admin
+                  "$ref": "#/components/schemas/Role"
               required:
               - name
               - email
@@ -749,6 +744,12 @@ components:
       in: cookie
       name: token
   schemas:
+    Role:
+      type: string
+      enum:
+      - student
+      - teacher
+      - school_admin
     AuthResponse:
       type: object
       properties:
@@ -766,11 +767,7 @@ components:
         email:
           type: string
         role:
-          type: string
-          enum:
-          - student
-          - teacher
-          - school_admin
+          "$ref": "#/components/schemas/Role"
         created_at:
           type: string
           format: date-time
