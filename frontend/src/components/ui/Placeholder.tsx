@@ -6,6 +6,10 @@ type PlaceholderProps = {
   description?: string;
 };
 
+// description 未指定時のデフォルト文言（テストからも参照する）
+export const DEFAULT_PLACEHOLDER_DESCRIPTION =
+  "この画面は現在準備中です。召喚獣たちが鋭意制作しています。";
+
 // 各タブの中身がまだ無い画面、および教師・管理者ダッシュボードの仮表示に使う汎用コンポーネント。
 export function Placeholder({ title, description }: PlaceholderProps) {
   return (
@@ -19,7 +23,7 @@ export function Placeholder({ title, description }: PlaceholderProps) {
       <div className="px-6 py-10 text-center">
         <p className="text-4xl">🛠️</p>
         <p className="mt-4 text-sm text-slate-300">
-          {description ?? "この画面は現在準備中です。召喚獣たちが鋭意制作しています。"}
+          {description ?? DEFAULT_PLACEHOLDER_DESCRIPTION}
         </p>
       </div>
     </Panel>
