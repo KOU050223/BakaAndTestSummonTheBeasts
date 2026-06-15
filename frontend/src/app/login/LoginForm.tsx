@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { $api } from "@/lib/api/client";
 import { Panel, LabelTag, Button } from "@/components/ui";
 
@@ -27,6 +28,7 @@ function validate(email: string, password: string): FieldErrors {
 
 export function LoginForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -37,6 +39,7 @@ export function LoginForm() {
     "/api/auth/login",
     {
       onSuccess() {
+        queryClient.clear();
         router.push("/");
       },
     }
