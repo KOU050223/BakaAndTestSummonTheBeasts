@@ -37,16 +37,32 @@ RSpec.configure do |config|
             },
             required: %w[user]
           },
+          SchoolClass: {
+            type: :object,
+            properties: {
+              id:   { type: :integer },
+              name: { type: :string }
+            },
+            required: %w[id name]
+          },
           User: {
             type: :object,
             properties: {
-              id:         { type: :integer },
-              name:       { type: :string },
-              email:      { type: :string },
-              role:       { '$ref' => '#/components/schemas/Role' },
-              created_at: { type: :string, format: 'date-time' }
+              id:           { type: :integer },
+              name:         { type: :string },
+              email:        { type: :string },
+              role:         { '$ref' => '#/components/schemas/Role' },
+              created_at:   { type: :string, format: 'date-time' },
+              school_class: {
+                nullable: true,
+                type: :object,
+                properties: {
+                  id:   { type: :integer },
+                  name: { type: :string }
+                }
+              }
             },
-            required: %w[id name email role created_at]
+            required: %w[id name email role created_at school_class]
           },
           error: {
             type: :object,
