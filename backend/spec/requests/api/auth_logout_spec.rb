@@ -5,7 +5,7 @@ RSpec.describe 'DELETE /api/auth/logout', type: :request do
     delete 'ログアウト' do
       tags 'Auth'
       produces 'application/json'
-      security [ cookie_auth: [] ]
+      security [ { cookie_auth: [] }, {} ]
 
       response '200', 'ログアウト成功' do
         schema type: :object,
@@ -23,6 +23,7 @@ RSpec.describe 'DELETE /api/auth/logout', type: :request do
         run_test! do |response|
           json = JSON.parse(response.body)
           expect(json['message']).to be_present
+          expect(response.cookies['token']).to be_nil
         end
       end
 
