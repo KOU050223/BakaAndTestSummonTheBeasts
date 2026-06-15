@@ -3,14 +3,36 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { $api } from "@/lib/api/client";
-import { Panel, LabelTag, TaggedInput, Button } from "@/components/ui";
+import { Panel, LabelTag, Button } from "@/components/ui";
+
+type FieldErrors = {
+  email?: string;
+  password?: string;
+};
+
+function validate(email: string, password: string): FieldErrors {
+  const errors: FieldErrors = {};
+  if (!email) {
+    errors.email = "メールアドレスを入力してください";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errors.email = "正しいメールアドレスの形式で入力してください（例：yoshii@fumizuki.ac.jp）";
+  }
+  if (!password) {
+    errors.password = "パスワードを入力してください";
+  } else if (password.length < 6) {
+    errors.password = "パスワードは6文字以上で入力してください";
+  }
+  return errors;
+}
 
 export function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<{ email?: boolean; password?: boolean }>({});
 
-  const { mutate: login, isPending, error } = $api.useMutation(
+  const { mutate: login, isPending, error: apiError } = $api.useMutation(
     "post",
     "/api/auth/login",
     {
@@ -20,10 +42,21 @@ export function LoginForm() {
     }
   );
 
+  const handleBlur = (field: "email" | "password") => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    setFieldErrors(validate(email, password));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const errors = validate(email, password);
+    setFieldErrors(errors);
+    setTouched({ email: true, password: true });
+    if (Object.keys(errors).length > 0) return;
     login({ body: { email, password } });
   };
+
+  const isApiUnauthorized = apiError != null;
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a1628] via-[#0d2447] to-[#0a3a5c] overflow-hidden p-4">
@@ -58,35 +91,87 @@ export function LoginForm() {
           </h1>
         </div>
 
-        {/* エラー */}
-        {error && (
-          <div className="flex items-center gap-2.5 mx-5 mt-4 px-3.5 py-2.5 bg-red-500/15 border border-red-500/60 rounded-sm">
-            <LabelTag variant="error">ERROR</LabelTag>
-            <p className="text-red-300 text-sm m-0">メールアドレスまたはパスワードが正しくありません</p>
+        {/* API認証エラー */}
+        {isApiUnauthorized && (
+          <div className="flex items-start gap-2.5 mx-5 mt-4 px-3.5 py-3 bg-red-500/15 border border-red-500/60 rounded-sm">
+            <LabelTag variant="error">召喚失敗</LabelTag>
+            <div className="flex flex-col gap-0.5">
+              <p className="text-red-300 text-sm font-bold m-0">メールアドレスまたはパスワードが違います</p>
+              <p className="text-red-300/70 text-xs m-0">入力内容を確認してもう一度お試しください</p>
+            </div>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5 px-5 py-6">
-          <TaggedInput
-            tag="必須"
-            label="メールアドレス"
-            type="email"
-            placeholder="example@fumizuki.ac.jp"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoComplete="email"
-          />
-          <TaggedInput
-            tag="必須"
-            label="パスワード"
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-          />
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5 px-5 py-6" noValidate>
+          {/* メールアドレス */}
+          <div className="flex flex-col gap-2">
+            <label className="flex items-center gap-2.5 cursor-default">
+              <LabelTag variant="required">必須</LabelTag>
+              <span className="text-blue-300 text-sm font-semibold tracking-wide">メールアドレス</span>
+            </label>
+            <input
+              type="email"
+              placeholder="example@fumizuki.ac.jp"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (touched.email) setFieldErrors(validate(e.target.value, password));
+              }}
+              onBlur={() => handleBlur("email")}
+              onFocus={() => setTouched((prev) => ({ ...prev, email: true }))}
+              required
+              autoComplete="email"
+              className={`w-full px-3.5 py-2.5 bg-white/5 border rounded-sm text-sky-100 text-base outline-none transition-all duration-200 placeholder:text-slate-400/50 placeholder:text-sm focus:bg-sky-400/8 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.2),0_0_12px_rgba(56,189,248,0.2)] ${
+                touched.email && fieldErrors.email
+                  ? "border-red-500/70 focus:border-red-400"
+                  : "border-sky-400/40 focus:border-sky-400"
+              }`}
+            />
+            {touched.email && fieldErrors.email ? (
+              <p className="text-red-400 text-xs flex items-center gap-1">
+                <span>⚠</span> {fieldErrors.email}
+              </p>
+            ) : (
+              <p className="text-slate-400/60 text-xs">
+                登録済みのメールアドレスを入力してください
+              </p>
+            )}
+          </div>
+
+          {/* パスワード */}
+          <div className="flex flex-col gap-2">
+            <label className="flex items-center gap-2.5 cursor-default">
+              <LabelTag variant="required">必須</LabelTag>
+              <span className="text-blue-300 text-sm font-semibold tracking-wide">パスワード</span>
+            </label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (touched.password) setFieldErrors(validate(email, e.target.value));
+              }}
+              onBlur={() => handleBlur("password")}
+              required
+              autoComplete="current-password"
+              className={`w-full px-3.5 py-2.5 bg-white/5 border rounded-sm text-sky-100 text-base outline-none transition-all duration-200 placeholder:text-slate-400/50 placeholder:text-sm focus:bg-sky-400/8 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.2),0_0_12px_rgba(56,189,248,0.2)] ${
+                touched.password && fieldErrors.password
+                  ? "border-red-500/70 focus:border-red-400"
+                  : "border-sky-400/40 focus:border-sky-400"
+              }`}
+            />
+            {touched.password && fieldErrors.password ? (
+              <p className="text-red-400 text-xs flex items-center gap-1">
+                <span>⚠</span> {fieldErrors.password}
+              </p>
+            ) : (
+              <p className="text-slate-400/60 text-xs">
+                6文字以上のパスワードを入力してください
+              </p>
+            )}
+          </div>
+
           <Button type="submit" disabled={isPending} fullWidth>
             {isPending ? "召喚中..." : "召喚獣を呼び出す！"}
           </Button>
