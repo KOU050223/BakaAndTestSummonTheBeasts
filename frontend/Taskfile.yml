@@ -23,11 +23,16 @@ tasks:
     desc: ESLintでコードスタイルをチェックする
     cmd: pnpm lint
 
+  test:
+    desc: Vitestでテストを実行する
+    cmd: pnpm test
+
   ci:
-    desc: CI相当のチェックをローカルで全て実行する（generate + lint + build）
+    desc: CI相当のチェックをローカルで全て実行する（generate + lint + test + build）
     cmds:
       - task: generate
       - task: lint
+      - task: test
       - task: build
 
   generate:

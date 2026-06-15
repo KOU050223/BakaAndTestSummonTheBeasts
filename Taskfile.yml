@@ -49,6 +49,7 @@ tasks:
     desc: 全サービスのテストをまとめて実行する
     deps:
       - task: backend:test
+      - task: frontend:test
 
   scan:
     desc: 全サービスのセキュリティスキャンをまとめて実行する
