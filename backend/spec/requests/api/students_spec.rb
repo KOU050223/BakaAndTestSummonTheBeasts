@@ -26,7 +26,7 @@ RSpec.describe 'GET /api/students/:id/summon', type: :request do
     get '召喚獣ステータス取得' do
       tags 'Students'
       produces 'application/json'
-      security [ bearer_auth: [] ]
+      security [ cookie_auth: [] ]
 
       parameter name: :id, in: :path, type: :integer, required: true, description: '生徒ID'
 
@@ -34,7 +34,7 @@ RSpec.describe 'GET /api/students/:id/summon', type: :request do
         schema SUMMON_RESPONSE_SCHEMA
 
         let(:user) { create(:user) }
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: user.id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: user.id) }
         let(:id) { user.id }
 
         run_test! do |response|
@@ -49,7 +49,7 @@ RSpec.describe 'GET /api/students/:id/summon', type: :request do
 
         let(:teacher) { create(:user, :teacher) }
         let(:student) { create(:user) }
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: teacher.id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: teacher.id) }
         let(:id) { student.id }
         run_test!
       end
@@ -59,7 +59,7 @@ RSpec.describe 'GET /api/students/:id/summon', type: :request do
 
         let(:admin) { create(:user, :school_admin) }
         let(:student) { create(:user) }
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: admin.id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: admin.id) }
         let(:id) { student.id }
         run_test!
       end
@@ -67,7 +67,6 @@ RSpec.describe 'GET /api/students/:id/summon', type: :request do
       response '401', '未認証' do
         schema '$ref' => '#/components/schemas/error'
 
-        let(:Authorization) { nil }
         let(:id) { 1 }
 
         run_test!
@@ -78,7 +77,7 @@ RSpec.describe 'GET /api/students/:id/summon', type: :request do
 
         let(:other_student) { create(:user) }
         let(:target_student) { create(:user) }
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: other_student.id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: other_student.id) }
         let(:id) { target_student.id }
 
         run_test!

@@ -5,7 +5,7 @@ RSpec.describe 'DELETE /api/auth/logout', type: :request do
     delete 'ログアウト' do
       tags 'Auth'
       produces 'application/json'
-      security [ bearer_auth: [] ]
+      security [ { cookie_auth: [] }, {} ]
 
       response '200', 'ログアウト成功' do
         schema type: :object,
@@ -15,24 +15,28 @@ RSpec.describe 'DELETE /api/auth/logout', type: :request do
           required: [ 'message' ]
 
         let(:user) { create(:user, email: 'logout_test@example.com', password: 'password123') }
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: user.id)}" }
+
+        before do
+          cookies[:token] = JwtService.encode(user_id: user.id)
+        end
 
         run_test! do |response|
           json = JSON.parse(response.body)
           expect(json['message']).to be_present
+          expect(response.cookies['token']).to be_nil
         end
       end
 
-      response '401', '認証なし' do
-        schema '$ref' => '#/components/schemas/error'
-
-        let(:Authorization) { nil }
+      response '200', 'Cookie なしでもログアウト成功（Cookie は削除済み扱い）' do
+        schema type: :object,
+          properties: {
+            message: { type: :string }
+          },
+          required: [ 'message' ]
 
         run_test! do |response|
           json = JSON.parse(response.body)
-          expect(json['error']['code']).to eq('unauthorized')
-          expect(json['error']['message']).to be_present
-          expect(json['error']['details']).to be_a(Hash)
+          expect(json['message']).to be_present
         end
       end
     end

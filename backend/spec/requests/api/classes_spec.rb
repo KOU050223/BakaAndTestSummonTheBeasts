@@ -5,7 +5,7 @@ RSpec.describe "GET /api/classes", type: :request do
     get "クラス一覧取得" do
       tags "Classes"
       produces "application/json"
-      security [ bearer_auth: [] ]
+      security [ cookie_auth: [] ]
 
       response "200", "クラス一覧" do
         schema type: :object,
@@ -24,7 +24,7 @@ RSpec.describe "GET /api/classes", type: :request do
           },
           required: %w[classes]
 
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :teacher).id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user, :teacher).id) }
         run_test!
       end
 
@@ -45,19 +45,18 @@ RSpec.describe "GET /api/classes", type: :request do
           },
           required: %w[classes]
 
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :school_admin).id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user, :school_admin).id) }
         run_test!
       end
 
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
-        let(:Authorization) { nil }
         run_test!
       end
 
       response "403", "権限なし（student は禁止）" do
         schema "$ref" => "#/components/schemas/error"
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user).id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
         run_test!
       end
     end
@@ -67,7 +66,7 @@ RSpec.describe "GET /api/classes", type: :request do
     get "クラス内生徒一覧取得" do
       tags "Classes"
       produces "application/json"
-      security [ bearer_auth: [] ]
+      security [ cookie_auth: [] ]
 
       parameter name: :class_id, in: :path, type: :string, required: true, description: "クラスID"
 
@@ -89,7 +88,7 @@ RSpec.describe "GET /api/classes", type: :request do
           },
           required: %w[classId students]
 
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :teacher).id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user, :teacher).id) }
         let(:class_id) { "class_a" }
         run_test!
       end
@@ -112,21 +111,20 @@ RSpec.describe "GET /api/classes", type: :request do
           },
           required: %w[classId students]
 
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user, :school_admin).id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user, :school_admin).id) }
         let(:class_id) { "class_a" }
         run_test!
       end
 
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
-        let(:Authorization) { nil }
         let(:class_id) { "class_a" }
         run_test!
       end
 
       response "403", "権限なし（student は禁止）" do
         schema "$ref" => "#/components/schemas/error"
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: create(:user).id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
         let(:class_id) { "class_a" }
         run_test!
       end

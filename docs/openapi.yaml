@@ -11,7 +11,7 @@ paths:
       tags:
       - Admin
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       parameters: []
       responses:
         '201':
@@ -77,10 +77,11 @@ paths:
       tags:
       - Auth
       security:
-      - bearer_auth: []
+      - cookie_auth: []
+      - {}
       responses:
         '200':
-          description: ログアウト成功
+          description: Cookie なしでもログアウト成功（Cookie は削除済み扱い）
           content:
             application/json:
               schema:
@@ -90,12 +91,6 @@ paths:
                     type: string
                 required:
                 - message
-        '401':
-          description: 認証なし
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/error"
   "/api/auth/signup":
     post:
       summary: ユーザー登録
@@ -108,15 +103,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-                  user:
-                    "$ref": "#/components/schemas/User"
-                required:
-                - token
-                - user
+                "$ref": "#/components/schemas/AuthResponse"
         '409':
           description: メールアドレス重複
           content:
@@ -161,15 +148,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-                  user:
-                    "$ref": "#/components/schemas/User"
-                required:
-                - token
-                - user
+                "$ref": "#/components/schemas/AuthResponse"
         '401':
           description: 認証失敗
           content:
@@ -204,7 +183,7 @@ paths:
       tags:
       - Battles
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       responses:
         '200':
           description: バトル一覧
@@ -250,7 +229,7 @@ paths:
       tags:
       - Battles
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       parameters: []
       responses:
         '201':
@@ -300,7 +279,7 @@ paths:
       tags:
       - Battles
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       parameters:
       - name: id
         in: path
@@ -369,7 +348,7 @@ paths:
       tags:
       - Classes
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       responses:
         '200':
           description: school_admin もクラス一覧を取得できる
@@ -410,7 +389,7 @@ paths:
       tags:
       - Classes
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       parameters:
       - name: class_id
         in: path
@@ -461,7 +440,7 @@ paths:
       tags:
       - Exams
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       responses:
         '200':
           description: school_admin も試験一覧を取得できる
@@ -507,7 +486,7 @@ paths:
       tags:
       - Exams
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       parameters: []
       responses:
         '201':
@@ -575,7 +554,7 @@ paths:
       tags:
       - Exams
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       parameters:
       - name: exam_id
         in: path
@@ -629,7 +608,7 @@ paths:
       tags:
       - Scores
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       parameters: []
       responses:
         '201':
@@ -689,7 +668,7 @@ paths:
       tags:
       - Students
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       parameters:
       - name: id
         in: path
@@ -746,7 +725,7 @@ paths:
       tags:
       - Users
       security:
-      - bearer_auth: []
+      - cookie_auth: []
       responses:
         '200':
           description: 自分のユーザー情報
@@ -755,7 +734,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/User"
         '401':
-          description: Authorizationヘッダーなし
+          description: 未認証（token Cookie なし）
           content:
             application/json:
               schema:
@@ -765,11 +744,18 @@ servers:
   description: ローカル開発環境
 components:
   securitySchemes:
-    bearer_auth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+    cookie_auth:
+      type: apiKey
+      in: cookie
+      name: token
   schemas:
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          "$ref": "#/components/schemas/User"
+      required:
+      - user
     User:
       type: object
       properties:

@@ -6,7 +6,7 @@ RSpec.describe 'POST /api/admin/users', type: :request do
       tags 'Admin'
       consumes 'application/json'
       produces 'application/json'
-      security [ bearer_auth: [] ]
+      security [ cookie_auth: [] ]
 
       parameter name: :body, in: :body, required: true, schema: {
         type: :object,
@@ -27,7 +27,7 @@ RSpec.describe 'POST /api/admin/users', type: :request do
           required: [ 'user' ]
 
         let(:admin) { create(:user, :school_admin) }
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: admin.id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: admin.id) }
         let(:body) { { name: '鈴木先生', email: 'teacher_new@example.com', password: 'password123', role: 'teacher' } }
 
         run_test! do |response|
@@ -40,7 +40,7 @@ RSpec.describe 'POST /api/admin/users', type: :request do
         schema '$ref' => '#/components/schemas/error'
 
         let(:teacher) { create(:user, :teacher) }
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: teacher.id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: teacher.id) }
         let(:body) { { name: '誰か', email: 'someone@example.com', password: 'password123', role: 'student' } }
 
         run_test! do |response|
@@ -55,7 +55,7 @@ RSpec.describe 'POST /api/admin/users', type: :request do
         schema '$ref' => '#/components/schemas/error'
 
         let(:admin) { create(:user, :school_admin) }
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: admin.id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: admin.id) }
         let!(:existing) { create(:user, email: 'dup_admin@example.com') }
         let(:body) { { name: '重複', email: 'dup_admin@example.com', password: 'password123', role: 'teacher' } }
 
@@ -71,7 +71,7 @@ RSpec.describe 'POST /api/admin/users', type: :request do
         schema '$ref' => '#/components/schemas/error'
 
         let(:admin) { create(:user, :school_admin) }
-        let(:Authorization) { "Bearer #{JwtService.encode(user_id: admin.id)}" }
+        before { cookies[:token] = JwtService.encode(user_id: admin.id) }
         let(:body) { { name: '', email: '', password: '', role: 'invalid_role' } }
 
         run_test! do |response|
