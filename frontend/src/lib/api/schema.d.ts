@@ -30,11 +30,7 @@ export interface paths {
                         email: string;
                         /** @example password123 */
                         password: string;
-                        /**
-                         * @example teacher
-                         * @enum {string}
-                         */
-                        role: "student" | "teacher" | "school_admin";
+                        role: components["schemas"]["Role"];
                     };
                 };
             };
@@ -105,7 +101,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description ログアウト成功 */
+                /** @description Cookie なしでもログアウト成功（Cookie は削除済み扱い） */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -114,15 +110,6 @@ export interface paths {
                         "application/json": {
                             message: string;
                         };
-                    };
-                };
-                /** @description 認証なし */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["error"];
                     };
                 };
             };
@@ -168,9 +155,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": {
-                            user: components["schemas"]["User"];
-                        };
+                        "application/json": components["schemas"]["AuthResponse"];
                     };
                 };
                 /** @description メールアドレス重複 */
@@ -233,9 +218,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": {
-                            user: components["schemas"]["User"];
-                        };
+                        "application/json": components["schemas"]["AuthResponse"];
                     };
                 };
                 /** @description 認証失敗 */
@@ -908,7 +891,7 @@ export interface paths {
                         "application/json": components["schemas"]["User"];
                     };
                 };
-                /** @description Authorizationヘッダーなし */
+                /** @description 未認証（token Cookie なし） */
                 401: {
                     headers: {
                         [name: string]: unknown;
@@ -931,12 +914,16 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @enum {string} */
+        Role: "student" | "teacher" | "school_admin";
+        AuthResponse: {
+            user: components["schemas"]["User"];
+        };
         User: {
             id: number;
             name: string;
             email: string;
-            /** @enum {string} */
-            role: "student" | "teacher" | "school_admin";
+            role: components["schemas"]["Role"];
             /** Format: date-time */
             created_at: string;
         };

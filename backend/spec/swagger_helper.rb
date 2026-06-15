@@ -26,6 +26,10 @@ RSpec.configure do |config|
           }
         },
         schemas: {
+          Role: {
+            type: :string,
+            enum: %w[student teacher school_admin]
+          },
           AuthResponse: {
             type: :object,
             properties: {
@@ -39,7 +43,7 @@ RSpec.configure do |config|
               id:         { type: :integer },
               name:       { type: :string },
               email:      { type: :string },
-              role:       { type: :string, enum: %w[student teacher school_admin] },
+              role:       { '$ref' => '#/components/schemas/Role' },
               created_at: { type: :string, format: 'date-time' }
             },
             required: %w[id name email role created_at]
