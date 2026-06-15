@@ -3,13 +3,7 @@ import { render, screen } from "@testing-library/react";
 import DashboardLayout from "./layout";
 import type { User } from "@/lib/api/types";
 
-const mockReplace = vi.fn();
 const mockUseCurrentUser = vi.fn();
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ replace: mockReplace, push: vi.fn() }),
-  usePathname: () => "/",
-}));
 
 vi.mock("@/lib/auth/useCurrentUser", () => ({
   useCurrentUser: () => mockUseCurrentUser(),
@@ -32,7 +26,7 @@ const studentUser: User = {
 
 describe("DashboardLayout 認証ガード", () => {
   beforeEach(() => {
-    mockReplace.mockClear();
+    mockUseCurrentUser.mockReset();
   });
 
   it("ローディング中は召喚中表示を出す", () => {
@@ -41,10 +35,14 @@ describe("DashboardLayout 認証ガード", () => {
     expect(screen.getByText("召喚中...")).toBeInTheDocument();
   });
 
-  it("未認証（isError）なら /login へリダイレクトする", () => {
+  // 401（未認証）の /login リダイレクトは client.ts の onResponse middleware が
+  // status を見て担う。layout は isError 全般を /login に飛ばすと 5xx や通信エラーも
+  // ログイン送りになるため、エラー時はシェルを出さずエラー表示に留める。
+  it("取得エラー時はシェルを描画せずエラーメッセージを表示する", () => {
     mockUseCurrentUser.mockReturnValue({ user: undefined, isLoading: false, isError: true });
     render(<DashboardLayout>本文</DashboardLayout>);
-    expect(mockReplace).toHaveBeenCalledWith("/login");
+    expect(screen.getByText(/取得に失敗しました/)).toBeInTheDocument();
+    expect(screen.queryByTestId("shell")).not.toBeInTheDocument();
   });
 
   it("認証済みならシェルと子を描画する", () => {
