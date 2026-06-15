@@ -919,6 +919,10 @@ export interface components {
         AuthResponse: {
             user: components["schemas"]["User"];
         };
+        SchoolClass: {
+            id: number;
+            name: string;
+        };
         User: {
             id: number;
             name: string;
@@ -926,6 +930,10 @@ export interface components {
             role: components["schemas"]["Role"];
             /** Format: date-time */
             created_at: string;
+            school_class: {
+                id?: number;
+                name?: string;
+            } | null;
         };
         error: {
             error: {

@@ -757,6 +757,16 @@ components:
           "$ref": "#/components/schemas/User"
       required:
       - user
+    SchoolClass:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required:
+      - id
+      - name
     User:
       type: object
       properties:
@@ -771,12 +781,21 @@ components:
         created_at:
           type: string
           format: date-time
+        school_class:
+          nullable: true
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
       required:
       - id
       - name
       - email
       - role
       - created_at
+      - school_class
     error:
       type: object
       properties:
