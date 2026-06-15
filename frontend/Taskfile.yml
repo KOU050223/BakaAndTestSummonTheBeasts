@@ -24,7 +24,12 @@ tasks:
     cmd: pnpm lint
 
   ci:
-    desc: CI相当のチェックをローカルで全て実行する（lint + build）
+    desc: CI相当のチェックをローカルで全て実行する（generate + lint + build）
     cmds:
+      - task: generate
       - task: lint
       - task: build
+
+  generate:
+    desc: OpenAPIスキーマからTypeScriptの型定義を生成する
+    cmd: pnpm run generate
