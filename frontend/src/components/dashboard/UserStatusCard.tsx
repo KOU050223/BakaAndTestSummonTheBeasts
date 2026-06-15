@@ -11,9 +11,6 @@ type UserStatusCardProps = {
   user: User;
 };
 
-// TODO: /api/me に所属クラス情報が無いため暫定固定。API 拡張後に user 由来へ置き換える。
-const FALLBACK_AFFILIATION = "文月学園 ・ 2年";
-
 export function UserStatusCard({ user }: UserStatusCardProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -48,7 +45,9 @@ export function UserStatusCard({ user }: UserStatusCardProps) {
           </span>
           <span className="flex items-center gap-1.5 text-[0.7rem] text-slate-400/80">
             <LabelTag variant="info">{ROLE_LABEL[user.role]}</LabelTag>
-            <span className="truncate">{FALLBACK_AFFILIATION}</span>
+            {user.school_class && (
+              <span className="truncate">{user.school_class.name}</span>
+            )}
           </span>
         </div>
       </div>
