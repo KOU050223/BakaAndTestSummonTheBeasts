@@ -26,6 +26,13 @@ RSpec.configure do |config|
           }
         },
         schemas: {
+          AuthResponse: {
+            type: :object,
+            properties: {
+              user: { '$ref' => '#/components/schemas/User' }
+            },
+            required: %w[user]
+          },
           User: {
             type: :object,
             properties: {

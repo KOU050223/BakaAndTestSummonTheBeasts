@@ -17,11 +17,7 @@ RSpec.describe 'POST /api/auth/login', type: :request do
       }
 
       response '200', 'ログイン成功' do
-        schema type: :object,
-          properties: {
-            user: { '$ref' => '#/components/schemas/User' }
-          },
-          required: %w[user]
+        schema '$ref' => '#/components/schemas/AuthResponse'
 
         let(:user) { create(:user, email: 'login_test@example.com', password: 'password123') }
         let(:body) { { email: user.email, password: 'password123' } }
@@ -29,6 +25,7 @@ RSpec.describe 'POST /api/auth/login', type: :request do
         run_test! do |response|
           json = JSON.parse(response.body)
           expect(json['user']['email']).to eq('login_test@example.com')
+          expect(json).not_to have_key('token')
           expect(response.cookies['token']).to be_present
         end
       end
