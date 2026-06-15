@@ -1,0 +1,80 @@
+import type { Role } from "@/lib/api/types";
+
+export type NavItem = {
+  label: string;
+  href: string;
+  icon: string;
+};
+
+// サイドバー上のタブのまとまり。セクション単位で見出し付きグループとして表示する。
+export type NavSection = {
+  // グループ見出し（例: メイン / 試召戦争）
+  heading: string;
+  items: NavItem[];
+};
+
+// ロール別のサイドバー構成。セクションの配列として定義することで、
+// セクション数や各セクションの項目数をロールごとに自由に組める
+// （Sidebar 側で件数を決め打ちで振り分ける必要がない）。
+// 生徒タブは提示されたダッシュボード画像に準拠。
+// 教師・管理者は現状プレースホルダのため仮のラベルを置いている。
+export const NAV_BY_ROLE: Record<Role, NavSection[]> = {
+  student: [
+    {
+      heading: "メイン",
+      items: [
+        { label: "ダッシュボード", href: "/", icon: "⚡" },
+        { label: "成績・召喚獣ステータス", href: "/scores", icon: "📊" },
+        { label: "答案を提出", href: "/submit", icon: "📨" },
+      ],
+    },
+    {
+      heading: "試召戦争",
+      items: [
+        { label: "宣戦布告", href: "/declare-war", icon: "⚔️" },
+        { label: "戦績", href: "/records", icon: "🏆" },
+      ],
+    },
+  ],
+  teacher: [
+    {
+      heading: "採点管理",
+      items: [
+        { label: "試験作成", href: "/", icon: "📝" },
+        { label: "OCR採点", href: "/scores", icon: "🔍" },
+        { label: "FB送信", href: "/submit", icon: "📬" },
+      ],
+    },
+    {
+      heading: "クラス",
+      items: [
+        { label: "クラス管理", href: "/declare-war", icon: "🏫" },
+        { label: "生徒一覧", href: "/records", icon: "👤" },
+      ],
+    },
+  ],
+  school_admin: [
+    {
+      heading: "システム管理",
+      items: [
+        { label: "管理者ダッシュボード", href: "/", icon: "🖥️" },
+        { label: "ユーザー管理", href: "/scores", icon: "👤" },
+        { label: "クラス設定", href: "/submit", icon: "🏫" },
+      ],
+    },
+    {
+      heading: "参照",
+      items: [
+        { label: "全体成績", href: "/declare-war", icon: "📊" },
+        { label: "試召戦争ログ", href: "/records", icon: "⚔️" },
+      ],
+    },
+  ],
+};
+
+// ロールの日本語表記。サイドバー左下のバッジなどで使う。
+export const ROLE_LABEL: Record<Role, string> = {
+  student: "生徒",
+  teacher: "教師",
+  school_admin: "管理者",
+};
