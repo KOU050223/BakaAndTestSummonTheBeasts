@@ -78,9 +78,10 @@ paths:
       - Auth
       security:
       - cookie_auth: []
+      - {}
       responses:
         '200':
-          description: ログアウト成功
+          description: Cookie なしでもログアウト成功（Cookie は削除済み扱い）
           content:
             application/json:
               schema:
@@ -90,12 +91,6 @@ paths:
                     type: string
                 required:
                 - message
-        '401':
-          description: 認証なし
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/error"
   "/api/auth/signup":
     post:
       summary: ユーザー登録
@@ -108,12 +103,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  user:
-                    "$ref": "#/components/schemas/User"
-                required:
-                - user
+                "$ref": "#/components/schemas/AuthResponse"
         '409':
           description: メールアドレス重複
           content:
@@ -158,12 +148,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  user:
-                    "$ref": "#/components/schemas/User"
-                required:
-                - user
+                "$ref": "#/components/schemas/AuthResponse"
         '401':
           description: 認証失敗
           content:
@@ -749,7 +734,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/User"
         '401':
-          description: Authorizationヘッダーなし
+          description: 未認証（token Cookie なし）
           content:
             application/json:
               schema:
@@ -764,6 +749,13 @@ components:
       in: cookie
       name: token
   schemas:
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          "$ref": "#/components/schemas/User"
+      required:
+      - user
     User:
       type: object
       properties:

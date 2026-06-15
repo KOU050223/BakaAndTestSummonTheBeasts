@@ -19,7 +19,7 @@ RSpec.describe 'GET /api/me', type: :request do
         end
       end
 
-      response '401', 'Authorizationヘッダーなし' do
+      response '401', '未認証（token Cookie なし）' do
         schema '$ref' => '#/components/schemas/error'
 
 
