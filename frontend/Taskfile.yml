@@ -24,8 +24,9 @@ tasks:
     cmd: pnpm lint
 
   ci:
-    desc: CI相当のチェックをローカルで全て実行する（lint + build）
+    desc: CI相当のチェックをローカルで全て実行する（generate + lint + build）
     cmds:
+      - task: generate
       - task: lint
       - task: build
 

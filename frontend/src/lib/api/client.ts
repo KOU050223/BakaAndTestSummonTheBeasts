@@ -2,8 +2,13 @@ import createFetchClient from "openapi-fetch";
 import createClient from "openapi-react-query";
 import type { paths } from "./schema.d";
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
+if (!apiBaseUrl) {
+  throw new Error("NEXT_PUBLIC_API_URL is required");
+}
+
 const fetchClient = createFetchClient<paths>({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000",
+  baseUrl: apiBaseUrl,
   credentials: "include", // httpOnly Cookie を自動送信する
 });
 
