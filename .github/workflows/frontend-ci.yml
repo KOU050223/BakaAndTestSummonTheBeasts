@@ -18,6 +18,8 @@ jobs:
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -43,6 +45,8 @@ jobs:
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
