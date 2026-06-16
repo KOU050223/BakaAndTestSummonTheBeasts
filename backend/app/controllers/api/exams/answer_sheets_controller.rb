@@ -1,16 +1,41 @@
 module Api
   module Exams
     class AnswerSheetsController < BaseController
-      before_action -> { require_role!(:teacher, :school_admin) }
       before_action :set_exam
 
+      # 教師：試験に提出された答案一覧
+      def index
+        require_role!(:teacher, :school_admin)
+        sheets = @exam.answer_sheets.includes(:student).order(created_at: :desc)
+        render json: {
+          answer_sheets: sheets.map { |s|
+            {
+              id: s.id,
+              status: s.status,
+              student_id: s.student_id,
+              student_name: s.student.name,
+              updated_at: s.updated_at
+            }
+          }
+        }
+      end
+
+      # 生徒・教師ともに参照可
       def show
-        sheet = @exam.answer_sheets.find(params[:id])
+        sheet = find_accessible_sheet
         render json: answer_sheet_json(sheet)
       end
 
+      # 生徒：自分の答案をアップロード
+      # 教師：任意の生徒の答案をアップロード（student_id 指定）
       def create
-        student = User.find(params[:student_id])
+        student = if current_user.role == "student"
+          current_user
+        else
+          require_role!(:teacher, :school_admin)
+          User.find(params.require(:student_id))
+        end
+
         sheet = Exams::UploadAnswerSheet.new(
           exam: @exam,
           student: student,
@@ -19,7 +44,9 @@ module Api
         render json: answer_sheet_json(sheet), status: :created
       end
 
+      # 教師：採点結果を登録
       def score
+        require_role!(:teacher, :school_admin)
         sheet = @exam.answer_sheets.find(params[:id])
         score = Exams::ScoreAnswerSheet.new(
           answer_sheet: sheet,
@@ -32,6 +59,14 @@ module Api
 
       def set_exam
         @exam = ::Exam.find(params[:exam_id])
+      end
+
+      def find_accessible_sheet
+        if current_user.role == "student"
+          @exam.answer_sheets.find_by!(student: current_user)
+        else
+          @exam.answer_sheets.find(params[:id])
+        end
       end
 
       def answer_sheet_json(sheet)

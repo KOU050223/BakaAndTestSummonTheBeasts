@@ -25,7 +25,7 @@ Rails.application.routes.draw do
     resources :exams, only: [ :index, :create ] do
       resources :scores, only: [ :index ], module: :exams
       resources :questions, only: [ :index, :create ], module: :exams
-      resources :answer_sheets, only: [ :show, :create ], module: :exams do
+      resources :answer_sheets, only: [ :index, :show, :create ], module: :exams do
         member do
           post :score
         end
