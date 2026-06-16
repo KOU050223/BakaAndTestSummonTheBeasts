@@ -1,16 +1,18 @@
 module Api
-  # 試験一覧・作成のスタブ。apiSpec.md §3.3, §3.4 準拠の固定モックを返す。
-  # TODO: Exam の実データ取得・Exam::Create UseCase に差し替える。
   class ExamsController < BaseController
-    before_action -> { require_role!(:teacher, :school_admin) }
+    before_action -> { require_role!(:teacher, :school_admin) }, only: :create
 
     def index
+      exams = case current_user.role
+      when "student"
+        current_user.school_class&.exams&.order(created_at: :desc) || []
+      else
+        Exam.where(created_by: current_user).order(created_at: :desc)
+      end
+
       render json: {
-        exams: [
-          { id: "exam_1", title: "数学 小テスト1", subjectId: "math", createdBy: "teacher_1" },
-          { id: "exam_2", title: "英語 小テスト1", subjectId: "english", createdBy: "teacher_1" }
-        ]
-      }, status: :ok
+        exams: exams.as_json(only: %i[id title subject max_score])
+      }
     end
 
     def create
