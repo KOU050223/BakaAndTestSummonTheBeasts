@@ -21,9 +21,15 @@ Rails.application.routes.draw do
       resources :students, only: [ :index ], module: :classes
     end
 
-    # 試験・点数
+    # 試験・点数・OCR採点
     resources :exams, only: [ :index, :create ] do
       resources :scores, only: [ :index ], module: :exams
+      resources :questions, only: [ :index, :create ], module: :exams
+      resources :answer_sheets, only: [ :show, :create ], module: :exams do
+        member do
+          post :score
+        end
+      end
     end
     resources :scores, only: [ :create ]
 
