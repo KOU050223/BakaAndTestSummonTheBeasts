@@ -6,13 +6,26 @@ class OcrAnswerSheetJob < ApplicationJob
     return unless answer_sheet.image.attached?
 
     answer_sheet.image.open do |file|
-      preprocessed = preprocess(file.path)
+      image_path = pdf?(file.path) ? convert_pdf(file.path) : file.path
+      preprocessed = preprocess(image_path)
       text = RTesseract.new(preprocessed, lang: "jpn").to_s
       answer_sheet.update!(ocr_text: text, status: "ocr_done")
     end
   end
 
   private
+
+  def pdf?(path)
+    File.read(path, 4).start_with?("%PDF")
+  end
+
+  def convert_pdf(path)
+    output = Tempfile.new([ "pdf_to_img_", ".png" ])
+    image = MiniMagick::Image.open("#{path}[0]") # 1ページ目のみ
+    image.format("png")
+    image.write(output.path)
+    output.path
+  end
 
   def preprocess(path)
     image = MiniMagick::Image.open(path)
