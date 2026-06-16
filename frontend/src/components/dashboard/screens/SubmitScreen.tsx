@@ -5,31 +5,34 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { $api } from "@/lib/api/client";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
 import {
-  uploadAnswerSheet,
+  uploadMyAnswerSheet,
+  listAnswerSheets,
   getAnswerSheet,
   submitScore,
   type AnswerSheet,
+  type AnswerSheetSummary,
   type ExamQuestion,
 } from "@/lib/api/grading";
 import { Panel, LabelTag, Button, Placeholder } from "@/components/ui";
 
-// ─── 型 ───────────────────────────────────────────────────────────────────────
+type Exam = { id: number; title: string; subject: string };
 
-type Exam = { id: string; title: string; subjectId: string };
-type Student = { id: string; name: string };
-type SchoolClass = { id: string; name: string };
-
-// ─── Step1: 試験選択 ──────────────────────────────────────────────────────────
+// ─── 共通：試験選択 ────────────────────────────────────────────────────────────
 
 function ExamSelector({ onSelect }: { onSelect: (exam: Exam) => void }) {
   const { data, isLoading } = $api.useQuery("get", "/api/exams");
   const exams = (data as { exams?: Exam[] } | undefined)?.exams ?? [];
 
   if (isLoading) {
+    return <p className="text-sky-300 animate-pulse text-center py-10">読み込み中...</p>;
+  }
+
+  if (exams.length === 0) {
     return (
-      <p className="text-sky-300 animate-pulse text-center py-10">
-        試験一覧を読み込み中...
-      </p>
+      <div className="py-10 text-center">
+        <p className="text-4xl mb-3">📋</p>
+        <p className="text-slate-400 text-sm">試験がありません</p>
+      </div>
     );
   }
 
@@ -42,61 +45,46 @@ function ExamSelector({ onSelect }: { onSelect: (exam: Exam) => void }) {
           className="w-full text-left px-5 py-4 bg-white/5 border border-sky-400/30 rounded-sm text-sky-100 hover:border-sky-400 hover:bg-sky-400/10 transition-all duration-200"
         >
           <p className="font-bold">{exam.title}</p>
-          <p className="text-sm text-slate-400 mt-0.5">{exam.subjectId}</p>
+          <p className="text-sm text-slate-400 mt-0.5">{exam.subject}</p>
         </button>
       ))}
     </div>
   );
 }
 
-// ─── Step2: 生徒選択 + 画像アップロード ──────────────────────────────────────
+// ─── 生徒：答案アップロード ────────────────────────────────────────────────────
 
-function UploadStep({
+function StudentUploadStep({
   exam,
   onUploaded,
 }: {
   exam: Exam;
   onUploaded: (sheet: AnswerSheet) => void;
 }) {
-  const [selectedClassId, setSelectedClassId] = useState("");
-  const [selectedStudentId, setSelectedStudentId] = useState("");
-  const [image, setImage] = useState<File | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [isPdf, setIsPdf] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { data: classesData } = $api.useQuery("get", "/api/classes");
-  const classes = (classesData as { classes?: SchoolClass[] } | undefined)?.classes ?? [];
-
-  const { data: studentsData } = $api.useQuery(
-    "get",
-    "/api/classes/{class_id}/students",
-    { params: { path: { class_id: selectedClassId } } },
-    { enabled: !!selectedClassId },
-  );
-  const students = (studentsData as { students?: Student[] } | undefined)?.students ?? [];
-
   const { mutate: upload, isPending } = useMutation({
-    mutationFn: () => uploadAnswerSheet(exam.id, selectedStudentId, image!),
+    mutationFn: () => uploadMyAnswerSheet(exam.id, file!),
     onSuccess: onUploaded,
     onError: (e: Error) => setError(e.message),
   });
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const pdf = file.type === "application/pdf";
-    setImage(file);
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setFile(f);
+    const pdf = f.type === "application/pdf";
     setIsPdf(pdf);
-    setPreview(pdf ? null : URL.createObjectURL(file));
+    setPreview(pdf ? null : URL.createObjectURL(f));
   };
-
-  const canSubmit = selectedStudentId && image && !isPending;
 
   return (
     <div className="flex flex-col gap-5">
       <div className="px-4 py-2 bg-sky-400/10 border border-sky-400/30 rounded-sm">
-        <p className="text-xs text-sky-400">選択中の試験</p>
+        <p className="text-xs text-sky-400">提出先の試験</p>
         <p className="text-white font-bold mt-0.5">{exam.title}</p>
       </div>
 
@@ -107,78 +95,28 @@ function UploadStep({
         </div>
       )}
 
-      {/* クラス選択 */}
-      <div className="flex flex-col gap-2">
-        <label className="flex items-center gap-2">
-          <LabelTag variant="required">必須</LabelTag>
-          <span className="text-blue-300 text-sm font-semibold">クラス</span>
-        </label>
-        <select
-          value={selectedClassId}
-          onChange={(e) => {
-            setSelectedClassId(e.target.value);
-            setSelectedStudentId("");
-          }}
-          className="w-full px-3.5 py-2.5 bg-white/5 border border-sky-400/40 rounded-sm text-sky-100 text-base outline-none focus:border-sky-400"
-        >
-          <option value="">クラスを選択</option>
-          {classes.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* 生徒選択 */}
-      <div className="flex flex-col gap-2">
-        <label className="flex items-center gap-2">
-          <LabelTag variant="required">必須</LabelTag>
-          <span className="text-blue-300 text-sm font-semibold">生徒</span>
-        </label>
-        <select
-          value={selectedStudentId}
-          onChange={(e) => setSelectedStudentId(e.target.value)}
-          disabled={!selectedClassId}
-          className="w-full px-3.5 py-2.5 bg-white/5 border border-sky-400/40 rounded-sm text-sky-100 text-base outline-none focus:border-sky-400 disabled:opacity-50"
-        >
-          <option value="">生徒を選択</option>
-          {students.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* 答案アップロード */}
       <div className="flex flex-col gap-2">
         <label className="flex items-center gap-2">
           <LabelTag variant="required">必須</LabelTag>
           <span className="text-blue-300 text-sm font-semibold">答案ファイル</span>
         </label>
 
-        {/* プレビュー or PDFファイル名表示 */}
-        {image && (
-          <div className="relative w-full border border-sky-400/30 rounded-sm overflow-hidden bg-white/5">
+        {file && (
+          <div className="relative border border-sky-400/30 rounded-sm overflow-hidden bg-white/5">
             {isPdf ? (
               <div className="flex items-center gap-3 px-4 py-3">
                 <span className="text-2xl">📄</span>
                 <div>
-                  <p className="text-sky-100 text-sm font-bold">{image.name}</p>
+                  <p className="text-sky-100 text-sm font-bold">{file.name}</p>
                   <p className="text-slate-400 text-xs">PDF ファイル</p>
                 </div>
               </div>
             ) : (
-              <img
-                src={preview!}
-                alt="プレビュー"
-                className="w-full max-h-64 object-contain"
-              />
+              <img src={preview!} alt="プレビュー" className="w-full max-h-64 object-contain" />
             )}
             <button
               type="button"
-              onClick={() => { setImage(null); setPreview(null); setIsPdf(false); }}
+              onClick={() => { setFile(null); setPreview(null); setIsPdf(false); }}
               className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 text-white text-xs flex items-center justify-center hover:bg-red-500/80"
             >
               ✕
@@ -186,80 +124,126 @@ function UploadStep({
           </div>
         )}
 
-        {/* ボタン群 */}
-        <div className="grid grid-cols-2 gap-2">
-          {/* ファイル選択（画像＋PDF） */}
-          <label className="flex flex-col items-center justify-center gap-1.5 py-4 border-2 border-dashed border-sky-400/40 rounded-sm cursor-pointer hover:border-sky-400 hover:bg-sky-400/5 transition-all duration-200">
-            <input
-              type="file"
-              accept="image/*,application/pdf"
-              className="sr-only"
-              onChange={handleFileChange}
-            />
-            <span className="text-2xl">🖼️</span>
-            <span className="text-xs text-slate-400">画像 / PDF</span>
-          </label>
-
-          {/* カメラで撮影 */}
-          <label className="flex flex-col items-center justify-center gap-1.5 py-4 border-2 border-dashed border-sky-400/40 rounded-sm cursor-pointer hover:border-sky-400 hover:bg-sky-400/5 transition-all duration-200">
-            <input
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="sr-only"
-              onChange={handleFileChange}
-            />
-            <span className="text-2xl">📷</span>
-            <span className="text-xs text-slate-400">カメラで撮影</span>
-          </label>
-        </div>
+        <label className="flex flex-col items-center justify-center gap-1.5 py-5 border-2 border-dashed border-sky-400/40 rounded-sm cursor-pointer hover:border-sky-400 hover:bg-sky-400/5 transition-all duration-200">
+          <input type="file" accept="image/*,application/pdf" className="sr-only" onChange={handleFile} />
+          <span className="text-3xl">📎</span>
+          <span className="text-sm text-slate-400">画像または PDF を選択</span>
+        </label>
       </div>
 
-      <Button
-        onClick={() => upload()}
-        disabled={!canSubmit}
-        fullWidth
-      >
-        {isPending ? "アップロード中..." : "アップロードして OCR 開始"}
+      <Button onClick={() => upload()} disabled={!file || isPending} fullWidth>
+        {isPending ? "アップロード中..." : "アップロードして提出"}
       </Button>
     </div>
   );
 }
 
-// ─── Step3: OCR確認 & 採点 ────────────────────────────────────────────────────
+// ─── 生徒：提出完了 ────────────────────────────────────────────────────────────
+
+function StudentDoneStep({ onReset }: { onReset: () => void }) {
+  return (
+    <div className="flex flex-col items-center gap-4 py-12">
+      <span className="text-5xl">✅</span>
+      <p className="text-white font-bold text-lg">提出完了！</p>
+      <p className="text-slate-400 text-sm text-center">
+        先生が採点するまでしばらくお待ちください。
+      </p>
+      <Button onClick={onReset}>別の試験を提出する</Button>
+    </div>
+  );
+}
+
+// ─── 教師：答案一覧 ────────────────────────────────────────────────────────────
+
+const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
+  pending:  { label: "OCR処理中", cls: "text-yellow-300" },
+  ocr_done: { label: "採点待ち",  cls: "text-sky-300" },
+  scored:   { label: "採点済み",  cls: "text-green-300" },
+};
+
+function TeacherSheetList({
+  exam,
+  onSelect,
+}: {
+  exam: Exam;
+  onSelect: (sheet: AnswerSheetSummary) => void;
+}) {
+  const { data: sheets, isLoading, refetch } = useQuery({
+    queryKey: ["answer_sheets", exam.id],
+    queryFn: () => listAnswerSheets(exam.id),
+  });
+
+  if (isLoading) {
+    return <p className="text-sky-300 animate-pulse text-center py-10">読み込み中...</p>;
+  }
+
+  if (!sheets || sheets.length === 0) {
+    return (
+      <div className="py-10 text-center">
+        <p className="text-4xl mb-3">📭</p>
+        <p className="text-slate-400 text-sm">まだ提出された答案がありません</p>
+        <button onClick={() => refetch()} className="mt-4 text-xs text-sky-400 hover:text-sky-300">
+          更新
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-blue-300 text-sm font-semibold">提出された答案</p>
+        <button onClick={() => refetch()} className="text-xs text-slate-400 hover:text-sky-300">
+          更新
+        </button>
+      </div>
+      {sheets.map((s) => {
+        const st = STATUS_LABEL[s.status] ?? { label: s.status, cls: "text-slate-400" };
+        return (
+          <button
+            key={s.id}
+            onClick={() => onSelect(s)}
+            className="w-full text-left px-4 py-3 bg-white/5 border border-sky-400/20 rounded-sm hover:border-sky-400 hover:bg-sky-400/8 transition-all duration-200 flex items-center justify-between"
+          >
+            <span className="text-sky-100 font-semibold">{s.student_name}</span>
+            <span className={`text-xs font-bold ${st.cls}`}>{st.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── 教師：採点 ────────────────────────────────────────────────────────────────
 
 function GradingStep({
   exam,
-  sheet: initialSheet,
+  sheetSummary,
   onDone,
 }: {
   exam: Exam;
-  sheet: AnswerSheet;
+  sheetSummary: AnswerSheetSummary;
   onDone: () => void;
 }) {
-  const [questionScores, setQuestionScores] = useState<Record<number, string>>(
-    {},
-  );
+  const [questionScores, setQuestionScores] = useState<Record<number, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // OCR完了まで3秒ごとにポーリング
   const { data: sheet } = useQuery({
-    queryKey: ["answer_sheet", exam.id, initialSheet.id],
-    queryFn: () => getAnswerSheet(exam.id, initialSheet.id),
-    initialData: initialSheet,
+    queryKey: ["answer_sheet", exam.id, sheetSummary.id],
+    queryFn: () => getAnswerSheet(exam.id, sheetSummary.id),
     refetchInterval: (query) =>
       query.state.data?.status === "pending" ? 3000 : false,
   });
 
-  const totalPoints = sheet.questions.reduce((sum, q) => sum + q.points, 0);
-  const totalScore = sheet.questions.reduce((sum, q) => {
+  const totalPoints = sheet?.questions.reduce((s, q) => s + q.points, 0) ?? 0;
+  const totalScore = (sheet?.questions ?? []).reduce((s, q) => {
     const v = Number(questionScores[q.id] ?? 0);
-    return sum + (isNaN(v) ? 0 : v);
+    return s + (isNaN(v) ? 0 : v);
   }, 0);
 
   const { mutate: score, isPending } = useMutation({
-    mutationFn: () => submitScore(exam.id, sheet.id, totalScore),
+    mutationFn: () => submitScore(exam.id, sheetSummary.id, totalScore),
     onSuccess: () => setSubmitted(true),
     onError: (e: Error) => setError(e.message),
   });
@@ -269,19 +253,21 @@ function GradingStep({
       <div className="flex flex-col items-center gap-4 py-12">
         <span className="text-5xl">✅</span>
         <p className="text-white font-bold text-lg">採点完了！</p>
-        <p className="text-slate-400 text-sm">
-          合計 {totalScore} / {totalPoints} 点
-        </p>
-        <Button onClick={onDone}>別の答案を採点する</Button>
+        <p className="text-slate-400 text-sm">合計 {totalScore} / {totalPoints} 点</p>
+        <Button onClick={onDone}>答案一覧に戻る</Button>
       </div>
     );
+  }
+
+  if (!sheet) {
+    return <p className="text-sky-300 animate-pulse text-center py-10">読み込み中...</p>;
   }
 
   return (
     <div className="flex flex-col gap-5">
       <div className="px-4 py-2 bg-sky-400/10 border border-sky-400/30 rounded-sm">
-        <p className="text-xs text-sky-400">採点中の試験</p>
-        <p className="text-white font-bold mt-0.5">{exam.title}</p>
+        <p className="text-xs text-sky-400">{exam.title}</p>
+        <p className="text-white font-bold mt-0.5">{sheetSummary.student_name}</p>
       </div>
 
       {error && (
@@ -291,31 +277,21 @@ function GradingStep({
         </div>
       )}
 
-      {/* 答案画像 */}
       {sheet.image_url && (
         <div className="flex flex-col gap-2">
           <p className="text-blue-300 text-sm font-semibold">答案画像</p>
-          <img
-            src={sheet.image_url}
-            alt="答案"
-            className="w-full rounded-sm border border-sky-400/30 object-contain max-h-96"
-          />
+          <img src={sheet.image_url} alt="答案" className="w-full rounded-sm border border-sky-400/30 object-contain max-h-96" />
         </div>
       )}
 
-      {/* OCR結果 */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
           <p className="text-blue-300 text-sm font-semibold">OCR テキスト</p>
-          {sheet.status === "pending" && (
-            <LabelTag variant="info">OCR 処理中...</LabelTag>
-          )}
+          {sheet.status === "pending" && <LabelTag variant="info">処理中...</LabelTag>}
         </div>
-        <div className="px-4 py-3 bg-white/5 border border-sky-400/20 rounded-sm min-h-20">
+        <div className="px-4 py-3 bg-white/5 border border-sky-400/20 rounded-sm min-h-16">
           {sheet.status === "pending" ? (
-            <p className="text-slate-400 animate-pulse text-sm">
-              文字を認識しています...
-            </p>
+            <p className="text-slate-400 animate-pulse text-sm">文字を認識しています...</p>
           ) : (
             <pre className="text-slate-300 text-sm whitespace-pre-wrap font-sans">
               {sheet.ocr_text ?? "（テキストなし）"}
@@ -324,7 +300,6 @@ function GradingStep({
         </div>
       </div>
 
-      {/* 問題ごと採点 */}
       {sheet.questions.length > 0 ? (
         <div className="flex flex-col gap-3">
           <p className="text-blue-300 text-sm font-semibold">問題ごとの採点</p>
@@ -333,39 +308,25 @@ function GradingStep({
               key={q.id}
               question={q}
               value={questionScores[q.id] ?? ""}
-              onChange={(v) =>
-                setQuestionScores((prev) => ({ ...prev, [q.id]: v }))
-              }
+              onChange={(v) => setQuestionScores((prev) => ({ ...prev, [q.id]: v }))}
             />
           ))}
         </div>
       ) : (
         <div className="px-4 py-3 bg-white/5 border border-sky-400/20 rounded-sm">
-          <p className="text-slate-400 text-sm">
-            この試験には問題が登録されていません。
-            <br />
-            問題を登録してから採点してください。
-          </p>
+          <p className="text-slate-400 text-sm">問題が登録されていません。</p>
         </div>
       )}
 
-      {/* 合計 & 送信 */}
       <div className="flex items-center justify-between px-4 py-3 bg-sky-400/10 border border-sky-400/40 rounded-sm">
         <span className="text-blue-300 font-semibold text-sm">合計点</span>
         <span className="text-white font-black text-xl">
           {totalScore}
-          <span className="text-slate-400 text-sm font-normal">
-            {" "}
-            / {totalPoints} 点
-          </span>
+          <span className="text-slate-400 text-sm font-normal"> / {totalPoints} 点</span>
         </span>
       </div>
 
-      <Button
-        onClick={() => score()}
-        disabled={isPending || sheet.status === "pending"}
-        fullWidth
-      >
+      <Button onClick={() => score()} disabled={isPending || sheet.status === "pending"} fullWidth>
         {isPending ? "送信中..." : "採点を確定する"}
       </Button>
     </div>
@@ -392,8 +353,7 @@ function QuestionScoreRow({
       </div>
       <div className="flex items-center gap-3">
         <div className="flex-1 text-xs text-slate-400">
-          <span className="text-sky-400">模範解答：</span>
-          {question.model_answer}
+          <span className="text-sky-400">模範解答：</span>{question.model_answer}
         </div>
         <div className="flex items-center gap-2">
           <input
@@ -412,117 +372,117 @@ function QuestionScoreRow({
   );
 }
 
-// ─── SubmitScreen (メイン) ────────────────────────────────────────────────────
-
-type Step = "exam" | "upload" | "grade";
+// ─── SubmitScreen（メイン） ────────────────────────────────────────────────────
 
 export function SubmitScreen() {
   const { user } = useCurrentUser();
-  const [step, setStep] = useState<Step>("exam");
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
   const [sheet, setSheet] = useState<AnswerSheet | null>(null);
-
-  const isTeacher = user?.role === "teacher" || user?.role === "school_admin";
-
-  if (!isTeacher) {
-    return <Placeholder title="答案を提出" />;
-  }
+  const [selectedSheetSummary, setSelectedSheetSummary] = useState<AnswerSheetSummary | null>(null);
+  const [studentDone, setStudentDone] = useState(false);
 
   const reset = useCallback(() => {
-    setStep("exam");
     setSelectedExam(null);
     setSheet(null);
+    setSelectedSheetSummary(null);
+    setStudentDone(false);
   }, []);
 
-  const stepLabels: Record<Step, string> = {
-    exam: "試験を選ぶ",
-    upload: "答案をアップロード",
-    grade: "OCR確認・採点",
+  if (!user) return null;
+
+  const isTeacher = user.role === "teacher" || user.role === "school_admin";
+  const title = isTeacher ? "OCR 採点" : "答案を提出";
+
+  const currentStep = () => {
+    if (!selectedExam) return "exam";
+    if (isTeacher) {
+      if (!selectedSheetSummary) return "list";
+      return "grade";
+    } else {
+      if (studentDone) return "done";
+      return "upload";
+    }
   };
 
-  const steps: Step[] = ["exam", "upload", "grade"];
+  const stepLabel = () => {
+    switch (currentStep()) {
+      case "exam":   return "試験を選ぶ";
+      case "upload": return "答案をアップロード";
+      case "done":   return "提出完了";
+      case "list":   return "答案一覧";
+      case "grade":  return "採点";
+    }
+  };
 
   return (
     <Panel className="mx-auto mt-6 max-w-2xl">
-      {/* ヘッダー */}
       <div className="flex items-center gap-3 border-b border-sky-400/40 bg-gradient-to-r from-sky-400/20 to-sky-400/5 px-5 py-4">
-        <LabelTag variant="info">採点</LabelTag>
+        <LabelTag variant="info">{isTeacher ? "採点" : "提出"}</LabelTag>
         <h1 className="text-xl font-black tracking-wide text-white [text-shadow:0_0_10px_rgba(56,189,248,0.7)]">
-          OCR 採点
+          {title}
         </h1>
       </div>
 
-      {/* ステップインジケーター */}
-      <div className="flex items-center px-5 py-3 border-b border-sky-400/20 bg-black/10">
-        {steps.map((s, i) => (
-          <div key={s} className="flex items-center flex-1">
-            <div className="flex items-center gap-2 min-w-0">
-              <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                  step === s
-                    ? "bg-sky-400 text-slate-900"
-                    : steps.indexOf(step) > i
-                      ? "bg-sky-400/30 text-sky-300"
-                      : "bg-white/10 text-slate-500"
-                }`}
-              >
-                {steps.indexOf(step) > i ? "✓" : i + 1}
-              </div>
-              <span
-                className={`text-xs truncate ${step === s ? "text-sky-300 font-semibold" : "text-slate-500"}`}
-              >
-                {stepLabels[s]}
-              </span>
-            </div>
-            {i < steps.length - 1 && (
-              <div className="flex-1 h-px bg-sky-400/20 mx-2 min-w-2" />
-            )}
-          </div>
-        ))}
+      {/* パンくず */}
+      <div className="flex items-center gap-2 px-5 py-2.5 border-b border-sky-400/20 bg-black/10 text-xs text-slate-400">
+        <button onClick={reset} className={selectedExam ? "hover:text-sky-300" : "text-sky-300 font-semibold"}>
+          試験選択
+        </button>
+        {selectedExam && (
+          <>
+            <span>›</span>
+            <button
+              onClick={() => { setSelectedSheetSummary(null); setStudentDone(false); setSheet(null); }}
+              className={currentStep() === "exam" ? "" : (currentStep() === "list" || currentStep() === "upload" ? "text-sky-300 font-semibold" : "hover:text-sky-300")}
+            >
+              {isTeacher ? "答案一覧" : "アップロード"}
+            </button>
+          </>
+        )}
+        {selectedSheetSummary && (
+          <>
+            <span>›</span>
+            <span className="text-sky-300 font-semibold">採点</span>
+          </>
+        )}
+        {studentDone && (
+          <>
+            <span>›</span>
+            <span className="text-sky-300 font-semibold">提出完了</span>
+          </>
+        )}
+        <span className="ml-auto text-slate-500">{stepLabel()}</span>
       </div>
 
-      {/* コンテンツ */}
       <div className="px-5 py-6">
-        {step === "exam" && (
-          <ExamSelector
-            onSelect={(exam) => {
-              setSelectedExam(exam);
-              setStep("upload");
-            }}
+        {currentStep() === "exam" && (
+          <ExamSelector onSelect={setSelectedExam} />
+        )}
+
+        {/* 生徒フロー */}
+        {currentStep() === "upload" && selectedExam && (
+          <StudentUploadStep
+            exam={selectedExam}
+            onUploaded={(s) => { setSheet(s); setStudentDone(true); }}
           />
         )}
-
-        {step === "upload" && selectedExam && (
-          <>
-            <button
-              onClick={() => setStep("exam")}
-              className="mb-4 text-xs text-slate-400 hover:text-sky-300 flex items-center gap-1"
-            >
-              ← 試験選択に戻る
-            </button>
-            <UploadStep
-              exam={selectedExam}
-              onUploaded={(s) => {
-                setSheet(s);
-                setStep("grade");
-              }}
-            />
-          </>
+        {currentStep() === "done" && (
+          <StudentDoneStep onReset={reset} />
         )}
 
-        {step === "grade" && selectedExam && sheet && (
-          <>
-            <button
-              onClick={() => {
-                setStep("upload");
-                setSheet(null);
-              }}
-              className="mb-4 text-xs text-slate-400 hover:text-sky-300 flex items-center gap-1"
-            >
-              ← 別の答案をアップロード
-            </button>
-            <GradingStep exam={selectedExam} sheet={sheet} onDone={reset} />
-          </>
+        {/* 教師フロー */}
+        {currentStep() === "list" && selectedExam && (
+          <TeacherSheetList
+            exam={selectedExam}
+            onSelect={setSelectedSheetSummary}
+          />
+        )}
+        {currentStep() === "grade" && selectedExam && selectedSheetSummary && (
+          <GradingStep
+            exam={selectedExam}
+            sheetSummary={selectedSheetSummary}
+            onDone={() => setSelectedSheetSummary(null)}
+          />
         )}
       </div>
     </Panel>
