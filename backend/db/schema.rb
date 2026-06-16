@@ -10,9 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_11_000009) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_16_090738) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "answer_sheets", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "exam_id", null: false
+    t.text "ocr_text"
+    t.string "status", default: "pending", null: false
+    t.bigint "student_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["exam_id", "student_id"], name: "index_answer_sheets_on_exam_id_and_student_id", unique: true
+    t.index ["exam_id"], name: "index_answer_sheets_on_exam_id"
+    t.index ["status"], name: "index_answer_sheets_on_status"
+    t.index ["student_id"], name: "index_answer_sheets_on_student_id"
+  end
 
   create_table "battle_logs", force: :cascade do |t|
     t.string "action", null: false
@@ -63,6 +76,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_000009) do
     t.bigint "user_id", null: false
     t.index ["school_class_id"], name: "index_class_memberships_on_school_class_id"
     t.index ["user_id"], name: "index_class_memberships_on_user_id", unique: true
+  end
+
+  create_table "exam_questions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "exam_id", null: false
+    t.text "model_answer", null: false
+    t.integer "number", null: false
+    t.integer "points", null: false
+    t.text "question_text", null: false
+    t.datetime "updated_at", null: false
+    t.index ["exam_id", "number"], name: "index_exam_questions_on_exam_id_and_number", unique: true
+    t.index ["exam_id"], name: "index_exam_questions_on_exam_id"
   end
 
   create_table "exams", force: :cascade do |t|
@@ -119,6 +144,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_000009) do
     t.index ["role"], name: "index_users_on_role"
   end
 
+  add_foreign_key "answer_sheets", "exams"
+  add_foreign_key "answer_sheets", "users", column: "student_id"
   add_foreign_key "battle_logs", "battles"
   add_foreign_key "battle_logs", "users", column: "actor_id"
   add_foreign_key "battle_logs", "users", column: "target_id"
@@ -128,6 +155,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_000009) do
   add_foreign_key "battles", "users", column: "winner_id"
   add_foreign_key "class_memberships", "school_classes"
   add_foreign_key "class_memberships", "users"
+  add_foreign_key "exam_questions", "exams"
   add_foreign_key "exams", "school_classes"
   add_foreign_key "exams", "users", column: "created_by_id"
   add_foreign_key "scores", "exams"
