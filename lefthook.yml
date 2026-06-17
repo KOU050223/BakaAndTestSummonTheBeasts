@@ -4,7 +4,7 @@ pre-commit:
     backend-lint:
       root: backend
       glob: "backend/**/*.rb"
-      run: nix develop "$(git rev-parse --show-toplevel)" --command bin/rubocop -f github {staged_files}
+      run: nix develop "$(git rev-parse --show-toplevel)" --command bin/rubocop --force-exclusion -f github {staged_files}
       env:
         RUBOCOP_CACHE_ROOT: tmp/rubocop
 
