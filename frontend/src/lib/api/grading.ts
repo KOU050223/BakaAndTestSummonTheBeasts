@@ -8,13 +8,36 @@ export type ExamQuestion = {
   points: number;
 };
 
+export type ExamDetail = {
+  answer_key_attached: boolean;
+  questions: ExamQuestion[];
+};
+
+export type AiGrading =
+  | null
+  | { status: "processing" }
+  | { status: "failed" }
+  | { status: "done"; results: Record<number, boolean> };
+
 export type AnswerSheet = {
   id: number;
   status: "pending" | "ocr_done" | "scored";
-  ocr_text: string | null;
   student_id: number;
   image_url: string | null;
+  image_content_type: string | null;
+  answer_key_url: string | null;
+  answer_key_content_type: string | null;
+  ai_grading: AiGrading;
   questions: ExamQuestion[];
+};
+
+export type MyScore = {
+  exam_id: number;
+  exam_title: string;
+  subject: string;
+  score: number;
+  max_score: number;
+  scored_at: string;
 };
 
 export type AnswerSheetSummary = {
@@ -103,4 +126,63 @@ export async function submitScore(
     },
   );
   if (!res.ok) throw new Error("採点の送信に失敗しました");
+}
+
+export async function getExamDetail(examId: string | number): Promise<ExamDetail> {
+  const res = await fetch(`${API_BASE}/api/exams/${examId}/questions`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("試験情報の取得に失敗しました");
+  return res.json() as Promise<ExamDetail>;
+}
+
+export async function uploadAnswerKey(examId: string | number, file: File): Promise<void> {
+  const body = new FormData();
+  body.append("answer_key_file", file);
+  const res = await fetch(`${API_BASE}/api/exams/${examId}/upload_answer_key`, {
+    method: "POST",
+    credentials: "include",
+    body,
+  });
+  if (!res.ok) throw new Error("解答PDFのアップロードに失敗しました");
+}
+
+export type QuestionInput = {
+  number: number;
+  question_text: string;
+  model_answer: string;
+  points: number;
+};
+
+export async function getMyScores(): Promise<MyScore[]> {
+  const res = await fetch(`${API_BASE}/api/scores`, { credentials: "include" });
+  if (!res.ok) throw new Error("成績の取得に失敗しました");
+  const data = await res.json() as { scores: MyScore[] };
+  return data.scores;
+}
+
+export async function regradeAnswerSheet(
+  examId: string | number,
+  sheetId: number,
+): Promise<void> {
+  const res = await fetch(
+    `${API_BASE}/api/exams/${examId}/answer_sheets/${sheetId}/regrade`,
+    { method: "POST", credentials: "include" },
+  );
+  if (!res.ok) throw new Error("再採点のリクエストに失敗しました");
+}
+
+export async function registerQuestions(
+  examId: string | number,
+  questions: QuestionInput[],
+): Promise<ExamQuestion[]> {
+  const res = await fetch(`${API_BASE}/api/exams/${examId}/questions`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ questions }),
+  });
+  if (!res.ok) throw new Error("問題の登録に失敗しました");
+  const data = await res.json() as { questions: ExamQuestion[] };
+  return data.questions;
 }
