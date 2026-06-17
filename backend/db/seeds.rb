@@ -1,14 +1,14 @@
 # find_or_create_by! でべき等に実行できる
 
 # -----------------------------------------------
-# クラス
+# クラス（いずれも2年生。学年は school_classes.grade で表現する）
 # -----------------------------------------------
-class_a = SchoolClass.find_or_create_by!(name: "Aクラス")
-class_b = SchoolClass.find_or_create_by!(name: "Bクラス")
-class_c = SchoolClass.find_or_create_by!(name: "Cクラス")
-class_d = SchoolClass.find_or_create_by!(name: "Dクラス")
-class_e = SchoolClass.find_or_create_by!(name: "Eクラス")
-class_f = SchoolClass.find_or_create_by!(name: "Fクラス")
+class_a = SchoolClass.find_or_create_by!(grade: 2, name: "Aクラス")
+class_b = SchoolClass.find_or_create_by!(grade: 2, name: "Bクラス")
+class_c = SchoolClass.find_or_create_by!(grade: 2, name: "Cクラス")
+class_d = SchoolClass.find_or_create_by!(grade: 2, name: "Dクラス")
+class_e = SchoolClass.find_or_create_by!(grade: 2, name: "Eクラス")
+class_f = SchoolClass.find_or_create_by!(grade: 2, name: "Fクラス")
 
 # -----------------------------------------------
 # 教師
@@ -173,37 +173,47 @@ ClassMembership.find_or_create_by!(user: student_f2) { |m| m.school_class = clas
 ClassMembership.find_or_create_by!(user: student_f3) { |m| m.school_class = class_f }
 
 # -----------------------------------------------
-# 試験
+# 試験・点数（全クラスの数学・英語）
+# 成績順クラス編成（A=最上位 … F=最下位）が伝わるよう、上位クラスほど高得点にする。
+# クラスごとに基準点を置き、生徒順に少しずつ点をずらして個人差を出す。
 # -----------------------------------------------
-exam_math = Exam.find_or_create_by!(title: "数学 小テスト1", subject: "math", school_class: class_f) do |e|
-  e.created_by = teacher1
-  e.max_score  = 100
-end
+class_base_scores = {
+  class_a => 92,
+  class_b => 80,
+  class_c => 68,
+  class_d => 55,
+  class_e => 44,
+  class_f => 35
+}
 
-exam_english = Exam.find_or_create_by!(title: "英語 小テスト1", subject: "english", school_class: class_f) do |e|
-  e.created_by = teacher2
-  e.max_score  = 100
-end
+# クラス所属はメンバーシップから引く（生徒変数の重複列挙を避ける）。
+class_base_scores.each do |school_class, base|
+  exam_math = Exam.find_or_create_by!(title: "#{school_class.name} 数学 小テスト1", subject: "math", school_class: school_class) do |e|
+    e.created_by = teacher1
+    e.max_score  = 100
+  end
+  exam_english = Exam.find_or_create_by!(title: "#{school_class.name} 英語 小テスト1", subject: "english", school_class: school_class) do |e|
+    e.created_by = teacher2
+    e.max_score  = 100
+  end
 
-# -----------------------------------------------
-# 点数（Fクラス生徒の数学・英語）
-# -----------------------------------------------
-Score.find_or_create_by!(exam: exam_math, student: student_f1) { |s| s.score = 42 }
-Score.find_or_create_by!(exam: exam_math, student: student_f2) { |s| s.score = 55 }
-Score.find_or_create_by!(exam: exam_english, student: student_f1) { |s| s.score = 38 }
-Score.find_or_create_by!(exam: exam_english, student: student_f2) { |s| s.score = 61 }
+  school_class.students.order(:id).each_with_index do |student, i|
+    # 生徒ごとに -4〜+4 程度ずらし、数学と英語でも少し差をつける（0〜100 にクランプ）。
+    math_score    = (base + (i * 3) - 4).clamp(0, 100)
+    english_score = (base - (i * 2) + 2).clamp(0, 100)
+    Score.find_or_create_by!(exam: exam_math, student: student) { |s| s.score = math_score }
+    Score.find_or_create_by!(exam: exam_english, student: student) { |s| s.score = english_score }
+  end
+end
 
 # -----------------------------------------------
 # 召喚獣ステータス（Summon::Recalculate で計算式を一元化）
 # Score#after_save でも再計算されるが、再シード時に最新の計算式を確実に反映するため明示的に呼ぶ。
 # -----------------------------------------------
-[
-  { student: student_f1, subject: "math" },
-  { student: student_f1, subject: "english" },
-  { student: student_f2, subject: "math" },
-  { student: student_f2, subject: "english" }
-].each do |entry|
-  Summon::Recalculate.call(student: entry[:student], subject: entry[:subject])
+User.where(role: "student").find_each do |student|
+  %w[math english].each do |subject|
+    Summon::Recalculate.call(student: student, subject: subject)
+  end
 end
 
 puts "Seed完了:"

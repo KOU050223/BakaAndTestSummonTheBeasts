@@ -8,3 +8,4 @@ export { ScoresScreen } from "./screens/ScoresScreen";
 export { SubmitScreen } from "./screens/SubmitScreen";
 export { DeclareWarScreen } from "./screens/DeclareWarScreen";
 export { RecordsScreen } from "./screens/RecordsScreen";
+export { ClassManagementScreen } from "./screens/ClassManagementScreen";
