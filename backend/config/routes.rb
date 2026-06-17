@@ -23,15 +23,19 @@ Rails.application.routes.draw do
 
     # 試験・点数・OCR採点
     resources :exams, only: [ :index, :create ] do
+      member do
+        post :upload_answer_key
+      end
       resources :scores, only: [ :index ], module: :exams
       resources :questions, only: [ :index, :create ], module: :exams
       resources :answer_sheets, only: [ :index, :show, :create ], module: :exams do
         member do
           post :score
+          post :regrade
         end
       end
     end
-    resources :scores, only: [ :create ]
+    resources :scores, only: [ :index, :create ]
 
     # 召喚獣
     get "students/:id/summon", to: "students#summon"

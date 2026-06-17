@@ -36,7 +36,7 @@ module Api
           User.find(params.require(:student_id))
         end
 
-        sheet = Exams::UploadAnswerSheet.new(
+        sheet = ::Exams::UploadAnswerSheet.new(
           exam: @exam,
           student: student,
           image: params.require(:image)
@@ -48,11 +48,20 @@ module Api
       def score
         require_role!(:teacher, :school_admin)
         sheet = @exam.answer_sheets.find(params[:id])
-        score = Exams::ScoreAnswerSheet.new(
+        score = ::Exams::ScoreAnswerSheet.new(
           answer_sheet: sheet,
           total_score: params.require(:total_score).to_i
         ).call
         render json: { score: score.score }, status: :ok
+      end
+
+      # 教師：AI採点を再実行
+      def regrade
+        require_role!(:teacher, :school_admin)
+        sheet = @exam.answer_sheets.find(params[:id])
+        sheet.update!(ai_grading: nil)
+        GradeAnswerSheetJob.perform_later(sheet.id)
+        render json: { status: "queued" }, status: :ok
       end
 
       private
@@ -73,9 +82,12 @@ module Api
         {
           id: sheet.id,
           status: sheet.status,
-          ocr_text: sheet.ocr_text,
           student_id: sheet.student_id,
           image_url: sheet.image.attached? ? url_for(sheet.image) : nil,
+          image_content_type: sheet.image.attached? ? sheet.image.content_type : nil,
+          answer_key_url: @exam.answer_key.attached? ? url_for(@exam.answer_key) : nil,
+          answer_key_content_type: @exam.answer_key.attached? ? @exam.answer_key.content_type : nil,
+          ai_grading: sheet.ai_grading,
           questions: @exam.exam_questions.as_json(only: %i[id number question_text model_answer points])
         }
       end

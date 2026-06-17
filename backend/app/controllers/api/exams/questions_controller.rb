@@ -5,11 +5,14 @@ module Api
       before_action :set_exam
 
       def index
-        render json: { questions: @exam.exam_questions.as_json(only: %i[id number question_text model_answer points]) }
+        render json: {
+          questions: @exam.exam_questions.as_json(only: %i[id number question_text model_answer points]),
+          answer_key_attached: @exam.answer_key.attached?
+        }
       end
 
       def create
-        questions = Exams::RegisterQuestions.new(
+        questions = ::Exams::RegisterQuestions.new(
           exam: @exam,
           questions_params: questions_params
         ).call
