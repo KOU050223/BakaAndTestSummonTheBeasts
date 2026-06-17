@@ -21,6 +21,7 @@ const studentUser: User = {
   email: "yoshii@fumizuki.ac.jp",
   role: "student",
   created_at: "2026-01-01T00:00:00Z",
+  school_class: null,
 };
 
 describe("Sidebar", () => {
