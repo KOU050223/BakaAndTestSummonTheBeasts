@@ -399,6 +399,62 @@ function TeacherSheetList({
 // ─── 教師：採点 ────────────────────────────────────────────────────────────────
 
 
+function FileViewerInner({
+  label,
+  url,
+  contentType,
+  className,
+}: {
+  label: string;
+  url: string;
+  contentType: string | null;
+  className?: string;
+}) {
+  const [objectUrl, setObjectUrl] = useState<string | null>(null);
+  const [fetchFailed, setFetchFailed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    let created: string | null = null;
+    fetch(url, { credentials: "include" })
+      .then((r) => r.blob())
+      .then((blob) => {
+        if (cancelled) return;
+        created = URL.createObjectURL(blob);
+        setObjectUrl(created);
+      })
+      .catch(() => { if (!cancelled) setFetchFailed(true); });
+    return () => {
+      cancelled = true;
+      if (created) URL.revokeObjectURL(created);
+    };
+  }, [url]);
+
+  if (fetchFailed) return (
+    <div className={`flex flex-col gap-1 min-h-0 ${className ?? ""}`}>
+      <p className="text-xs text-slate-400">{label}</p>
+      <div className="flex-1 flex items-center justify-center border border-dashed border-red-400/20 rounded-sm min-h-[80px]">
+        <p className="text-red-400 text-xs">読み込み失敗</p>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className={`flex flex-col gap-1 min-h-0 ${className ?? ""}`}>
+      <p className="text-xs text-slate-400">{label}</p>
+      {!objectUrl ? (
+        <div className="flex-1 flex items-center justify-center border border-sky-400/20 rounded-sm min-h-[80px]">
+          <p className="text-slate-400 text-xs animate-pulse">読み込み中...</p>
+        </div>
+      ) : contentType === "application/pdf" ? (
+        <iframe src={objectUrl} className="flex-1 w-full min-h-0 rounded-sm border border-sky-400/30 bg-white" title={label} />
+      ) : (
+        <img src={objectUrl} alt={label} className="flex-1 w-full min-h-0 rounded-sm border border-sky-400/30 object-contain" />
+      )}
+    </div>
+  );
+}
+
 function FileViewer({
   label,
   url,
@@ -410,47 +466,15 @@ function FileViewer({
   contentType: string | null;
   className?: string;
 }) {
-  const [objectUrl, setObjectUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!url) return;
-    let cancelled = false;
-    let created: string | null = null;
-    setLoading(true);
-    fetch(url, { credentials: "include" })
-      .then((r) => r.blob())
-      .then((blob) => {
-        if (cancelled) return;
-        created = URL.createObjectURL(blob);
-        setObjectUrl(created);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-    return () => {
-      cancelled = true;
-      if (created) URL.revokeObjectURL(created);
-    };
-  }, [url]);
-
-  return (
+  if (!url) return (
     <div className={`flex flex-col gap-1 min-h-0 ${className ?? ""}`}>
       <p className="text-xs text-slate-400">{label}</p>
-      {!url ? (
-        <div className="flex-1 flex items-center justify-center border border-dashed border-sky-400/20 rounded-sm min-h-[80px]">
-          <p className="text-slate-500 text-xs">未設定</p>
-        </div>
-      ) : loading || !objectUrl ? (
-        <div className="flex-1 flex items-center justify-center border border-sky-400/20 rounded-sm min-h-[80px]">
-          <p className="text-slate-400 text-xs animate-pulse">読み込み中...</p>
-        </div>
-      ) : contentType === "application/pdf" ? (
-        <iframe src={objectUrl} className="flex-1 w-full min-h-0 rounded-sm border border-sky-400/30 bg-white" title={label} />
-      ) : (
-        <img src={objectUrl} alt={label} className="flex-1 w-full min-h-0 rounded-sm border border-sky-400/30 object-contain" />
-      )}
+      <div className="flex-1 flex items-center justify-center border border-dashed border-sky-400/20 rounded-sm min-h-[80px]">
+        <p className="text-slate-500 text-xs">未設定</p>
+      </div>
     </div>
   );
+  return <FileViewerInner key={url} label={label} url={url} contentType={contentType} className={className} />;
 }
 
 function GradingStep({
