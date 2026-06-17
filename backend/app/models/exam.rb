@@ -1,6 +1,8 @@
 class Exam < ApplicationRecord
   SUBJECTS = %w[english math physics chemistry biology earth_science geography japanese_history world_history civics japanese].freeze
 
+  has_one_attached :answer_key
+
   belongs_to :school_class
   belongs_to :created_by, class_name: "User"
   has_many :scores, dependent: :destroy

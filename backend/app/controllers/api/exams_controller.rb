@@ -1,6 +1,7 @@
 module Api
   class ExamsController < BaseController
-    before_action -> { require_role!(:teacher, :school_admin) }, only: :create
+    before_action -> { require_role!(:teacher, :school_admin) }, only: %i[create upload_answer_key]
+    before_action :set_exam, only: :upload_answer_key
 
     def index
       exams = case current_user.role
@@ -11,8 +12,19 @@ module Api
       end
 
       render json: {
-        exams: exams.as_json(only: %i[id title subject max_score])
+        exams: exams.map { |e|
+          e.as_json(only: %i[id title subject max_score]).merge(
+            answer_key_status: answer_key_status(e)
+          )
+        }
       }
+    end
+
+    def upload_answer_key
+      @exam.answer_key.attach(params.require(:answer_key_file))
+      @exam.update!(answer_key_text: nil)
+      OcrAnswerKeyJob.perform_later(@exam.id)
+      render json: { status: "processing" }, status: :accepted
     end
 
     def create
@@ -23,6 +35,17 @@ module Api
         classId: params[:classId] || "class_a",
         maxScore: params[:maxScore] || 100
       }, status: :created
+    end
+
+    private
+
+    def set_exam
+      @exam = Exam.find(params[:id])
+    end
+
+    def answer_key_status(exam)
+      return "none" unless exam.answer_key.attached?
+      exam.answer_key_text.present? ? "done" : "processing"
     end
   end
 end
