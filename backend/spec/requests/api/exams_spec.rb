@@ -58,8 +58,16 @@ RSpec.describe "Exams API", type: :request do
         run_test!
       end
 
-      response "403", "権限なし（student は禁止）" do
-        schema "$ref" => "#/components/schemas/error"
+      response "200", "student は自分のクラスの試験一覧を取得できる" do
+        schema type: :object,
+          properties: {
+            exams: {
+              type: :array,
+              items: { type: :object }
+            }
+          },
+          required: %w[exams]
+
         before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
         run_test!
       end
