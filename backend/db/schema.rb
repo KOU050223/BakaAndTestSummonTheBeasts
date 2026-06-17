@@ -135,8 +135,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_17_200000) do
 
   create_table "school_classes", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.integer "grade", default: 2, null: false
     t.string "name", null: false
     t.datetime "updated_at", null: false
+    t.index ["grade", "name"], name: "index_school_classes_on_grade_and_name", unique: true
   end
 
   create_table "scores", force: :cascade do |t|

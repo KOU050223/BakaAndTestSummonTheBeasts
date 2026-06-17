@@ -20,6 +20,8 @@ Rails.application.routes.draw do
     resources :classes, only: [ :index ] do
       resources :students, only: [ :index ], module: :classes
     end
+    # クラス振り分けの一括反映（自動振り分けの保存）
+    patch "classes/assignments", to: "classes/assignments#update"
 
     # 試験・点数・OCR採点
     resources :exams, only: [ :index, :create ] do
@@ -39,6 +41,9 @@ Rails.application.routes.draw do
 
     # 召喚獣
     get "students/:id/summon", to: "students#summon"
+
+    # クラス変更（教師がクラス管理画面から生徒の所属クラスを変更する）
+    patch "students/:id/class", to: "students#update_class"
 
     # バトル（Go Game Server連携部はモック）
     resources :battles, only: [ :index, :create ] do
