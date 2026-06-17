@@ -32,6 +32,7 @@ tasks:
     desc: 全サービスの開発サーバーをまとめて起動
     deps:
       - task: backend:dev
+      - task: backend:jobs
       - task: frontend:dev
 
   lint:

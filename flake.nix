@@ -12,7 +12,7 @@
         pkgs = import nixpkgs { inherit system; };
         pnpmPackage = pkgs.pnpm_10 or pkgs.pnpm;
         goPackage = pkgs.go_1_26 or pkgs.go;
-        tesseractJpn = pkgs.tesseract5.override { tessdataLanguages = [ "jpn" "eng" ]; };
+        tesseractJpn = pkgs.tesseract5.override { enableLanguages = [ "jpn" "eng" ]; };
       in
       {
         devShells.default = pkgs.mkShell {
