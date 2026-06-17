@@ -62,6 +62,168 @@ tasks:
       - task: backend:ci
       - task: frontend:ci
 
+  setup:
+    desc: 🚀 新規参加者向けセットアップ（install → .env → DB起動 → DB初期化 まで一括実行）
+    cmds:
+      - task: setup:check-tools
+      - task: setup:copy-env
+      - task: setup:install
+      - task: setup:db
+      - task: setup:done
+
+  setup:check-tools:
+    desc: 必要ツールの存在確認
+    silent: true
+    cmds:
+      - |
+        echo "🔍 必要なツールを確認しています..."
+        MISSING=()
+
+        if ! command -v docker &>/dev/null; then
+          MISSING+=("docker")
+        fi
+        if ! command -v bundle &>/dev/null; then
+          MISSING+=("bundler (gem install bundler)")
+        fi
+        if ! command -v pnpm &>/dev/null; then
+          MISSING+=("pnpm (npm install -g pnpm)")
+        fi
+        if ! command -v lefthook &>/dev/null; then
+          MISSING+=("lefthook (brew install lefthook)")
+        fi
+
+        if [ ${#MISSING[@]} -gt 0 ]; then
+          echo ""
+          echo "❌ 以下のツールがインストールされていません:"
+          for tool in "${MISSING[@]}"; do
+            echo "   - $tool"
+          done
+          echo ""
+          echo "💡 上記ツールをインストールしてから再度 'task setup' を実行してください。"
+          exit 1
+        fi
+
+        echo "✅ 必要なツールがすべて揃っています"
+
+  setup:copy-env:
+    desc: .env ファイルをコピー（存在しない場合のみ）
+    silent: true
+    cmds:
+      - |
+        echo ""
+        echo "📄 .env ファイルを確認しています..."
+
+        # ルートの .env
+        if [ ! -f ".env" ]; then
+          cp .env.example .env
+          echo "✅ .env を .env.example からコピーしました"
+          echo "   ⚠️  .env を開いて DB_PASSWORD と JWT_SECRET_KEY を設定してください"
+        else
+          echo "✅ .env は既に存在します（スキップ）"
+        fi
+
+        # backend/.env
+        if [ ! -f "backend/.env" ]; then
+          cp backend/.env.example backend/.env
+          echo "✅ backend/.env を backend/.env.example からコピーしました"
+          echo "   ⚠️  backend/.env を開いて DB_PASSWORD を設定してください"
+        else
+          echo "✅ backend/.env は既に存在します（スキップ）"
+        fi
+
+        # .env に JWT_SECRET_KEY が "your_jwt_secret_key_here" のままなら警告
+        if grep -q "your_jwt_secret_key_here" .env 2>/dev/null; then
+          echo ""
+          echo "⚠️  .env の JWT_SECRET_KEY がデフォルト値のままです。"
+          echo "   'openssl rand -hex 64' で生成した値を設定してください:"
+          echo "   $(openssl rand -hex 64 2>/dev/null || echo '<openssl が使えません>')"
+        fi
+
+  setup:install:
+    desc: 依存関係のインストール
+    silent: true
+    cmds:
+      - |
+        echo ""
+        echo "📦 依存関係をインストールしています..."
+      - task: backend:install-deps
+      - task: frontend:install-deps
+      - task: hooks:install
+      - |
+        echo "✅ 依存関係のインストール完了"
+
+  setup:db:
+    desc: DB起動 → 作成 → マイグレーション → シード
+    silent: true
+    dotenv: [".env"]
+    cmds:
+      - |
+        echo ""
+        echo "🐘 PostgreSQL を起動しています..."
+
+        # Docker が起動しているか確認
+        if ! docker info &>/dev/null 2>&1; then
+          echo ""
+          echo "❌ Docker が起動していません。"
+          echo "💡 Docker Desktop を起動してから再度 'task setup' を実行してください。"
+          exit 1
+        fi
+
+        # DB_PORT が使用済みか確認
+        DB_PORT="${DB_PORT:-5432}"
+        if lsof -iTCP:"$DB_PORT" -sTCP:LISTEN &>/dev/null 2>&1; then
+          # 自分の docker compose の db コンテナが使っているか確認
+          CONTAINER=$(docker compose ps -q db 2>/dev/null)
+          if [ -z "$CONTAINER" ]; then
+            echo ""
+            echo "❌ ポート $DB_PORT がすでに使用されています。"
+            echo "💡 別の PostgreSQL が起動していないか確認してください:"
+            echo "   lsof -iTCP:$DB_PORT -sTCP:LISTEN"
+            exit 1
+          fi
+        fi
+
+        docker compose up -d --wait db
+        if [ $? -ne 0 ]; then
+          echo ""
+          echo "❌ PostgreSQL コンテナの起動に失敗しました。"
+          echo "💡 以下を確認してください:"
+          echo "   - .env の DB_USERNAME / DB_PASSWORD が正しいか"
+          echo "   - docker compose logs db  でエラー内容を確認する"
+          exit 1
+        fi
+        echo "✅ PostgreSQL が起動しました"
+
+      - |
+        echo ""
+        echo "🗄️  データベースをセットアップしています..."
+        cd backend && bundle exec rails db:setup
+        if [ $? -ne 0 ]; then
+          echo ""
+          echo "❌ データベースのセットアップに失敗しました。"
+          echo "💡 以下を確認してください:"
+          echo "   - .env と backend/.env の DB_HOST / DB_PORT / DB_USERNAME / DB_PASSWORD が正しいか"
+          echo "   - 'task db:start' で DB が起動しているか"
+          echo "   - 'docker compose logs db' でコンテナのエラーを確認する"
+          exit 1
+        fi
+        echo "✅ データベースのセットアップ完了"
+
+  setup:done:
+    desc: セットアップ完了メッセージ
+    silent: true
+    cmd: |
+      echo ""
+      echo "╔══════════════════════════════════════════════╗"
+      echo "║  🎉 セットアップが完了しました！              ║"
+      echo "╠══════════════════════════════════════════════╣"
+      echo "║  開発サーバーを起動するには:                  ║"
+      echo "║    task dev                                  ║"
+      echo "║                                              ║"
+      echo "║  その他のコマンドを確認するには:              ║"
+      echo "║    task                                      ║"
+      echo "╚══════════════════════════════════════════════╝"
+
   db:start:
     desc: PostgreSQLをdocker-composeで起動し、healthyになるまで待つ
     dotenv: [".env"]
