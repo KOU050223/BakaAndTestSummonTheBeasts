@@ -42,6 +42,11 @@ const studentUser: User = {
   school_class: null,
 };
 
+const classedUser: User = {
+  ...studentUser,
+  school_class: { id: 6, name: "Fクラス" },
+};
+
 describe("UserStatusCard", () => {
   beforeEach(() => {
     mockMutate.mockClear();
@@ -54,6 +59,18 @@ describe("UserStatusCard", () => {
 
     expect(screen.getByText("吉井明久")).toBeInTheDocument();
     expect(screen.getByText("生徒")).toBeInTheDocument();
+  });
+
+  it("所属クラスがある場合はクラス名を表示する", () => {
+    render(<UserStatusCard user={classedUser} />);
+
+    expect(screen.getByText("Fクラス")).toBeInTheDocument();
+  });
+
+  it("所属クラスがない場合はクラス名を表示しない", () => {
+    render(<UserStatusCard user={studentUser} />);
+
+    expect(screen.queryByText("Fクラス")).not.toBeInTheDocument();
   });
 
   it("ログアウトボタン押下で logout mutation を呼ぶ", async () => {
