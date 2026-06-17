@@ -426,6 +426,87 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/classes/assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** クラス振り分けの一括反映 */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        assignments: {
+                            studentId: number;
+                            classId: number;
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description 一括反映成功 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AssignmentUpdateResponse"];
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description 権限なし（student は禁止） */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description 割り当て対象が存在しない */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description assignments が配列でない */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/api/classes": {
         parameters: {
             query?: never;
@@ -436,7 +517,10 @@ export interface paths {
         /** クラス一覧取得 */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description 学年で絞り込む（省略時は全学年） */
+                    grade?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -449,12 +533,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": {
-                            classes: {
-                                id: string;
-                                name: string;
-                            }[];
-                        };
+                        "application/json": components["schemas"]["ClassListResponse"];
                     };
                 };
                 /** @description 未認証 */
@@ -499,7 +578,7 @@ export interface paths {
                 header?: never;
                 path: {
                     /** @description クラスID */
-                    class_id: string;
+                    class_id: number;
                 };
                 cookie?: never;
             };
@@ -511,13 +590,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": {
-                            classId: string;
-                            students: {
-                                id: string;
-                                name: string;
-                            }[];
-                        };
+                        "application/json": components["schemas"]["ClassStudentListResponse"];
                     };
                 };
                 /** @description 未認証 */
@@ -531,6 +604,15 @@ export interface paths {
                 };
                 /** @description 権限なし（student は禁止） */
                 403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description クラスが存在しない */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -865,6 +947,79 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/students/{id}/class": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** 生徒のクラス変更 */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description 生徒ID */
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description 変更先クラスID */
+                        class_id: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description クラス変更成功 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClassChangeResponse"];
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description 権限なし（student は禁止） */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description 生徒が存在しない */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/api/me": {
         parameters: {
             query?: never;
@@ -934,6 +1089,41 @@ export interface components {
                 id?: number;
                 name?: string;
             } | null;
+        };
+        ClassSummary: {
+            id: number;
+            name: string;
+            grade: number;
+            averageScore: number;
+            studentCount: number;
+        };
+        ClassListResponse: {
+            classes: components["schemas"]["ClassSummary"][];
+        };
+        ClassStudent: {
+            id: number;
+            name: string;
+            grade: number;
+            totalScore: number;
+            topSubject: {
+                name: string;
+                score: number;
+            };
+        };
+        ClassStudentListResponse: {
+            classId: number;
+            students: components["schemas"]["ClassStudent"][];
+        };
+        AssignmentUpdateResponse: {
+            updatedCount: number;
+        };
+        ClassChangeResponse: {
+            studentId: number;
+            schoolClass: {
+                id: number;
+                name: string;
+                grade: number;
+            };
         };
         error: {
             error: {

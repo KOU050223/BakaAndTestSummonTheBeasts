@@ -337,6 +337,66 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/api/classes/assignments":
+    patch:
+      summary: クラス振り分けの一括反映
+      tags:
+      - Classes
+      security:
+      - cookie_auth: []
+      parameters: []
+      responses:
+        '200':
+          description: 一括反映成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AssignmentUpdateResponse"
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: 権限なし（student は禁止）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: 一部不正時は全件ロールバックされる
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: assignments の要素が不正な形式
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                assignments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      studentId:
+                        type: integer
+                      classId:
+                        type: integer
+                    required:
+                    - studentId
+                    - classId
+              required:
+              - assignments
+        required: true
   "/api/classes":
     get:
       summary: クラス一覧取得
@@ -344,28 +404,20 @@ paths:
       - Classes
       security:
       - cookie_auth: []
+      parameters:
+      - name: grade
+        in: query
+        required: false
+        description: 学年で絞り込む（省略時は全学年）
+        schema:
+          type: integer
       responses:
         '200':
           description: school_admin もクラス一覧を取得できる
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  classes:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                        name:
-                          type: string
-                      required:
-                      - id
-                      - name
-                required:
-                - classes
+                "$ref": "#/components/schemas/ClassListResponse"
         '401':
           description: 未認証
           content:
@@ -391,32 +443,14 @@ paths:
         required: true
         description: クラスID
         schema:
-          type: string
+          type: integer
       responses:
         '200':
           description: school_admin もクラス内生徒一覧を取得できる
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  classId:
-                    type: string
-                  students:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                        name:
-                          type: string
-                      required:
-                      - id
-                      - name
-                required:
-                - classId
-                - students
+                "$ref": "#/components/schemas/ClassStudentListResponse"
         '401':
           description: 未認証
           content:
@@ -425,6 +459,12 @@ paths:
                 "$ref": "#/components/schemas/error"
         '403':
           description: 権限なし（student は禁止）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: クラスが存在しない
           content:
             application/json:
               schema:
@@ -714,6 +754,57 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/api/students/{id}/class":
+    patch:
+      summary: 生徒のクラス変更
+      tags:
+      - Students
+      security:
+      - cookie_auth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: 生徒ID
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: クラス変更成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ClassChangeResponse"
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: 権限なし（student は禁止）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: 生徒が存在しない
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                class_id:
+                  type: integer
+                  description: 変更先クラスID
+              required:
+              - class_id
+        required: true
   "/api/me":
     get:
       summary: 認証ユーザー情報取得
@@ -796,6 +887,101 @@ components:
       - role
       - created_at
       - school_class
+    ClassSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        grade:
+          type: integer
+        averageScore:
+          type: integer
+        studentCount:
+          type: integer
+      required:
+      - id
+      - name
+      - grade
+      - averageScore
+      - studentCount
+    ClassListResponse:
+      type: object
+      properties:
+        classes:
+          type: array
+          items:
+            "$ref": "#/components/schemas/ClassSummary"
+      required:
+      - classes
+    ClassStudent:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        grade:
+          type: integer
+        totalScore:
+          type: integer
+        topSubject:
+          type: object
+          properties:
+            name:
+              type: string
+            score:
+              type: integer
+          required:
+          - name
+          - score
+      required:
+      - id
+      - name
+      - grade
+      - totalScore
+      - topSubject
+    ClassStudentListResponse:
+      type: object
+      properties:
+        classId:
+          type: integer
+        students:
+          type: array
+          items:
+            "$ref": "#/components/schemas/ClassStudent"
+      required:
+      - classId
+      - students
+    AssignmentUpdateResponse:
+      type: object
+      properties:
+        updatedCount:
+          type: integer
+      required:
+      - updatedCount
+    ClassChangeResponse:
+      type: object
+      properties:
+        studentId:
+          type: integer
+        schoolClass:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            grade:
+              type: integer
+          required:
+          - id
+          - name
+          - grade
+      required:
+      - studentId
+      - schoolClass
     error:
       type: object
       properties:
