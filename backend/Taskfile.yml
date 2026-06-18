@@ -12,8 +12,12 @@ tasks:
     cmd: bundle install
   
   dev:
-    desc: バックエンドの開発サーバーを起動
-    cmd: bundle exec rails server
+    desc: バックエンドの開発サーバーを起動（ポート8000）
+    cmd: bundle exec rails server -p 8000
+
+  jobs:
+    desc: Solid Queue ワーカーを起動（バックグラウンドジョブ処理）
+    cmd: bundle exec rails solid_queue:start
 
   lint:
     desc: RuboCopでコードスタイルをチェックする

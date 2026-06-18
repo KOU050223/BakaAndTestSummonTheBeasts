@@ -10,9 +10,51 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_16_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_17_200000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.bigint "record_id", null: false
+    t.string "record_type", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.string "content_type"
+    t.datetime "created_at", null: false
+    t.string "filename", null: false
+    t.string "key", null: false
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "answer_sheets", force: :cascade do |t|
+    t.jsonb "ai_grading"
+    t.datetime "created_at", null: false
+    t.bigint "exam_id", null: false
+    t.text "ocr_text"
+    t.string "status", default: "pending", null: false
+    t.bigint "student_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["exam_id", "student_id"], name: "index_answer_sheets_on_exam_id_and_student_id", unique: true
+    t.index ["exam_id"], name: "index_answer_sheets_on_exam_id"
+    t.index ["status"], name: "index_answer_sheets_on_status"
+    t.index ["student_id"], name: "index_answer_sheets_on_student_id"
+  end
 
   create_table "battle_logs", force: :cascade do |t|
     t.string "action", null: false
@@ -65,7 +107,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_16_000001) do
     t.index ["user_id"], name: "index_class_memberships_on_user_id", unique: true
   end
 
+  create_table "exam_questions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "exam_id", null: false
+    t.text "model_answer", null: false
+    t.integer "number", null: false
+    t.integer "points", null: false
+    t.text "question_text", null: false
+    t.datetime "updated_at", null: false
+    t.index ["exam_id", "number"], name: "index_exam_questions_on_exam_id_and_number", unique: true
+    t.index ["exam_id"], name: "index_exam_questions_on_exam_id"
+  end
+
   create_table "exams", force: :cascade do |t|
+    t.text "answer_key_text"
     t.datetime "created_at", null: false
     t.bigint "created_by_id", null: false
     t.integer "max_score", default: 100, null: false
@@ -121,6 +176,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_16_000001) do
     t.index ["role"], name: "index_users_on_role"
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "answer_sheets", "exams"
+  add_foreign_key "answer_sheets", "users", column: "student_id"
   add_foreign_key "battle_logs", "battles"
   add_foreign_key "battle_logs", "users", column: "actor_id"
   add_foreign_key "battle_logs", "users", column: "target_id"
@@ -130,6 +189,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_16_000001) do
   add_foreign_key "battles", "users", column: "winner_id"
   add_foreign_key "class_memberships", "school_classes"
   add_foreign_key "class_memberships", "users"
+  add_foreign_key "exam_questions", "exams"
   add_foreign_key "exams", "school_classes"
   add_foreign_key "exams", "users", column: "created_by_id"
   add_foreign_key "scores", "exams"

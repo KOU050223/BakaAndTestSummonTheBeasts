@@ -36,6 +36,10 @@
             pkgs.libxslt
             pkgs.zlib
             pkgs.openssl
+
+            # 画像処理（ActiveStorage / image_processing gem）
+            pkgs.imagemagick
+            pkgs.ghostscript
           ];
 
           shellHook = ''

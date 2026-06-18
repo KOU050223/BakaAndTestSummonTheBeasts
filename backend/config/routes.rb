@@ -23,11 +23,21 @@ Rails.application.routes.draw do
     # クラス振り分けの一括反映（自動振り分けの保存）
     patch "classes/assignments", to: "classes/assignments#update"
 
-    # 試験・点数
+    # 試験・点数・OCR採点
     resources :exams, only: [ :index, :create ] do
+      member do
+        post :upload_answer_key
+      end
       resources :scores, only: [ :index ], module: :exams
+      resources :questions, only: [ :index, :create ], module: :exams
+      resources :answer_sheets, only: [ :index, :show, :create ], module: :exams do
+        member do
+          post :score
+          post :regrade
+        end
+      end
     end
-    resources :scores, only: [ :create ]
+    resources :scores, only: [ :index, :create ]
 
     # 召喚獣
     get "students/:id/summon", to: "students#summon"
