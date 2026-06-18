@@ -40,7 +40,7 @@ module Api
     private
 
     def set_exam
-      @exam = Exam.find(params[:id])
+      @exam = Exam.find_by!(id: params[:id], created_by: current_user)
     end
 
     def answer_key_status(exam)
