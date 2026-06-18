@@ -2,24 +2,10 @@
 
 import { Panel, LabelTag } from "@/components/ui";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
-import { useSummon, type SummonStats } from "@/lib/summon/useSummon";
+import { useSummon, type Summon } from "@/lib/summon/useSummon";
 
-// 科目コード → 日本語表記。ScoresScreen と同じ語彙に揃える。
-const SUBJECT_LABEL: Record<string, string> = {
-  english: "英語",
-  math: "数学",
-  physics: "物理",
-  chemistry: "化学",
-  biology: "生物",
-  earth_science: "地学",
-  geography: "地理",
-  japanese_history: "日本史",
-  world_history: "世界史",
-  civics: "公民",
-  japanese: "国語",
-};
-
-// 科目ごとの召喚獣アイコン（雰囲気づけ）。未定義の科目は汎用アイコンにフォールバックする。
+// 科目ごとの召喚獣アイコン（雰囲気づけ）。表示の装飾であり科目マスタの責務ではないため
+// フロント側に持つ。未定義の科目は汎用アイコンにフォールバックする。
 const SUBJECT_ICON: Record<string, string> = {
   english: "📖",
   math: "🔢",
@@ -36,7 +22,10 @@ const SUBJECT_ICON: Record<string, string> = {
 
 // 各ステータスの表示メタ情報。bar の最大値は表示スケール用の目安。
 // HP は他より大きい値域（HP_BASE=100 始まり）になるため max を分けている。
-const STAT_META: { key: keyof SummonStats; label: string; max: number; color: string }[] = [
+// ステータスのうちバー表示する数値項目のキー（code/label を除いたもの）。
+type StatKey = "hp" | "attack" | "defense" | "speed";
+
+const STAT_META: { key: StatKey; label: string; max: number; color: string }[] = [
   { key: "hp", label: "HP", max: 150, color: "bg-green-400" },
   { key: "attack", label: "こうげき", max: 40, color: "bg-red-400" },
   { key: "defense", label: "ぼうぎょ", max: 15, color: "bg-sky-400" },
@@ -46,8 +35,6 @@ const STAT_META: { key: keyof SummonStats; label: string; max: number; color: st
 export function SummonScreen() {
   const { user } = useCurrentUser();
   const { summons, isLoading, isError } = useSummon(user?.id);
-
-  const subjects = Object.keys(summons).sort();
 
   return (
     <Panel className="mx-auto mt-6 max-w-3xl">
@@ -69,7 +56,7 @@ export function SummonScreen() {
           </p>
         )}
 
-        {!isLoading && !isError && subjects.length === 0 && (
+        {!isLoading && !isError && summons.length === 0 && (
           <div className="py-10 text-center">
             <p className="mb-3 text-4xl">🪄</p>
             <p className="text-sm text-slate-400">
@@ -78,14 +65,10 @@ export function SummonScreen() {
           </div>
         )}
 
-        {!isLoading && !isError && subjects.length > 0 && (
+        {!isLoading && !isError && summons.length > 0 && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {subjects.map((subject) => (
-              <SummonCard
-                key={subject}
-                subject={subject}
-                stats={summons[subject]}
-              />
+            {summons.map((summon) => (
+              <SummonCard key={summon.code} summon={summon} />
             ))}
           </div>
         )}
@@ -94,21 +77,13 @@ export function SummonScreen() {
   );
 }
 
-function SummonCard({
-  subject,
-  stats,
-}: {
-  subject: string;
-  stats: SummonStats;
-}) {
+function SummonCard({ summon }: { summon: Summon }) {
   return (
     <div className="rounded-sm border border-sky-400/20 bg-white/5 p-4">
       <div className="mb-3 flex items-center gap-3">
-        <span className="text-3xl">{SUBJECT_ICON[subject] ?? "✨"}</span>
+        <span className="text-3xl">{SUBJECT_ICON[summon.code] ?? "✨"}</span>
         <div>
-          <p className="font-bold text-white">
-            {SUBJECT_LABEL[subject] ?? subject}の召喚獣
-          </p>
+          <p className="font-bold text-white">{summon.label}の召喚獣</p>
           <p className="text-xs text-slate-400">
             直近のテスト結果から召喚
           </p>
@@ -117,7 +92,7 @@ function SummonCard({
 
       <div className="flex flex-col gap-2">
         {STAT_META.map(({ key, label, max, color }) => {
-          const value = stats[key];
+          const value = summon[key];
           const pct = Math.min(100, Math.round((value / max) * 100));
           return (
             <div key={key} className="flex items-center gap-2">

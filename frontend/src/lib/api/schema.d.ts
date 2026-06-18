@@ -799,7 +799,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description school_admin も試験一覧を取得できる */
+                /** @description student は自分のクラスの試験一覧を取得できる */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -817,15 +817,6 @@ export interface paths {
                 };
                 /** @description 未認証 */
                 401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["error"];
-                    };
-                };
-                /** @description 権限なし（student は禁止） */
-                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1061,13 +1052,13 @@ export interface paths {
                         "application/json": {
                             studentId: string;
                             summons: {
-                                [key: string]: {
-                                    hp: number;
-                                    attack: number;
-                                    defense: number;
-                                    speed: number;
-                                };
-                            };
+                                code: string;
+                                label: string;
+                                hp: number;
+                                attack: number;
+                                defense: number;
+                                speed: number;
+                            }[];
                         };
                     };
                 };

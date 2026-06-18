@@ -1,17 +1,15 @@
 "use client";
 
 import { $api } from "@/lib/api/client";
+import type { components, paths } from "@/lib/api/schema";
 
-// 召喚獣ステータス（科目1体ぶん）。API レスポンスの summons の値に対応する。
-export type SummonStats = {
-  hp: number;
-  attack: number;
-  defense: number;
-  speed: number;
-};
+// 召喚獣ステータス（科目1体ぶん）。API レスポンスの summons の要素に対応する。
+// 科目コード（code）と表示用ラベル（label）はバックエンドの Subject ドメインが出典。
+export type Summon =
+  paths["/api/students/{id}/summon"]["get"]["responses"]["200"]["content"]["application/json"]["summons"][number];
 
-// 科目コードをキー、ステータスを値に持つマップ。
-export type SummonMap = Record<string, SummonStats>;
+// User 型（id を取り出す用途）。
+export type User = components["schemas"]["User"];
 
 // 指定生徒の召喚獣ステータスを取得する。
 // 点数登録時にバックエンドで再計算・永続化された SummonStatus の実データを返す。
@@ -29,7 +27,7 @@ export function useSummon(studentId: number | undefined) {
   );
 
   return {
-    summons: (data?.summons ?? {}) as SummonMap,
+    summons: data?.summons ?? [],
     isLoading,
     isError,
     error,

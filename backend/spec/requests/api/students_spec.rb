@@ -5,16 +5,18 @@ SUMMON_RESPONSE_SCHEMA = {
   properties: {
     studentId: { type: :string },
     summons: {
-      type: :object,
-      additionalProperties: {
+      type: :array,
+      items: {
         type: :object,
         properties: {
+          code: { type: :string },
+          label: { type: :string },
           hp: { type: :integer },
           attack: { type: :integer },
           defense: { type: :integer },
           speed: { type: :integer }
         },
-        required: %w[hp attack defense speed]
+        required: %w[code label hp attack defense speed]
       }
     }
   },
@@ -30,7 +32,7 @@ RSpec.describe 'GET /api/students/:id/summon', type: :request do
 
       parameter name: :id, in: :path, type: :integer, required: true, description: '生徒ID'
 
-      response '200', '召喚獣ステータス一覧（自身の実データを返す）' do
+      response '200', '召喚獣ステータス一覧' do
         schema SUMMON_RESPONSE_SCHEMA
 
         let(:user) { create(:user) }
@@ -44,7 +46,7 @@ RSpec.describe 'GET /api/students/:id/summon', type: :request do
           json = JSON.parse(response.body)
           expect(json['studentId']).to eq(user.id.to_s)
           expect(json['summons']).to eq(
-            'math' => { 'hp' => 142, 'attack' => 33, 'defense' => 12, 'speed' => 8 }
+            [ { 'code' => 'math', 'label' => '数学', 'hp' => 142, 'attack' => 33, 'defense' => 12, 'speed' => 8 } ]
           )
         end
       end
@@ -58,7 +60,7 @@ RSpec.describe 'GET /api/students/:id/summon', type: :request do
 
         run_test! do |response|
           json = JSON.parse(response.body)
-          expect(json['summons']).to eq({})
+          expect(json['summons']).to eq([])
         end
       end
 
@@ -75,7 +77,8 @@ RSpec.describe 'GET /api/students/:id/summon', type: :request do
 
         run_test! do |response|
           json = JSON.parse(response.body)
-          expect(json['summons']).to have_key('english')
+          expect(json['summons'].map { |s| s['code'] }).to include('english')
+          expect(json['summons'].find { |s| s['code'] == 'english' }['label']).to eq('英語')
         end
       end
 

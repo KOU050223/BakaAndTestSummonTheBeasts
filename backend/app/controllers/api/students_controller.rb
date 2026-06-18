@@ -2,6 +2,7 @@ module Api
   # 召喚獣ステータス取得。apiSpec.md §3.6 準拠。
   # 指定生徒の SummonStatus 実データ（点数登録時に Summon::Recalculate で永続化済み）を
   # 科目別に返す。ステータス未生成の科目は含めない。
+  # 各要素は科目コード（code）と表示用ラベル（label, Subject ドメインが出典）を持つ。
   class StudentsController < BaseController
     before_action :authorize_summon_access!, only: :summon
     before_action -> { require_role!(:teacher, :school_admin) }, only: :update_class
@@ -10,8 +11,13 @@ module Api
       student = User.find_by(id: params[:id], role: "student")
       return render_error(code: "not_found", message: "生徒が見つかりません", status: :not_found) if student.nil?
 
-      summons = student.summon_statuses.each_with_object({}) do |ss, acc|
-        acc[ss.subject] = { hp: ss.hp, attack: ss.attack, defense: ss.defense, speed: ss.speed }
+      # 科目マスタ（Subject::CODES）の定義順に並べ、レスポンスの並びを安定させる。
+      by_subject = student.summon_statuses.index_by(&:subject)
+      summons = Subject::CODES.filter_map do |code|
+        ss = by_subject[code]
+        next if ss.nil?
+
+        { code: ss.subject, label: Subject.label(ss.subject), hp: ss.hp, attack: ss.attack, defense: ss.defense, speed: ss.speed }
       end
 
       render json: { studentId: student.id.to_s, summons: summons }, status: :ok
