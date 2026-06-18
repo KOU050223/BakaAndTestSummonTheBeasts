@@ -11,6 +11,15 @@ class_e = SchoolClass.find_or_create_by!(grade: 2, name: "Eクラス")
 class_f = SchoolClass.find_or_create_by!(grade: 2, name: "Fクラス")
 
 # -----------------------------------------------
+# 管理者
+# -----------------------------------------------
+admin = User.find_or_create_by!(email: "admin@example.com") do |u|
+  u.name     = "管理者"
+  u.password = "password"
+  u.role     = "school_admin"
+end
+
+# -----------------------------------------------
 # 教師
 # -----------------------------------------------
 teacher1 = User.find_or_create_by!(email: "teacher@example.com") do |u|
