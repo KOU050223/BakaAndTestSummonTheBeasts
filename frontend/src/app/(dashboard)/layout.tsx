@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
 import { DashboardShell } from "@/components/dashboard";
 
@@ -17,7 +19,18 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isLoading, isError } = useCurrentUser();
+  const router = useRouter();
+  const { user, isLoading, isError, isUnauthorized } = useCurrentUser();
+
+  // 未認証（401）なら確実にログイン画面へ遷移させる。
+  // client.ts の middleware（window.location.href）だけに任せると、フルページ遷移が
+  // 走る前に下の isError 分岐が描画され「取得に失敗しました」が見えてしまうため、
+  // ここで Next.js のルーターによる即時 replace を行いレースを断つ。
+  useEffect(() => {
+    if (isUnauthorized) {
+      router.replace("/login");
+    }
+  }, [isUnauthorized, router]);
 
   if (isLoading) {
     return (
@@ -29,17 +42,24 @@ export default function DashboardLayout({
     );
   }
 
-  // 未認証（401）のリダイレクトは client.ts の onResponse middleware が
-  // status を見て /login へ飛ばす（取得前のレースもそこで捌かれる）。
-  // ここで isError 全般を /login に飛ばすと、5xx や通信エラーまで
-  // ログイン画面送りになってしまうため、認証エラーとそれ以外を区別する。
-  // 401 はリダイレクト中なので何も描画しない。それ以外のエラーはその旨を表示する。
+  // 401（未認証）はログイン画面へリダイレクト中なので何も描画しない。
+  if (isUnauthorized) {
+    return null;
+  }
+
+  // 401 以外のエラー（5xx・通信断など）はログイン送りにせず、その旨を表示する。
+  // 「ログインへ飛ぶべきなのか／サーバーが落ちているのか」を区別できるよう文言を分ける。
   if (isError) {
     return (
       <FullScreen>
-        <p className="text-sm text-red-300">
-          ユーザー情報の取得に失敗しました。時間をおいて再度お試しください。
-        </p>
+        <div className="flex max-w-sm flex-col items-center gap-2 px-4 text-center">
+          <p className="text-sm font-bold text-red-300">
+            ユーザー情報の取得に失敗しました
+          </p>
+          <p className="text-xs text-red-300/70">
+            サーバーに接続できないか、サーバー側でエラーが発生しています。時間をおいて再度お試しください。
+          </p>
+        </div>
       </FullScreen>
     );
   }
