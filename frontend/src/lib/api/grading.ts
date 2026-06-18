@@ -35,6 +35,7 @@ export type MyScore = {
   exam_id: number;
   exam_title: string;
   subject: string;
+  subject_label: string;
   score: number;
   max_score: number;
   scored_at: string;

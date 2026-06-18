@@ -31,7 +31,7 @@ function summary(partial?: Partial<ScoreSummary>): ScoreSummary {
   return {
     scores: [],
     bySubject: {
-      english: { exam_id: 1, exam_title: "英語", subject: "english", score: 94, max_score: 100, scored_at: "2026-01-01T00:00:00Z" },
+      english: { exam_id: 1, exam_title: "英語", subject: "english", subject_label: "英語", score: 94, max_score: 100, scored_at: "2026-01-01T00:00:00Z" },
     },
     total: 182,
     max: 200,

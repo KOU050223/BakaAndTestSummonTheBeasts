@@ -5,20 +5,6 @@ import { Panel, LabelTag } from "@/components/ui";
 import { getMyScores } from "@/lib/api/grading";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
 
-const SUBJECT_LABEL: Record<string, string> = {
-  english: "英語",
-  math: "数学",
-  physics: "物理",
-  chemistry: "化学",
-  biology: "生物",
-  earth_science: "地学",
-  geography: "地理",
-  japanese_history: "日本史",
-  world_history: "世界史",
-  civics: "公民",
-  japanese: "国語",
-};
-
 export function ScoresScreen() {
   const { user } = useCurrentUser();
   const { data, isLoading } = useQuery({
@@ -71,7 +57,7 @@ export function ScoresScreen() {
                   <div className="flex-1">
                     <p className="text-white font-bold">{s.exam_title}</p>
                     <p className="text-slate-400 text-xs mt-0.5">
-                      {SUBJECT_LABEL[s.subject] ?? s.subject} ·{" "}
+                      {s.subject_label} ·{" "}
                       {new Date(s.scored_at).toLocaleDateString("ja-JP")}
                     </p>
                   </div>

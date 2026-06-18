@@ -15,6 +15,7 @@ function score(partial: Partial<MyScore>): MyScore {
     exam_id: 1,
     exam_title: "テスト",
     subject: "math",
+    subject_label: "数学",
     score: 80,
     max_score: 100,
     scored_at: "2026-01-01T00:00:00Z",
