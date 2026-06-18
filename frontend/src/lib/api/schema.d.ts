@@ -24,7 +24,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description ユーザー一覧取得成功 */
+                /** @description role 指定で絞り込む */
                 200: {
                     headers: {
                         [name: string]: unknown;
