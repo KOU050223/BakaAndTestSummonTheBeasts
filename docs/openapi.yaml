@@ -570,7 +570,7 @@ paths:
       - cookie_auth: []
       responses:
         '200':
-          description: school_admin も試験一覧を取得できる
+          description: student は自分のクラスの試験一覧を取得できる
           content:
             application/json:
               schema:
@@ -598,12 +598,6 @@ paths:
                 - exams
         '401':
           description: 未認証
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/error"
-        '403':
-          description: 権限なし（student は禁止）
           content:
             application/json:
               schema:
@@ -814,10 +808,14 @@ paths:
                   studentId:
                     type: string
                   summons:
-                    type: object
-                    additionalProperties:
+                    type: array
+                    items:
                       type: object
                       properties:
+                        code:
+                          type: string
+                        label:
+                          type: string
                         hp:
                           type: integer
                         attack:
@@ -827,6 +825,8 @@ paths:
                         speed:
                           type: integer
                       required:
+                      - code
+                      - label
                       - hp
                       - attack
                       - defense

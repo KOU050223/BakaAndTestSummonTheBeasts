@@ -25,6 +25,7 @@ export const NAV_BY_ROLE: Record<Role, NavSection[]> = {
       items: [
         { label: "ダッシュボード", href: "/", icon: "⚡" },
         { label: "成績・召喚獣ステータス", href: "/scores", icon: "📊" },
+        { label: "召喚獣プレビュー", href: "/summon", icon: "🐉" },
         { label: "答案を提出", href: "/submit", icon: "📨" },
       ],
     },

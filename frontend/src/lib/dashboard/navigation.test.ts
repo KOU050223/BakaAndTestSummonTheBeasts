@@ -24,11 +24,12 @@ describe("NAV_BY_ROLE", () => {
     }
   });
 
-  it("生徒は画像どおり5つのタブを持つ", () => {
+  it("生徒は6つのタブを持つ（メイン4 + 試召戦争2）", () => {
     const labels = flatItems(NAV_BY_ROLE.student).map((item) => item.label);
     expect(labels).toEqual([
       "ダッシュボード",
       "成績・召喚獣ステータス",
+      "召喚獣プレビュー",
       "答案を提出",
       "宣戦布告",
       "戦績",
