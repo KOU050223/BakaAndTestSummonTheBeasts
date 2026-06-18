@@ -55,6 +55,36 @@ describe("extractServerErrors", () => {
   it("error 形式でない値は undefined", () => {
     expect(extractServerErrors(undefined)).toBeUndefined();
   });
+
+  it("値が配列でない（文字列など）フィールドは除外する（.join() のクラッシュ防止）", () => {
+    const malformed = {
+      error: {
+        code: "validation_error",
+        message: "入力内容を確認してください",
+        details: { email: "配列でない文字列", password: ["は短すぎます"] },
+      },
+    };
+    // email は配列でないので除外され、password だけが残る。
+    expect(extractServerErrors(malformed)).toEqual({ password: ["は短すぎます"] });
+  });
+
+  it("配列内の非文字列要素は除外する", () => {
+    const malformed = {
+      error: {
+        code: "validation_error",
+        message: "x",
+        details: { email: ["ok", 123, null] },
+      },
+    };
+    expect(extractServerErrors(malformed)).toEqual({ email: ["ok"] });
+  });
+
+  it("正規化後に有効なフィールドが無ければ undefined", () => {
+    const malformed = {
+      error: { code: "validation_error", message: "x", details: { email: "str", age: 1 } },
+    };
+    expect(extractServerErrors(malformed)).toBeUndefined();
+  });
 });
 
 describe("extractFormErrorMessage", () => {

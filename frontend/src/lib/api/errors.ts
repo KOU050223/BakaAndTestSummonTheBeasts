@@ -11,16 +11,31 @@ export function extractApiError(
   return undefined;
 }
 
+// details（任意形状）を Record<string, string[]> に正規化する。
+// サーバーが配列以外（文字列やネスト等）を返しても、利用側で .join() などを
+// 安全に呼べるよう、値を文字列配列だけに絞り込む。該当が無ければ undefined。
+function normalizeFieldErrors(
+  details: unknown,
+): Record<string, string[]> | undefined {
+  if (!details || typeof details !== "object") return undefined;
+
+  const normalized: Record<string, string[]> = {};
+  for (const [key, value] of Object.entries(details)) {
+    if (!Array.isArray(value)) continue;
+    const messages = value.filter((v): v is string => typeof v === "string");
+    if (messages.length > 0) normalized[key] = messages;
+  }
+
+  return Object.keys(normalized).length > 0 ? normalized : undefined;
+}
+
 // サーバーのフィールド別バリデーションエラー（422 の details）を取り出す。
 // 422 以外（409 など）は details が空なので undefined を返す。
+// 値は normalizeFieldErrors で string[] に保証され、利用側の .join() が落ちない。
 export function extractServerErrors(
   error: unknown,
 ): Record<string, string[]> | undefined {
-  const details = extractApiError(error)?.details;
-  if (details && typeof details === "object" && Object.keys(details).length > 0) {
-    return details as Record<string, string[]>;
-  }
-  return undefined;
+  return normalizeFieldErrors(extractApiError(error)?.details);
 }
 
 // フォーム全体に出す汎用エラーメッセージ。
