@@ -12,7 +12,7 @@ Rails.application.routes.draw do
     delete "auth/logout", to: "auth#logout"
 
     namespace :admin do
-      resources :users, only: [ :create ]
+      resources :users, only: [ :index, :create, :update, :destroy ]
     end
     get "me", to: "users#me"
 
