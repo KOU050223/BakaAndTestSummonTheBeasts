@@ -4,7 +4,17 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { $api } from "@/lib/api/client";
+import { classifyLoginError, type LoginErrorKind } from "@/lib/api/errors";
 import { Panel, LabelTag, Button } from "@/components/ui";
+
+// エラー種別ごとの見出しラベル（開発中の切り分け用に種別が一目で分かるようにする）。
+const ERROR_LABEL: Record<LoginErrorKind, string> = {
+  unauthorized: "召喚失敗",
+  validation: "入力エラー",
+  network: "接続エラー",
+  server: "サーバーエラー",
+  unknown: "エラー",
+};
 
 type FieldErrors = {
   email?: string;
@@ -59,7 +69,9 @@ export function LoginForm() {
     login({ body: { email, password } });
   };
 
-  const isApiUnauthorized = apiError != null;
+  const loginError = classifyLoginError(apiError);
+  // 422 のフィールド別エラー（サーバー由来）をクライアント検証エラーにマージして表示する。
+  const serverFieldErrors = loginError?.fieldErrors;
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a1628] via-[#0d2447] to-[#0a3a5c] overflow-hidden p-4">
@@ -94,13 +106,23 @@ export function LoginForm() {
           </h1>
         </div>
 
-        {/* API認証エラー */}
-        {isApiUnauthorized && (
-          <div className="flex items-start gap-2.5 mx-5 mt-4 px-3.5 py-3 bg-red-500/15 border border-red-500/60 rounded-sm">
-            <LabelTag variant="error">召喚失敗</LabelTag>
+        {/* API エラー（種別ごとに文言・ヒントを出し分ける） */}
+        {loginError && (
+          <div
+            role="alert"
+            className="flex items-start gap-2.5 mx-5 mt-4 px-3.5 py-3 bg-red-500/15 border border-red-500/60 rounded-sm"
+          >
+            <LabelTag variant="error">{ERROR_LABEL[loginError.kind]}</LabelTag>
             <div className="flex flex-col gap-0.5">
-              <p className="text-red-300 text-sm font-bold m-0">メールアドレスまたはパスワードが違います</p>
-              <p className="text-red-300/70 text-xs m-0">入力内容を確認してもう一度お試しください</p>
+              <p className="text-red-300 text-sm font-bold m-0">{loginError.message}</p>
+              {loginError.hint && (
+                <p className="text-red-300/70 text-xs m-0">{loginError.hint}</p>
+              )}
+              {loginError.code && (
+                <p className="text-red-300/50 text-[0.65rem] font-mono mt-0.5 m-0">
+                  code: {loginError.code}
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -125,7 +147,7 @@ export function LoginForm() {
               required
               autoComplete="email"
               className={`w-full px-3.5 py-2.5 bg-white/5 border rounded-sm text-sky-100 text-base outline-none transition-all duration-200 placeholder:text-slate-400/50 placeholder:text-sm focus:bg-sky-400/8 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.2),0_0_12px_rgba(56,189,248,0.2)] ${
-                touched.email && fieldErrors.email
+                (touched.email && fieldErrors.email) || serverFieldErrors?.email
                   ? "border-red-500/70 focus:border-red-400"
                   : "border-sky-400/40 focus:border-sky-400"
               }`}
@@ -133,6 +155,10 @@ export function LoginForm() {
             {touched.email && fieldErrors.email ? (
               <p className="text-red-400 text-xs flex items-center gap-1">
                 <span>⚠</span> {fieldErrors.email}
+              </p>
+            ) : serverFieldErrors?.email ? (
+              <p className="text-red-400 text-xs flex items-center gap-1">
+                <span>⚠</span> {serverFieldErrors.email.join(" / ")}
               </p>
             ) : (
               <p className="text-slate-400/60 text-xs">
@@ -159,7 +185,7 @@ export function LoginForm() {
               required
               autoComplete="current-password"
               className={`w-full px-3.5 py-2.5 bg-white/5 border rounded-sm text-sky-100 text-base outline-none transition-all duration-200 placeholder:text-slate-400/50 placeholder:text-sm focus:bg-sky-400/8 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.2),0_0_12px_rgba(56,189,248,0.2)] ${
-                touched.password && fieldErrors.password
+                (touched.password && fieldErrors.password) || serverFieldErrors?.password
                   ? "border-red-500/70 focus:border-red-400"
                   : "border-sky-400/40 focus:border-sky-400"
               }`}
@@ -167,6 +193,10 @@ export function LoginForm() {
             {touched.password && fieldErrors.password ? (
               <p className="text-red-400 text-xs flex items-center gap-1">
                 <span>⚠</span> {fieldErrors.password}
+              </p>
+            ) : serverFieldErrors?.password ? (
+              <p className="text-red-400 text-xs flex items-center gap-1">
+                <span>⚠</span> {serverFieldErrors.password.join(" / ")}
               </p>
             ) : (
               <p className="text-slate-400/60 text-xs">
