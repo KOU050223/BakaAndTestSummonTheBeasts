@@ -14,6 +14,7 @@ module Api
             exam_id: s.exam_id,
             exam_title: s.exam.title,
             subject: s.exam.subject,
+            subject_label: Subject.label(s.exam.subject),
             score: s.score,
             max_score: s.exam.max_score,
             scored_at: s.updated_at
