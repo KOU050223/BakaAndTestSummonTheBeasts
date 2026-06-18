@@ -1,22 +1,20 @@
 module Api
-  # 召喚獣ステータス取得のスタブ。apiSpec.md §3.6 準拠。
-  # 計算式は実装済みの Summon::StatusCalculator を使い、固定スコアから算出した
-  # リアルな値を返す（フロントに実際のステータス形を見せる）。
-  # TODO: 指定生徒の SummonStatus 実データ取得に差し替える。
+  # 召喚獣ステータス取得。apiSpec.md §3.6 準拠。
+  # 指定生徒の SummonStatus 実データ（点数登録時に Summon::Recalculate で永続化済み）を
+  # 科目別に返す。ステータス未生成の科目は含めない。
   class StudentsController < BaseController
     before_action :authorize_summon_access!, only: :summon
     before_action -> { require_role!(:teacher, :school_admin) }, only: :update_class
 
-    # 科目別の固定スコア（モック用）。本実装では生徒の最新点数から算出する。
-    MOCK_SCORES = { "math" => 82, "english" => 61 }.freeze
-
     def summon
-      subjects = MOCK_SCORES.transform_values { |s| Summon::StatusCalculator.call(s) }
+      student = User.find_by(id: params[:id], role: "student")
+      return render_error(code: "not_found", message: "生徒が見つかりません", status: :not_found) if student.nil?
 
-      render json: {
-        studentId: params[:id],
-        summons: subjects.transform_values { |s| { hp: s.hp, attack: s.attack, defense: s.defense, speed: s.speed } }
-      }, status: :ok
+      summons = student.summon_statuses.each_with_object({}) do |ss, acc|
+        acc[ss.subject] = { hp: ss.hp, attack: ss.attack, defense: ss.defense, speed: ss.speed }
+      end
+
+      render json: { studentId: student.id.to_s, summons: summons }, status: :ok
     end
 
     # 生徒の所属クラスを変更する。ClassMembership は生徒1人につき1件のため upsert する。

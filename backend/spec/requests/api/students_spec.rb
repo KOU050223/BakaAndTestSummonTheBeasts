@@ -30,7 +30,26 @@ RSpec.describe 'GET /api/students/:id/summon', type: :request do
 
       parameter name: :id, in: :path, type: :integer, required: true, description: '生徒ID'
 
-      response '200', '召喚獣ステータス一覧' do
+      response '200', '召喚獣ステータス一覧（自身の実データを返す）' do
+        schema SUMMON_RESPONSE_SCHEMA
+
+        let(:user) { create(:user) }
+        before do
+          create(:summon_status, student: user, subject: 'math', hp: 142, attack: 33, defense: 12, speed: 8)
+          cookies[:token] = JwtService.encode(user_id: user.id)
+        end
+        let(:id) { user.id }
+
+        run_test! do |response|
+          json = JSON.parse(response.body)
+          expect(json['studentId']).to eq(user.id.to_s)
+          expect(json['summons']).to eq(
+            'math' => { 'hp' => 142, 'attack' => 33, 'defense' => 12, 'speed' => 8 }
+          )
+        end
+      end
+
+      response '200', 'ステータス未生成の生徒は空の summons を返す' do
         schema SUMMON_RESPONSE_SCHEMA
 
         let(:user) { create(:user) }
@@ -39,8 +58,7 @@ RSpec.describe 'GET /api/students/:id/summon', type: :request do
 
         run_test! do |response|
           json = JSON.parse(response.body)
-          expect(json['studentId']).to eq(user.id.to_s)
-          expect(json['summons']).to be_a(Hash)
+          expect(json['summons']).to eq({})
         end
       end
 
@@ -49,9 +67,16 @@ RSpec.describe 'GET /api/students/:id/summon', type: :request do
 
         let(:teacher) { create(:user, :teacher) }
         let(:student) { create(:user) }
-        before { cookies[:token] = JwtService.encode(user_id: teacher.id) }
+        before do
+          create(:summon_status, student: student, subject: 'english')
+          cookies[:token] = JwtService.encode(user_id: teacher.id)
+        end
         let(:id) { student.id }
-        run_test!
+
+        run_test! do |response|
+          json = JSON.parse(response.body)
+          expect(json['summons']).to have_key('english')
+        end
       end
 
       response '200', 'school_admin が他の生徒のステータスを参照できる' do
