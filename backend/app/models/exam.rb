@@ -1,5 +1,6 @@
 class Exam < ApplicationRecord
-  SUBJECTS = %w[english math physics chemistry biology earth_science geography japanese_history world_history civics japanese].freeze
+  # 科目コードの出典は Subject ドメインに一元化する。
+  SUBJECTS = Subject::CODES
 
   has_one_attached :answer_key
 
