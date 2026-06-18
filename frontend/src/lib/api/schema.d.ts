@@ -24,7 +24,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description ユーザー一覧取得成功 */
+                /** @description role 指定で絞り込む */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -799,7 +799,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description school_admin も試験一覧を取得できる */
+                /** @description student は自分のクラスの試験一覧を取得できる */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -817,15 +817,6 @@ export interface paths {
                 };
                 /** @description 未認証 */
                 401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["error"];
-                    };
-                };
-                /** @description 権限なし（student は禁止） */
-                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -971,7 +962,49 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** 自分の全試験スコア取得 */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description 取得成功 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            scores: {
+                                exam_id: number;
+                                exam_title: string;
+                                /** @example math */
+                                subject: string;
+                                /** @example 数学 */
+                                subject_label: string;
+                                score: number;
+                                max_score: number;
+                                /** Format: date-time */
+                                scored_at: string;
+                            }[];
+                        };
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+            };
+        };
         put?: never;
         /** 点数一括登録 */
         post: {
