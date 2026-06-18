@@ -142,6 +142,38 @@ RSpec.configure do |config|
             },
             required: %w[studentId schoolClass]
           },
+          # 管理者ユーザー管理向け。一覧の統計と作成/更新リクエストを複数箇所で共有する。
+          # ロール別件数を起点に、今後アクティブ数などの指標も足せるようサマリーとして定義する。
+          AdminUserSummary: {
+            type: :object,
+            properties: {
+              student_count: { type: :integer },
+              teacher_count: { type: :integer },
+              admin_count:   { type: :integer },
+              total_count:   { type: :integer }
+            },
+            required: %w[student_count teacher_count admin_count total_count]
+          },
+          AdminUserCreateRequest: {
+            type: :object,
+            properties: {
+              name:     { type: :string, example: '鈴木先生' },
+              email:    { type: :string, example: 'teacher@example.com' },
+              password: { type: :string, example: 'password123' },
+              role:     { '$ref' => '#/components/schemas/Role' }
+            },
+            required: %w[name email password role]
+          },
+          AdminUserUpdateRequest: {
+            type: :object,
+            properties: {
+              name:     { type: :string, example: '霧島翔子' },
+              email:    { type: :string, example: 'kirishima@example.com' },
+              password: { type: :string, example: 'password123', description: '未指定なら変更しない' },
+              role:     { '$ref' => '#/components/schemas/Role' }
+            },
+            required: %w[name email role]
+          },
           error: {
             type: :object,
             properties: {
