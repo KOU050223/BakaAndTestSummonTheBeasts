@@ -11,7 +11,42 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** 管理者によるユーザー一覧取得 */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description ロールで絞り込む（未指定なら全件） */
+                    role?: components["schemas"]["Role"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ユーザー一覧取得成功 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            users: components["schemas"]["User"][];
+                            stats: components["schemas"]["AdminUserSummary"];
+                        };
+                    };
+                };
+                /** @description 権限なし（school_admin 以外） */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+            };
+        };
         put?: never;
         /** 管理者によるユーザー作成 */
         post: {
@@ -23,15 +58,7 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": {
-                        /** @example 鈴木先生 */
-                        name: string;
-                        /** @example teacher@example.com */
-                        email: string;
-                        /** @example password123 */
-                        password: string;
-                        role: components["schemas"]["Role"];
-                    };
+                    "application/json": components["schemas"]["AdminUserCreateRequest"];
                 };
             };
             responses: {
@@ -41,9 +68,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": {
-                            user: components["schemas"]["User"];
-                        };
+                        "application/json": components["schemas"]["AuthResponse"];
                     };
                 };
                 /** @description 権限なし（school_admin 以外） */
@@ -79,6 +104,133 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/admin/users/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** 管理者によるユーザー削除 */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ユーザー削除成功 */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description 権限なし（school_admin 以外） */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description ユーザーが存在しない */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description 履歴に紐づくユーザーは削除できない */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** 管理者によるユーザー更新 */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AdminUserUpdateRequest"];
+                };
+            };
+            responses: {
+                /** @description ユーザー更新成功 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthResponse"];
+                    };
+                };
+                /** @description 権限なし（school_admin 以外） */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description ユーザーが存在しない */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description メールアドレス重複 */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description バリデーションエラー */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/api/auth/logout": {
@@ -485,7 +637,7 @@ export interface paths {
                         "application/json": components["schemas"]["error"];
                     };
                 };
-                /** @description 割り当て対象が存在しない */
+                /** @description 一部不正時は全件ロールバックされる */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -494,7 +646,7 @@ export interface paths {
                         "application/json": components["schemas"]["error"];
                     };
                 };
-                /** @description assignments が配列でない */
+                /** @description assignments の要素が不正な形式 */
                 422: {
                     headers: {
                         [name: string]: unknown;
@@ -1124,6 +1276,33 @@ export interface components {
                 name: string;
                 grade: number;
             };
+        };
+        AdminUserSummary: {
+            student_count: number;
+            teacher_count: number;
+            admin_count: number;
+            total_count: number;
+        };
+        AdminUserCreateRequest: {
+            /** @example 鈴木先生 */
+            name: string;
+            /** @example teacher@example.com */
+            email: string;
+            /** @example password123 */
+            password: string;
+            role: components["schemas"]["Role"];
+        };
+        AdminUserUpdateRequest: {
+            /** @example 霧島翔子 */
+            name: string;
+            /** @example kirishima@example.com */
+            email: string;
+            /**
+             * @description 未指定なら変更しない
+             * @example password123
+             */
+            password?: string;
+            role: components["schemas"]["Role"];
         };
         error: {
             error: {

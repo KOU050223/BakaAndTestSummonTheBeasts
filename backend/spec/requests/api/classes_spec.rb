@@ -1,6 +1,6 @@
 require "swagger_helper"
 
-RSpec.describe "GET /api/classes", type: :request do
+RSpec.describe "Classes API", type: :request do
   # クラス一覧・生徒一覧のレスポンス型は複数エンドポイントで共有するため、
   # spec/swagger_helper.rb の components.schemas に定義し $ref で参照する。
   classes_response_ref = { "$ref" => "#/components/schemas/ClassListResponse" }

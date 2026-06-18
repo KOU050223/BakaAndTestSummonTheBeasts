@@ -9,6 +9,16 @@
       "file": "app/controllers/api/admin/users_controller.rb",
       "line": 21,
       "note": "school_admin のみアクセス可能なエンドポイントで role を指定するため意図的"
+    },
+    {
+      "warning_type": "Mass Assignment",
+      "warning_code": 105,
+      "fingerprint": "9e802cd038a0f4022e605af6995b4947b3e7e478cbc70f2296312d70f6c03a2e",
+      "check_name": "PermitAttributes",
+      "message": "Potentially dangerous key allowed for mass assignment",
+      "file": "app/controllers/api/admin/users_controller.rb",
+      "line": 81,
+      "note": "school_admin のみアクセス可能な更新エンドポイントで role を指定するため意図的"
     }
   ]
 }

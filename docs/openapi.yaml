@@ -6,6 +6,42 @@ info:
   version: v1
 paths:
   "/api/admin/users":
+    get:
+      summary: 管理者によるユーザー一覧取得
+      tags:
+      - Admin
+      security:
+      - cookie_auth: []
+      parameters:
+      - name: role
+        in: query
+        required: false
+        schema:
+          "$ref": "#/components/schemas/Role"
+        description: ロールで絞り込む（未指定なら全件）
+      responses:
+        '200':
+          description: role 指定で絞り込む
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/User"
+                  stats:
+                    "$ref": "#/components/schemas/AdminUserSummary"
+                required:
+                - users
+                - stats
+        '403':
+          description: 権限なし（school_admin 以外）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
     post:
       summary: 管理者によるユーザー作成
       tags:
@@ -19,12 +55,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  user:
-                    "$ref": "#/components/schemas/User"
-                required:
-                - user
+                "$ref": "#/components/schemas/AuthResponse"
         '403':
           description: 権限なし（school_admin 以外）
           content:
@@ -47,25 +78,86 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  example: 鈴木先生
-                email:
-                  type: string
-                  example: teacher@example.com
-                password:
-                  type: string
-                  example: password123
-                role:
-                  "$ref": "#/components/schemas/Role"
-              required:
-              - name
-              - email
-              - password
-              - role
+              "$ref": "#/components/schemas/AdminUserCreateRequest"
         required: true
+  "/api/admin/users/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    patch:
+      summary: 管理者によるユーザー更新
+      tags:
+      - Admin
+      security:
+      - cookie_auth: []
+      parameters: []
+      responses:
+        '200':
+          description: ユーザー更新成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/AuthResponse"
+        '403':
+          description: 権限なし（school_admin 以外）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: ユーザーが存在しない
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '409':
+          description: メールアドレス重複
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/AdminUserUpdateRequest"
+        required: true
+    delete:
+      summary: 管理者によるユーザー削除
+      tags:
+      - Admin
+      security:
+      - cookie_auth: []
+      responses:
+        '204':
+          description: ユーザー削除成功
+        '403':
+          description: 権限なし（school_admin 以外）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: ユーザーが存在しない
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '409':
+          description: 履歴に紐づくユーザーは削除できない
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/api/auth/logout":
     delete:
       summary: ログアウト
@@ -982,6 +1074,60 @@ components:
       required:
       - studentId
       - schoolClass
+    AdminUserSummary:
+      type: object
+      properties:
+        student_count:
+          type: integer
+        teacher_count:
+          type: integer
+        admin_count:
+          type: integer
+        total_count:
+          type: integer
+      required:
+      - student_count
+      - teacher_count
+      - admin_count
+      - total_count
+    AdminUserCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 鈴木先生
+        email:
+          type: string
+          example: teacher@example.com
+        password:
+          type: string
+          example: password123
+        role:
+          "$ref": "#/components/schemas/Role"
+      required:
+      - name
+      - email
+      - password
+      - role
+    AdminUserUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 霧島翔子
+        email:
+          type: string
+          example: kirishima@example.com
+        password:
+          type: string
+          example: password123
+          description: 未指定なら変更しない
+        role:
+          "$ref": "#/components/schemas/Role"
+      required:
+      - name
+      - email
+      - role
     error:
       type: object
       properties:
