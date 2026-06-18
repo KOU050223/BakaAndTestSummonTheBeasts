@@ -12,7 +12,6 @@
         pkgs = import nixpkgs { inherit system; };
         pnpmPackage = pkgs.pnpm_10 or pkgs.pnpm;
         goPackage = pkgs.go_1_26 or pkgs.go;
-        tesseractJpn = pkgs.tesseract5.override { enableLanguages = [ "jpn" "eng" ]; };
       in
       {
         devShells.default = pkgs.mkShell {
@@ -38,8 +37,7 @@
             pkgs.zlib
             pkgs.openssl
 
-            # OCR・画像処理
-            tesseractJpn
+            # 画像処理（ActiveStorage / image_processing gem）
             pkgs.imagemagick
             pkgs.ghostscript
           ];
@@ -47,7 +45,6 @@
           shellHook = ''
             export GEM_HOME=$HOME/.gem
             export PATH=$GEM_HOME/bin:$PATH
-            export TESSDATA_PREFIX="${tesseractJpn}/share/tessdata"
           '';
         };
       });
