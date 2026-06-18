@@ -3,21 +3,6 @@ module Classroom
   # 総合スコアは全科目の点数合計、最高科目は科目別最高点の科目とする。
   # ActiveRecord に依存するが、集計ルールをコントローラから切り離すための PORO。
   class StudentScoreSummary
-    # Exam::SUBJECTS（英語キー）に対応する画面表示用の日本語ラベル。
-    SUBJECT_LABELS = {
-      "english" => "英語",
-      "math" => "数学",
-      "physics" => "物理",
-      "chemistry" => "化学",
-      "biology" => "生物",
-      "earth_science" => "地学",
-      "geography" => "地理",
-      "japanese_history" => "日本史",
-      "world_history" => "世界史",
-      "civics" => "公民",
-      "japanese" => "国語"
-    }.freeze
-
     Summary = Struct.new(:total_score, :top_subject_label, :top_subject_score, keyword_init: true)
 
     # @param scores [Array<Score>] 対象生徒の Score（exam を eager load 済み想定）
@@ -28,7 +13,7 @@ module Classroom
 
       Summary.new(
         total_score: total,
-        top_subject_label: top && SUBJECT_LABELS.fetch(top.exam.subject, top.exam.subject),
+        top_subject_label: top && Subject.label(top.exam.subject),
         top_subject_score: top&.score
       )
     end
