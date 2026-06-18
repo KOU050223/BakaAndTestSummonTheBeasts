@@ -860,10 +860,14 @@ paths:
                   studentId:
                     type: string
                   summons:
-                    type: object
-                    additionalProperties:
+                    type: array
+                    items:
                       type: object
                       properties:
+                        code:
+                          type: string
+                        label:
+                          type: string
                         hp:
                           type: integer
                         attack:
@@ -873,6 +877,8 @@ paths:
                         speed:
                           type: integer
                       required:
+                      - code
+                      - label
                       - hp
                       - attack
                       - defense

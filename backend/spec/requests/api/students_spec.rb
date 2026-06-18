@@ -5,16 +5,18 @@ SUMMON_RESPONSE_SCHEMA = {
   properties: {
     studentId: { type: :string },
     summons: {
-      type: :object,
-      additionalProperties: {
+      type: :array,
+      items: {
         type: :object,
         properties: {
+          code: { type: :string },
+          label: { type: :string },
           hp: { type: :integer },
           attack: { type: :integer },
           defense: { type: :integer },
           speed: { type: :integer }
         },
-        required: %w[hp attack defense speed]
+        required: %w[code label hp attack defense speed]
       }
     }
   },
@@ -34,13 +36,31 @@ RSpec.describe 'GET /api/students/:id/summon', type: :request do
         schema SUMMON_RESPONSE_SCHEMA
 
         let(:user) { create(:user) }
-        before { cookies[:token] = JwtService.encode(user_id: user.id) }
+        before do
+          create(:summon_status, student: user, subject: 'math', hp: 142, attack: 33, defense: 12, speed: 8)
+          cookies[:token] = JwtService.encode(user_id: user.id)
+        end
         let(:id) { user.id }
 
         run_test! do |response|
           json = JSON.parse(response.body)
           expect(json['studentId']).to eq(user.id.to_s)
-          expect(json['summons']).to be_a(Hash)
+          expect(json['summons']).to eq(
+            [ { 'code' => 'math', 'label' => '数学', 'hp' => 142, 'attack' => 33, 'defense' => 12, 'speed' => 8 } ]
+          )
+        end
+      end
+
+      response '200', 'ステータス未生成の生徒は空の summons を返す' do
+        schema SUMMON_RESPONSE_SCHEMA
+
+        let(:user) { create(:user) }
+        before { cookies[:token] = JwtService.encode(user_id: user.id) }
+        let(:id) { user.id }
+
+        run_test! do |response|
+          json = JSON.parse(response.body)
+          expect(json['summons']).to eq([])
         end
       end
 
@@ -49,9 +69,17 @@ RSpec.describe 'GET /api/students/:id/summon', type: :request do
 
         let(:teacher) { create(:user, :teacher) }
         let(:student) { create(:user) }
-        before { cookies[:token] = JwtService.encode(user_id: teacher.id) }
+        before do
+          create(:summon_status, student: student, subject: 'english')
+          cookies[:token] = JwtService.encode(user_id: teacher.id)
+        end
         let(:id) { student.id }
-        run_test!
+
+        run_test! do |response|
+          json = JSON.parse(response.body)
+          expect(json['summons'].map { |s| s['code'] }).to include('english')
+          expect(json['summons'].find { |s| s['code'] == 'english' }['label']).to eq('英語')
+        end
       end
 
       response '200', 'school_admin が他の生徒のステータスを参照できる' do

@@ -1,5 +1,5 @@
 class Exam < ApplicationRecord
-  # 科目コードの出典は Subject ドメインに一元化する。
+  # 科目の出典は Subject ドメインに一元化する。互換のため名前は SUBJECTS のまま残す。
   SUBJECTS = Subject::CODES
 
   has_one_attached :answer_key

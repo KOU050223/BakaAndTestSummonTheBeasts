@@ -1094,13 +1094,13 @@ export interface paths {
                         "application/json": {
                             studentId: string;
                             summons: {
-                                [key: string]: {
-                                    hp: number;
-                                    attack: number;
-                                    defense: number;
-                                    speed: number;
-                                };
-                            };
+                                code: string;
+                                label: string;
+                                hp: number;
+                                attack: number;
+                                defense: number;
+                                speed: number;
+                            }[];
                         };
                     };
                 };
