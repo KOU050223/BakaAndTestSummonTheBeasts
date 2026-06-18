@@ -67,7 +67,13 @@ module Api
       private
 
       def set_exam
-        @exam = ::Exam.find(params[:exam_id])
+        @exam = case current_user.role
+        when "student"
+          current_user.school_class&.exams&.find(params[:exam_id]) ||
+            raise(ActiveRecord::RecordNotFound)
+        else
+          ::Exam.find_by!(id: params[:exam_id], created_by: current_user)
+        end
       end
 
       def find_accessible_sheet
