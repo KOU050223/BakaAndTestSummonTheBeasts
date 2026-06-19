@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { $api } from "@/lib/api/client";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
-import { useClassmates } from "@/lib/battle/useClassmates";
+import { useOpponents } from "@/lib/battle/useOpponents";
 import { useSummon } from "@/lib/summon/useSummon";
 import { Button, Panel } from "@/components/ui";
 
@@ -14,7 +14,7 @@ import { Button, Panel } from "@/components/ui";
 export function DeclareWarScreen() {
   const router = useRouter();
   const { user } = useCurrentUser();
-  const { classmates } = useClassmates(user?.school_class?.id, user?.id);
+  const { opponents } = useOpponents();
   const { summons } = useSummon(user?.id);
 
   const [opponentId, setOpponentId] = useState<number | null>(null);
@@ -44,11 +44,11 @@ export function DeclareWarScreen() {
 
       <Panel className="p-5">
         <h2 className="mb-3 text-lg font-bold text-white">対戦相手を選ぶ</h2>
-        {classmates.length === 0 ? (
+        {opponents.length === 0 ? (
           <p className="text-slate-400">同じクラスに対戦できる生徒がいません。</p>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {classmates.map((s) => (
+            {opponents.map((s) => (
               <button
                 key={s.id}
                 type="button"

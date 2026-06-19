@@ -10,11 +10,11 @@ vi.mock("@/lib/auth/useCurrentUser", () => ({
   useCurrentUser: () => ({ user: { id: 1, school_class: { id: 10, name: "A" } } }),
 }));
 
-vi.mock("@/lib/battle/useClassmates", () => ({
-  useClassmates: () => ({
-    classmates: [
-      { id: 2, name: "明久", grade: 1, totalScore: 0, topSubject: { name: "数学", score: 0 } },
-      { id: 3, name: "雄二", grade: 1, totalScore: 0, topSubject: { name: "英語", score: 0 } },
+vi.mock("@/lib/battle/useOpponents", () => ({
+  useOpponents: () => ({
+    opponents: [
+      { id: 2, name: "明久" },
+      { id: 3, name: "雄二" },
     ],
     isLoading: false,
   }),
