@@ -264,6 +264,48 @@ paths:
               - email
               - password
         required: true
+  "/api/battles/opponents":
+    get:
+      summary: 対戦相手候補一覧取得
+      tags:
+      - Battles
+      security:
+      - cookie_auth: []
+      description: ログイン中の生徒と同じクラスの生徒一覧（自分は除く）。宣戦布告の相手選択に使う。
+      responses:
+        '200':
+          description: 対戦相手候補一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  opponents:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                      required:
+                      - id
+                      - name
+                required:
+                - opponents
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: 権限なし（school_admin は禁止）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/api/battles":
     get:
       summary: バトル一覧取得

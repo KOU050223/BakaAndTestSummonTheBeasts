@@ -1,6 +1,58 @@
 require "swagger_helper"
 
 RSpec.describe "Battles API", type: :request do
+  path "/api/battles/opponents" do
+    get "対戦相手候補一覧取得" do
+      tags "Battles"
+      produces "application/json"
+      security [ cookie_auth: [] ]
+      description "ログイン中の生徒と同じクラスの生徒一覧（自分は除く）。宣戦布告の相手選択に使う。"
+
+      response "200", "対戦相手候補一覧" do
+        schema type: :object,
+          properties: {
+            opponents: {
+              type: :array,
+              items: {
+                type: :object,
+                properties: {
+                  id:   { type: :integer },
+                  name: { type: :string }
+                },
+                required: %w[id name]
+              }
+            }
+          },
+          required: %w[opponents]
+
+        let(:school_class) { create(:school_class) }
+        let(:me) { create(:user) }
+        before do
+          create(:class_membership, user: me, school_class: school_class)
+          other = create(:user)
+          create(:class_membership, user: other, school_class: school_class)
+          cookies[:token] = JwtService.encode(user_id: me.id)
+        end
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          expect(body["opponents"].map { |o| o["id"] }).not_to include(me.id)
+          expect(body["opponents"].size).to eq(1)
+        end
+      end
+
+      response "401", "未認証" do
+        schema "$ref" => "#/components/schemas/error"
+        run_test!
+      end
+
+      response "403", "権限なし（school_admin は禁止）" do
+        schema "$ref" => "#/components/schemas/error"
+        before { cookies[:token] = JwtService.encode(user_id: create(:user, :school_admin).id) }
+        run_test!
+      end
+    end
+  end
+
   path "/api/battles" do
     get "バトル一覧取得" do
       tags "Battles"
