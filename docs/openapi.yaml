@@ -286,17 +286,19 @@ paths:
                       properties:
                         battleId:
                           type: string
-                        subjectId:
-                          type: string
+                        subjects:
+                          type: array
+                          items:
+                            type: string
                         status:
                           type: string
                         opponentName:
                           type: string
+                          nullable: true
                       required:
                       - battleId
-                      - subjectId
+                      - subjects
                       - status
-                      - opponentName
                 required:
                 - battles
         '401':
@@ -320,7 +322,7 @@ paths:
       parameters: []
       responses:
         '201':
-          description: 教師もバトル作成できる
+          description: バトル作成成功
           content:
             application/json:
               schema:
@@ -328,14 +330,22 @@ paths:
                 properties:
                   battleId:
                     type: string
-                  subjectId:
-                    type: string
+                  subjects:
+                    type: array
+                    items:
+                      type: string
                   status:
                     type: string
                 required:
                 - battleId
-                - subjectId
+                - subjects
                 - status
+        '422':
+          description: 対戦科目が空（バリデーションエラー）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: 未認証
           content:
@@ -354,11 +364,22 @@ paths:
             schema:
               type: object
               properties:
-                subjectId:
+                opponentId:
                   type: string
-                  example: math
+                  example: '2'
+                  description: 対戦相手の生徒ID
+                subjects:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                  - math
+                  - english
+                  - physics
+                  description: 対戦科目（召喚フィールド）
               required:
-              - subjectId
+              - opponentId
+              - subjects
         required: true
   "/api/battles/{id}/result":
     get:
@@ -386,8 +407,10 @@ paths:
                     type: string
                   winnerId:
                     type: string
+                    nullable: true
                   loserId:
                     type: string
+                    nullable: true
                   turnCount:
                     type: integer
                   logs:
@@ -413,18 +436,16 @@ paths:
                       - damage
                 required:
                 - battleId
-                - winnerId
-                - loserId
                 - turnCount
                 - logs
-        '401':
-          description: 未認証
+        '404':
+          description: バトルが存在しない
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
-        '403':
-          description: 権限なし（school_admin は禁止）
+        '401':
+          description: 未認証
           content:
             application/json:
               schema:

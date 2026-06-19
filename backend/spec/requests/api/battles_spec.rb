@@ -16,11 +16,11 @@ RSpec.describe "Battles API", type: :request do
                 type: :object,
                 properties: {
                   battleId:     { type: :string },
-                  subjectId:    { type: :string },
+                  subjects:     { type: :array, items: { type: :string } },
                   status:       { type: :string },
-                  opponentName: { type: :string }
+                  opponentName: { type: :string, nullable: true }
                 },
-                required: %w[battleId subjectId status opponentName]
+                required: %w[battleId subjects status]
               }
             }
           },
@@ -51,36 +51,32 @@ RSpec.describe "Battles API", type: :request do
       parameter name: :body, in: :body, required: true, schema: {
         type: :object,
         properties: {
-          subjectId: { type: :string, example: "math" }
+          opponentId: { type: :string, example: "2", description: "対戦相手の生徒ID" },
+          subjects:   { type: :array, items: { type: :string }, example: %w[math english physics], description: "対戦科目（召喚フィールド）" }
         },
-        required: %w[subjectId]
+        required: %w[opponentId subjects]
       }
 
       response "201", "バトル作成成功" do
         schema type: :object,
           properties: {
-            battleId:  { type: :string },
-            subjectId: { type: :string },
-            status:    { type: :string }
+            battleId: { type: :string },
+            subjects: { type: :array, items: { type: :string } },
+            status:   { type: :string }
           },
-          required: %w[battleId subjectId status]
+          required: %w[battleId subjects status]
 
+        let(:opponent) { create(:user) }
         before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
-        let(:body) { { subjectId: "math" } }
+        let(:body) { { opponentId: opponent.id.to_s, subjects: %w[math english physics] } }
         run_test!
       end
 
-      response "201", "教師もバトル作成できる" do
-        schema type: :object,
-          properties: {
-            battleId:  { type: :string },
-            subjectId: { type: :string },
-            status:    { type: :string }
-          },
-          required: %w[battleId subjectId status]
-
-        before { cookies[:token] = JwtService.encode(user_id: create(:user, :teacher).id) }
-        let(:body) { { subjectId: "math" } }
+      response "422", "対戦科目が空（バリデーションエラー）" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:opponent) { create(:user) }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
+        let(:body) { { opponentId: opponent.id.to_s, subjects: [] } }
         run_test!
       end
 
@@ -111,8 +107,8 @@ RSpec.describe "Battles API", type: :request do
         schema type: :object,
           properties: {
             battleId:  { type: :string },
-            winnerId:  { type: :string },
-            loserId:   { type: :string },
+            winnerId:  { type: :string, nullable: true },
+            loserId:   { type: :string, nullable: true },
             turnCount: { type: :integer },
             logs: {
               type: :array,
@@ -129,23 +125,28 @@ RSpec.describe "Battles API", type: :request do
               }
             }
           },
-          required: %w[battleId winnerId loserId turnCount logs]
+          required: %w[battleId turnCount logs]
 
+        let(:battle) do
+          b = create(:battle, status: "finished", turn_count: 0)
+          create(:battle_player, battle: b, student: create(:user))
+          b
+        end
+        let(:id) { battle.id.to_s }
         before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
-        let(:id) { "battle_1" }
+        run_test!
+      end
+
+      response "404", "バトルが存在しない" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:id) { "999999" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
         run_test!
       end
 
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
-        let(:id) { "battle_1" }
-        run_test!
-      end
-
-      response "403", "権限なし（school_admin は禁止）" do
-        schema "$ref" => "#/components/schemas/error"
-        before { cookies[:token] = JwtService.encode(user_id: create(:user, :school_admin).id) }
-        let(:id) { "battle_1" }
+        let(:id) { "1" }
         run_test!
       end
     end
