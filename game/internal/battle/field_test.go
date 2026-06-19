@@ -25,18 +25,20 @@ func TestFieldContains(t *testing.T) {
 }
 
 func TestSubjectAt(t *testing.T) {
-	fields := []Field{
-		{Subject: "math", CenterX: 5, CenterZ: 0, Radius: 3},
-		{Subject: "english", CenterX: -5, CenterZ: 0, Radius: 3},
-	}
+	t.Run("座標に対応する科目を取得しフィールド外では空文字を返す", func(t *testing.T) {
+		fields := []Field{
+			{Subject: "math", CenterX: 5, CenterZ: 0, Radius: 3},
+			{Subject: "english", CenterX: -5, CenterZ: 0, Radius: 3},
+		}
 
-	if got := SubjectAt(fields, 5, 0); got != "math" {
-		t.Errorf("math field expected, got %q", got)
-	}
-	if got := SubjectAt(fields, -5, 0); got != "english" {
-		t.Errorf("english field expected, got %q", got)
-	}
-	if got := SubjectAt(fields, 0, 0); got != "" {
-		t.Errorf("neutral expected (empty), got %q", got)
-	}
+		if got := SubjectAt(fields, 5, 0); got != "math" {
+			t.Errorf("math field expected, got %q", got)
+		}
+		if got := SubjectAt(fields, -5, 0); got != "english" {
+			t.Errorf("english field expected, got %q", got)
+		}
+		if got := SubjectAt(fields, 0, 0); got != "" {
+			t.Errorf("neutral expected (empty), got %q", got)
+		}
+	})
 }
