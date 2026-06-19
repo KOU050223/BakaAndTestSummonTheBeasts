@@ -6,7 +6,7 @@ RSpec.describe "Battles API", type: :request do
       tags "Battles"
       produces "application/json"
       security [ cookie_auth: [] ]
-      description "ログイン中の生徒と同じクラスの生徒一覧（自分は除く）。宣戦布告の相手選択に使う。"
+      description "対戦相手にできる生徒一覧（自分は除く、クラスを問わない）。宣戦布告の相手選択に使う。"
 
       response "200", "対戦相手候補一覧" do
         schema type: :object,
@@ -25,18 +25,18 @@ RSpec.describe "Battles API", type: :request do
           },
           required: %w[opponents]
 
-        let(:school_class) { create(:school_class) }
         let(:me) { create(:user) }
         before do
-          create(:class_membership, user: me, school_class: school_class)
-          other = create(:user)
-          create(:class_membership, user: other, school_class: school_class)
+          # クラスを問わず、他の生徒は全員候補になる。
+          create(:user)
+          create(:user)
           cookies[:token] = JwtService.encode(user_id: me.id)
         end
         run_test! do |response|
           body = JSON.parse(response.body)
-          expect(body["opponents"].map { |o| o["id"] }).not_to include(me.id)
-          expect(body["opponents"].size).to eq(1)
+          ids = body["opponents"].map { |o| o["id"] }
+          expect(ids).not_to include(me.id)
+          expect(ids.size).to eq(2)
         end
       end
 

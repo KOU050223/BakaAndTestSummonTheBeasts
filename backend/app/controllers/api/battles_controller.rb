@@ -15,11 +15,11 @@ module Api
       render json: { battles: battles.map { |b| index_json(b) } }, status: :ok
     end
 
-    # 対戦相手の候補一覧（ログイン生徒と同じクラスの生徒、自分は除く）。
-    # 宣戦布告の相手選択に使う。クラス未所属なら空配列。
+    # 対戦相手の候補一覧（自分以外の生徒全員、クラスを問わない）。
+    # 宣戦布告の相手選択に使う。
     def opponents
-      classmates = current_user.school_class&.students&.where&.not(id: current_user.id) || []
-      render json: { opponents: classmates.map { |s| { id: s.id, name: s.name } } }, status: :ok
+      candidates = User.where(role: "student").where.not(id: current_user.id).order(:id)
+      render json: { opponents: candidates.map { |s| { id: s.id, name: s.name } } }, status: :ok
     end
 
     def create

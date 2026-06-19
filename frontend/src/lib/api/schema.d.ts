@@ -408,7 +408,7 @@ export interface paths {
         };
         /**
          * 対戦相手候補一覧取得
-         * @description ログイン中の生徒と同じクラスの生徒一覧（自分は除く）。宣戦布告の相手選択に使う。
+         * @description 対戦相手にできる生徒一覧（自分は除く、クラスを問わない）。宣戦布告の相手選択に使う。
          */
         get: {
             parameters: {

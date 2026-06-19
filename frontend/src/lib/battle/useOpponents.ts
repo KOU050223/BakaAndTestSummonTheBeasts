@@ -6,8 +6,8 @@ import type { paths } from "@/lib/api/schema";
 export type Opponent =
   paths["/api/battles/opponents"]["get"]["responses"]["200"]["content"]["application/json"]["opponents"][number];
 
-// 対戦相手の候補一覧（自分と同じクラスの生徒、自分は除く）を取得する。
-// 除外・クラス絞り込みはバックエンド（GET /api/battles/opponents）が行う。
+// 対戦相手の候補一覧（自分以外の生徒全員、クラスを問わない）を取得する。
+// 自分の除外はバックエンド（GET /api/battles/opponents）が行う。
 export function useOpponents() {
   const { data, isLoading, isError, error } = $api.useQuery(
     "get",

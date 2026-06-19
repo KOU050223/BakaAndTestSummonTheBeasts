@@ -45,7 +45,7 @@ export function DeclareWarScreen() {
       <Panel className="p-5">
         <h2 className="mb-3 text-lg font-bold text-white">対戦相手を選ぶ</h2>
         {opponents.length === 0 ? (
-          <p className="text-slate-400">同じクラスに対戦できる生徒がいません。</p>
+          <p className="text-slate-400">対戦できる生徒がいません。</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {opponents.map((s) => (
