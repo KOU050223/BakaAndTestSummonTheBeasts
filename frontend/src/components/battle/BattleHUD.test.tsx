@@ -58,7 +58,7 @@ describe("BattleHUD", () => {
     fireEvent.pointerDown(up); // 押下
     expect(props.onMoveChange).toHaveBeenCalledWith("forward", true);
 
-    props.onMoveChange.mockClear();
+    vi.mocked(props.onMoveChange).mockClear();
     fireEvent.pointerUp(up); // 離し
     expect(props.onMoveChange).toHaveBeenCalledWith("forward", false);
   });
