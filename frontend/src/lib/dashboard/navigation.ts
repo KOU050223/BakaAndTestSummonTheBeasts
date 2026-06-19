@@ -33,8 +33,9 @@ export const NAV_BY_ROLE: Record<Role, NavSection[]> = {
       heading: "試召戦争",
       items: [
         { label: "宣戦布告", href: "/declare-war", icon: "⚔️" },
-        // バトル画面（フェーズ1: 3D表示デモ）。本来は宣戦布告から battleId 付きで遷移する。
-        { label: "バトル", href: "/wars/demo/battle", icon: "🎮" },
+        // バトル一覧（入室導線）。宣戦布告で作成したバトルや、相手から挑まれた
+        // 待機中バトルがここに並ぶ。個別バトルは /wars/:id/battle。
+        { label: "バトル", href: "/wars", icon: "🎮" },
         { label: "戦績", href: "/records", icon: "🏆" },
       ],
     },
