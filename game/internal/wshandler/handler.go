@@ -65,7 +65,7 @@ func (h *Handler) handleBattle(c *gin.Context) {
 
 // readLoop は接続から input メッセージを読み続け、最新入力としてルームに反映する。
 func (h *Handler) readLoop(rt *roomRuntime, userID string, ws *websocket.Conn) {
-	defer ws.Close()
+	defer func() { _ = ws.Close() }()
 	for {
 		var msg InputMessage
 		if err := ws.ReadJSON(&msg); err != nil {
