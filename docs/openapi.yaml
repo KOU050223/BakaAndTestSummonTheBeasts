@@ -450,6 +450,51 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/api/battles/{id}/token":
+    get:
+      summary: WebSocket接続用トークン発行
+      tags:
+      - Battles
+      security:
+      - cookie_auth: []
+      description: Go Game Server への WebSocket 接続に使う JWT を発行する。バトルの参加者にのみ発行する。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: バトルID
+        schema:
+          type: string
+      responses:
+        '200':
+          description: トークン発行成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                required:
+                - token
+        '403':
+          description: バトルの参加者でない
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: バトルが存在しない
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/api/classes/assignments":
     patch:
       summary: クラス振り分けの一括反映

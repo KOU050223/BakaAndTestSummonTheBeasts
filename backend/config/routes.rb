@@ -49,6 +49,7 @@ Rails.application.routes.draw do
     resources :battles, only: [ :index, :create ] do
       member do
         get :result
+        get :token
       end
     end
   end

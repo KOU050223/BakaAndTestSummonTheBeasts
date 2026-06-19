@@ -151,4 +151,54 @@ RSpec.describe "Battles API", type: :request do
       end
     end
   end
+
+  path "/api/battles/{id}/token" do
+    get "WebSocket接続用トークン発行" do
+      tags "Battles"
+      produces "application/json"
+      security [ cookie_auth: [] ]
+      description "Go Game Server への WebSocket 接続に使う JWT を発行する。バトルの参加者にのみ発行する。"
+
+      parameter name: :id, in: :path, type: :string, required: true, description: "バトルID"
+
+      response "200", "トークン発行成功" do
+        schema type: :object,
+          properties: {
+            token: { type: :string }
+          },
+          required: %w[token]
+
+        let(:student) { create(:user) }
+        let(:battle) do
+          b = create(:battle)
+          create(:battle_player, battle: b, student: student)
+          b
+        end
+        let(:id) { battle.id.to_s }
+        before { cookies[:token] = JwtService.encode(user_id: student.id) }
+        run_test!
+      end
+
+      response "403", "バトルの参加者でない" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:battle) { create(:battle) }
+        let(:id) { battle.id.to_s }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
+        run_test!
+      end
+
+      response "404", "バトルが存在しない" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:id) { "999999" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
+        run_test!
+      end
+
+      response "401", "未認証" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:id) { "1" }
+        run_test!
+      end
+    end
+  end
 end

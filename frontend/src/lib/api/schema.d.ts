@@ -425,9 +425,9 @@ export interface paths {
                         "application/json": {
                             battles: {
                                 battleId: string;
-                                subjectId: string;
+                                subjects: string[];
                                 status: string;
-                                opponentName: string;
+                                opponentName?: string | null;
                             }[];
                         };
                     };
@@ -464,13 +464,25 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        /** @example math */
-                        subjectId: string;
+                        /**
+                         * @description 対戦相手の生徒ID
+                         * @example 2
+                         */
+                        opponentId: string;
+                        /**
+                         * @description 対戦科目（召喚フィールド）
+                         * @example [
+                         *       "math",
+                         *       "english",
+                         *       "physics"
+                         *     ]
+                         */
+                        subjects: string[];
                     };
                 };
             };
             responses: {
-                /** @description 教師もバトル作成できる */
+                /** @description バトル作成成功 */
                 201: {
                     headers: {
                         [name: string]: unknown;
@@ -478,7 +490,7 @@ export interface paths {
                     content: {
                         "application/json": {
                             battleId: string;
-                            subjectId: string;
+                            subjects: string[];
                             status: string;
                         };
                     };
@@ -494,6 +506,15 @@ export interface paths {
                 };
                 /** @description 権限なし（school_admin は禁止） */
                 403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description 対戦科目が空（バリデーションエラー） */
+                422: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -537,8 +558,8 @@ export interface paths {
                     content: {
                         "application/json": {
                             battleId: string;
-                            winnerId: string;
-                            loserId: string;
+                            winnerId?: string | null;
+                            loserId?: string | null;
                             turnCount: number;
                             logs: {
                                 turn: number;
@@ -559,8 +580,79 @@ export interface paths {
                         "application/json": components["schemas"]["error"];
                     };
                 };
-                /** @description 権限なし（school_admin は禁止） */
+                /** @description バトルが存在しない */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/battles/{id}/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * WebSocket接続用トークン発行
+         * @description Go Game Server への WebSocket 接続に使う JWT を発行する。バトルの参加者にのみ発行する。
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description バトルID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description トークン発行成功 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            token: string;
+                        };
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description バトルの参加者でない */
                 403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description バトルが存在しない */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
