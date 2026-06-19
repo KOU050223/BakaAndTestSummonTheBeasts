@@ -54,7 +54,7 @@ func TestStepAttackCooldown(t *testing.T) {
 	r := newTestRoom()
 	r.Players["A"].Summoned = true
 
-	r.Step(map[string]Input{"A": {Attack: true}}) // 命中
+	r.Step(map[string]Input{"A": {Attack: true}})           // 命中
 	events := r.Step(map[string]Input{"A": {Attack: true}}) // クールダウン中
 	if len(events) != 0 {
 		t.Errorf("クールダウン中は攻撃できないはず: %d件", len(events))

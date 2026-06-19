@@ -10,8 +10,8 @@ func TestDamage(t *testing.T) {
 		attack, defense, want int
 	}{
 		{30, 12, 18},
-		{10, 10, 1},  // 同値でも最低1
-		{5, 20, 1},   // 防御過剰でも最低1
+		{10, 10, 1}, // 同値でも最低1
+		{5, 20, 1},  // 防御過剰でも最低1
 		{40, 0, 40},
 	}
 	for _, c := range cases {
@@ -60,9 +60,9 @@ func TestInAttackRange(t *testing.T) {
 	attacker := NewPlayer("1", "A", 0, 0, nil)
 	attacker.Angle = 0
 
-	front := NewPlayer("2", "B", 1, 0, nil)  // 正面1m
-	back := NewPlayer("3", "C", -1, 0, nil)  // 真後ろ1m
-	far := NewPlayer("4", "D", 5, 0, nil)    // 正面だが5m先
+	front := NewPlayer("2", "B", 1, 0, nil) // 正面1m
+	back := NewPlayer("3", "C", -1, 0, nil) // 真後ろ1m
+	far := NewPlayer("4", "D", 5, 0, nil)   // 正面だが5m先
 
 	rangeDist, frontDot := 2.0, 0.5
 

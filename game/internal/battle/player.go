@@ -14,12 +14,12 @@ type Summon struct {
 
 // Player はバトル参加者の権威的状態。位置・向きはサーバーが tick で更新する。
 type Player struct {
-	UserID  string
-	Name    string
-	X       float64
-	Z       float64
-	Angle   float64 // Y軸回りの向き（ラジアン）。0 は +X 方向。
-	Summoned bool   // 召喚獣が場に出ているか
+	UserID   string
+	Name     string
+	X        float64
+	Z        float64
+	Angle    float64 // Y軸回りの向き（ラジアン）。0 は +X 方向。
+	Summoned bool    // 召喚獣が場に出ているか
 
 	// 科目ごとの召喚獣。いずれか1つでも HP が 0 になると敗北。
 	Summons map[string]*Summon
