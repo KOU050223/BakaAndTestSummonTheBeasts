@@ -79,7 +79,7 @@ export function BattleScreen({ battleId, token, currentUserId, onExit }: BattleS
 
   return (
     <div className="relative h-full w-full overflow-hidden">
-      <BattleScene state={state} />
+      <BattleScene state={state} currentUserId={currentUserId} />
       <WaitingOverlay show={state === null} />
       {self && (
         <BattleHUD
