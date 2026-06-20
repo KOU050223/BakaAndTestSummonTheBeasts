@@ -100,27 +100,47 @@ func (r *Room) applyAttack(actorID string, actor *Player, in Input) (AttackEvent
 	// クライアントで攻撃モーションを再生させる。
 	actor.Attacking = true
 
-	for targetID, target := range r.Players {
-		if targetID == actorID {
+	// 自分以外で、攻撃範囲・正面条件を満たす対象のうち最も近い1体を選ぶ。
+	// map の反復順は非決定的なため、最近接で一意に決める（N:N の公平性）。
+	targetID, target, targetSummon := r.nearestTarget(actorID, actor)
+	if target == nil {
+		return AttackEvent{}, false
+	}
+
+	dmg := Damage(attackerSummon.Attack, targetSummon.Defense)
+	targetSummon.HP -= dmg
+	if targetSummon.HP < 0 {
+		targetSummon.HP = 0
+	}
+	r.cooldowns[actorID] = r.cooldown(attackerSummon)
+	return AttackEvent{Turn: r.Tick, ActorID: actorID, TargetID: targetID, Damage: dmg}, true
+}
+
+// nearestTarget は actor が攻撃可能な対象のうち最も近い1体を返す。
+// 「自分以外全員」が対象（味方含む）。誰も該当しなければ target は nil。
+func (r *Room) nearestTarget(actorID string, actor *Player) (string, *Player, *Summon) {
+	var bestID string
+	var best *Player
+	var bestSummon *Summon
+	bestDist := math.Inf(1)
+
+	for id, candidate := range r.Players {
+		if id == actorID {
 			continue
 		}
-		targetSummon := target.ActiveSummon(r.Fields)
-		if targetSummon == nil {
+		summon := candidate.ActiveSummon(r.Fields)
+		if summon == nil {
 			continue // 相手が中立地帯なら戦闘不可
 		}
-		if !InAttackRange(actor, target, r.Config.AttackRange, r.Config.FrontDot) {
+		if !InAttackRange(actor, candidate, r.Config.AttackRange, r.Config.FrontDot) {
 			continue
 		}
-
-		dmg := Damage(attackerSummon.Attack, targetSummon.Defense)
-		targetSummon.HP -= dmg
-		if targetSummon.HP < 0 {
-			targetSummon.HP = 0
+		dist := math.Hypot(candidate.X-actor.X, candidate.Z-actor.Z)
+		if dist < bestDist {
+			bestDist, bestID, best, bestSummon = dist, id, candidate, summon
 		}
-		r.cooldowns[actorID] = r.cooldown(attackerSummon)
-		return AttackEvent{Turn: r.Tick, ActorID: actorID, TargetID: targetID, Damage: dmg}, true
 	}
-	return AttackEvent{}, false
+	return bestID, best, bestSummon
 }
 
 // cooldown は素早さに反比例した攻撃クールタイム（tick数）。
@@ -132,23 +152,79 @@ func (r *Room) cooldown(s *Summon) int {
 	return cd
 }
 
-// checkVictory はいずれかのプレイヤーが敗北していれば決着を確定する。
+// checkVictory はチーム単位で決着を判定する。
+// あるチームの全員が脱落（または LeaderRule 下でリーダーが脱落）し、
+// かつ生存している他チームが1つだけ残った時点で決着を確定する。
 func (r *Room) checkVictory() {
-	var defeated []string
-	for id, p := range r.Players {
-		if p.Defeated() {
-			defeated = append(defeated, id)
-		}
-	}
-	if len(defeated) == 0 {
+	if len(r.Players) == 0 {
 		return
 	}
 
+	// チームごとに「生存者がいるか」「リーダーが生存しているか」を集計する。
+	alive := make(map[string]bool)
+	leaderAlive := make(map[string]bool)
+	hasLeader := make(map[string]bool)
+	for _, p := range r.Players {
+		team := r.teamKey(p)
+		if _, ok := alive[team]; !ok {
+			alive[team] = false
+		}
+		if !p.Defeated() {
+			alive[team] = true
+		}
+		if p.Leader {
+			hasLeader[team] = true
+			if !p.Defeated() {
+				leaderAlive[team] = true
+			}
+		}
+	}
+
+	// 各チームの敗北状態を判定する。
+	var survivors []string
+	var defeatedTeams []string
+	for team := range alive {
+		lost := !alive[team]
+		if r.LeaderRule && hasLeader[team] && !leaderAlive[team] {
+			lost = true // リーダー撃破で全滅前でも敗北。
+		}
+		if lost {
+			defeatedTeams = append(defeatedTeams, team)
+		} else {
+			survivors = append(survivors, team)
+		}
+	}
+
+	// 1チームも脱落していなければ続行。
+	if len(defeatedTeams) == 0 {
+		return
+	}
+	// 全チームが同時脱落した場合（引き分け相当）も決着扱いにする。
+	if len(survivors) > 1 {
+		return // 勝者が確定していないので続行。
+	}
+
 	r.Finished = true
-	r.LoserID = defeated[0]
-	for id := range r.Players {
-		if id != r.LoserID {
-			r.WinnerID = id
+	r.LoserTeam = defeatedTeams[0]
+	if len(survivors) == 1 {
+		r.WinnerTeam = survivors[0]
+	}
+	r.assignRepresentativeIDs()
+}
+
+// assignRepresentativeIDs は finished 通知の後方互換用に、勝敗チームの代表
+// プレイヤーIDを WinnerID/LoserID へ設定する（主に1:1表示向け）。
+func (r *Room) assignRepresentativeIDs() {
+	for id, p := range r.Players {
+		switch r.teamKey(p) {
+		case r.WinnerTeam:
+			if r.WinnerID == "" {
+				r.WinnerID = id
+			}
+		case r.LoserTeam:
+			if r.LoserID == "" {
+				r.LoserID = id
+			}
 		}
 	}
 }
