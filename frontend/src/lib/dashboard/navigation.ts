@@ -58,7 +58,7 @@ export const NAV_BY_ROLE: Record<Role, NavSection[]> = {
     {
       heading: "システム管理",
       items: [
-        { label: "管理者ダッシュボード", href: "/admin", icon: "🖥️" },
+        { label: "管理者ダッシュボード", href: "/", icon: "🖥️" },
         { label: "ユーザー管理", href: "/admin/users", icon: "👤" },
         { label: "クラス設定", href: "/admin/classes", icon: "🏫" },
       ],
