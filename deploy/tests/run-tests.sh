@@ -9,6 +9,7 @@ for test_script in \
   image-config-test.sh \
   install-backend-test.sh \
   quadlet-test.sh \
+  taskfile-test.sh \
   workflow-test.sh; do
   "$TEST_DIR/$test_script"
 done

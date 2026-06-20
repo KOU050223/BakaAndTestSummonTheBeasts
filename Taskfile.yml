@@ -263,6 +263,24 @@ tasks:
     dir: ./backend
     cmd: bundle exec rails db:seed
 
+  db:seed:demo:
+    desc: デモ環境用の初期データを明示的に投入する
+    dir: ./backend
+    cmd: bundle exec rails db:seed:demo
+
+  deploy:seed:demo:
+    desc: デプロイ先へデモ環境用の初期データを投入する
+    cmd: |
+      deploy_env_file="${DEPLOY_ENV_FILE:-$HOME/.config/baka/backend.env}"
+      if [ ! -r "$deploy_env_file" ]; then
+        echo "deployment environment file is not readable: $deploy_env_file" >&2
+        exit 2
+      fi
+      podman run --rm --network=host \
+        --env-file "$deploy_env_file" \
+        localhost/baka-backend:current \
+        ./bin/rails db:seed:demo
+
   db:setup:
     desc: DB作成・マイグレーション・シードをまとめて実行する
     dir: ./backend
