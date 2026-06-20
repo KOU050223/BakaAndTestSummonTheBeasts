@@ -237,7 +237,7 @@ function ClassCard({
           {schoolClass.averageScore.toLocaleString()}
         </span>
       </div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-black/10">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--dashboard-bar-bg)]">
         <div
           className="h-full rounded-full bg-gradient-to-r from-[#7a1f18] to-[#c49a4b]"
           style={{ width: `${ratio * 100}%` }}
@@ -288,7 +288,7 @@ function StudentTable({
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="border-b border-[#2d1a0f] bg-[#3a281d] text-left text-xs font-bold tracking-wide text-[#f4e4bd]">
+              <tr className="border-b border-[var(--dashboard-border)] bg-[var(--dashboard-table-header-bg)] text-left text-xs font-bold tracking-wide text-[var(--dashboard-table-header-text)]">
                 <th className="px-3 py-2">氏名</th>
                 <th className="px-3 py-2">総合スコア</th>
                 <th className="px-3 py-2">最高科目</th>

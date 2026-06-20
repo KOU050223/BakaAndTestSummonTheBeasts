@@ -13,6 +13,14 @@
   --dashboard-shadow: 5px 7px 0 rgb(34 32 26 / 34%), inset 0 0 24px rgb(88 62 35 / 18%);
   --dashboard-blur: 0px;
   --dashboard-panel-transform: rotate(-0.15deg);
+  --dashboard-bar-bg: rgb(41 39 31 / 20%);
+  --dashboard-score-good: #315b42;
+  --dashboard-score-warn: #70400e;
+  --dashboard-score-warn-soft: rgb(112 64 14 / 12%);
+  --dashboard-score-warn-border: rgb(112 64 14 / 34%);
+  --dashboard-score-bad: #8f2929;
+  --dashboard-score-bad-soft: rgb(143 41 41 / 11%);
+  --dashboard-score-bad-border: rgb(143 41 41 / 34%);
 }
 
 /* Eクラス: 傷んだ木材、ひび、わら半紙、不揃いな配置。 */
@@ -61,6 +69,7 @@
   --dashboard-accent: #f1dfaf;
   --dashboard-accent-soft: rgb(239 220 169 / 13%);
   --dashboard-border: rgb(46 36 25 / 72%);
+
   position: relative;
   background:
     repeating-linear-gradient(92deg, transparent 0 54px, rgb(38 27 18 / 18%) 55px 58px),
@@ -115,4 +124,3 @@
   background: #514334;
   box-shadow: none;
 }
-

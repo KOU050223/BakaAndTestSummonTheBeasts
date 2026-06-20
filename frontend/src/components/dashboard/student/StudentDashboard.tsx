@@ -61,7 +61,7 @@ export function StudentDashboard() {
   if (userLoading) {
     return (
       <Panel className="mx-auto max-w-2xl">
-        <p role="status" className="animate-pulse py-16 text-center text-sky-300">
+        <p role="status" className="animate-pulse py-16 text-center text-[var(--dashboard-accent)]">
           生徒情報を読み込み中…
         </p>
       </Panel>
@@ -71,7 +71,7 @@ export function StudentDashboard() {
   if (userError) {
     return (
       <Panel className="mx-auto max-w-2xl">
-        <p role="alert" className="py-16 text-center text-red-300">
+        <p role="alert" className="py-16 text-center text-[var(--dashboard-score-bad)]">
           生徒情報の取得に失敗しました
         </p>
       </Panel>
@@ -142,7 +142,7 @@ export function StudentDashboard() {
       {(scoresError || summonsError) && (
         <div
           role="alert"
-          className="rounded-md border border-red-400/40 bg-red-500/10 px-4 py-3 text-sm text-red-200"
+          className="rounded-md border border-[var(--dashboard-score-bad-border)] bg-[var(--dashboard-score-bad-soft)] px-4 py-3 text-sm text-[var(--dashboard-score-bad)]"
         >
           一部の学習データを取得できませんでした。時間をおいて再読み込みしてください。
         </div>
@@ -186,13 +186,13 @@ export function StudentDashboard() {
             ) : featuredSummon ? (
               <div className="theme-card flex items-center gap-5 p-4">
                 <div className="relative flex h-32 w-28 shrink-0 items-center justify-center">
-                  <div className="absolute h-24 w-24 rounded-full bg-sky-400/25 blur-2xl" />
+                  <div className="absolute h-24 w-24 rounded-full bg-[var(--dashboard-accent-soft)] blur-2xl" />
                   <Image
                     src={summonImage(featuredSummon.code)}
                     alt={`${user.name}の召喚獣`}
                     width={96}
                     height={128}
-                    className="relative h-auto max-h-28 w-auto drop-shadow-[0_0_14px_rgba(56,189,248,0.6)]"
+                    className="theme-summon-image relative h-auto max-h-28 w-auto"
                   />
                 </div>
                 <div className="min-w-0 flex-1">

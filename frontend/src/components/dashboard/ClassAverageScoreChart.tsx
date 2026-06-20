@@ -163,7 +163,7 @@ function ScoreBar({
     <div className="flex items-center gap-4">
       <div className="w-40 shrink-0 text-sm text-[var(--dashboard-muted)]">{label}</div>
       <div className="flex-1">
-        <div className="h-4 overflow-hidden rounded-sm bg-black/10">
+        <div className="h-4 overflow-hidden rounded-sm bg-[var(--dashboard-bar-bg)]">
           <div
             className={`h-4 transition-all duration-300 ${barClass}`}
             style={{ width: `${ratio * 100}%` }}
@@ -191,7 +191,7 @@ function SubjectAverageBar({
     <div className="flex items-center gap-4">
       <div className="w-40 shrink-0 text-sm text-[var(--dashboard-muted)]">{subjectAverage.subjectLabel}</div>
       <div className="flex-1">
-        <div className="h-3 overflow-hidden rounded-sm bg-black/10">
+        <div className="h-3 overflow-hidden rounded-sm bg-[var(--dashboard-bar-bg)]">
           <div
             className={`h-3 transition-all duration-300 ${barClass}`}
             style={{ width: `${ratio * 100}%` }}

@@ -15,6 +15,9 @@
   --dashboard-radius: 0.18rem;
   --dashboard-shadow: 0 10px 24px rgb(19 9 4 / 42%), inset 0 0 30px rgb(104 70 34 / 10%);
   --dashboard-blur: 0px;
+  --dashboard-table-header-bg: #3a281d;
+  --dashboard-table-header-text: #f4e4bd;
+  --dashboard-bar-bg: rgb(44 27 14 / 18%);
 }
 
 [data-theme="admin"] .theme-panel {
@@ -71,6 +74,7 @@
   --dashboard-accent: #f3d18a;
   --dashboard-accent-soft: rgb(243 209 138 / 12%);
   --dashboard-border: rgb(194 151 82 / 48%);
+
   position: relative;
   background:
     repeating-linear-gradient(90deg, transparent 0 58px, rgb(10 5 2 / 18%) 59px 62px),

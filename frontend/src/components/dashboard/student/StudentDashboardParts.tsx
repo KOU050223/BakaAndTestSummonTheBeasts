@@ -22,8 +22,9 @@ export function SummaryPanel({
   color: "sky" | "amber";
 }) {
   const colorClass = {
-    sky: "text-sky-300 border-sky-400/25 bg-sky-400/10",
-    amber: "text-amber-300 border-amber-400/25 bg-amber-400/10",
+    sky: "text-[var(--dashboard-accent)] border-[var(--dashboard-border)] bg-[var(--dashboard-accent-soft)]",
+    amber:
+      "text-[var(--dashboard-score-warn)] border-[var(--dashboard-score-warn-border)] bg-[var(--dashboard-score-warn-soft)]",
   }[color];
 
   return (
@@ -74,10 +75,10 @@ export function RecentScoreRow({ score }: { score: MyScore }) {
     score.max_score > 0 ? Math.round((score.score / score.max_score) * 100) : 0;
   const scoreClass =
     percentage >= 80
-      ? "text-emerald-300"
+      ? "text-[var(--dashboard-score-good)]"
       : percentage >= 60
-        ? "text-amber-300"
-        : "text-red-300";
+        ? "text-[var(--dashboard-score-warn)]"
+        : "text-[var(--dashboard-score-bad)]";
 
   return (
     <div className="theme-card flex items-center gap-4 px-4 py-3">
@@ -97,7 +98,7 @@ export function RecentScoreRow({ score }: { score: MyScore }) {
 
 export function SummonStat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="flex items-center justify-between gap-2 border-b border-sky-400/10 pb-1">
+    <div className="flex items-center justify-between gap-2 border-b border-[var(--dashboard-border)]/20 pb-1">
       <span className="text-[var(--dashboard-muted)]">{label}</span>
       <span className="font-black text-[var(--dashboard-accent)]">{value}</span>
     </div>
@@ -106,7 +107,7 @@ export function SummonStat({ label, value }: { label: string; value: number }) {
 
 export function LoadingMessage({ children }: { children: ReactNode }) {
   return (
-    <p className="animate-pulse py-12 text-center text-sm text-sky-300">
+    <p className="animate-pulse py-12 text-center text-sm text-[var(--dashboard-accent)]">
       {children}
     </p>
   );

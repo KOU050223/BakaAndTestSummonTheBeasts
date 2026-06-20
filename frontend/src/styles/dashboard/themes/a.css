@@ -14,6 +14,7 @@
   --dashboard-radius: 1.25rem;
   --dashboard-shadow: 0 24px 70px rgb(71 85 105 / 18%), inset 0 1px rgb(255 255 255 / 85%);
   --dashboard-blur: 24px;
+  --dashboard-bar-bg: rgb(0 0 0 / 12%);
 }
 
 /* Aクラスは白大理石の上にピアノブラックの光沢パネルを重ねる。 */
@@ -26,6 +27,13 @@
   --dashboard-accent: #67e8f9;
   --dashboard-accent-soft: rgb(103 232 249 / 11%);
   --dashboard-border: rgb(203 213 225 / 52%);
+  --dashboard-score-good: #86efac;
+  --dashboard-score-warn: #fcd34d;
+  --dashboard-score-warn-soft: rgb(252 211 77 / 12%);
+  --dashboard-score-warn-border: rgb(252 211 77 / 35%);
+  --dashboard-score-bad: #fca5a5;
+  --dashboard-score-bad-soft: rgb(252 165 165 / 12%);
+  --dashboard-score-bad-border: rgb(252 165 165 / 38%);
 }
 
 [data-theme="a"] .theme-panel {
@@ -63,6 +71,7 @@
   --dashboard-accent: #513406;
   --dashboard-accent-soft: rgb(255 248 205 / 38%);
   --dashboard-border: rgb(112 76 17 / 58%);
+
   position: relative;
   background:
     linear-gradient(105deg, transparent 8%, rgb(255 255 255 / 54%) 22%, transparent 38% 68%, rgb(255 247 190 / 32%) 82%, transparent 94%),
@@ -118,4 +127,3 @@
   background: linear-gradient(145deg, #3c290a, #936719);
   box-shadow: 0 0 0 2px #f9dc7a, 0 4px 12px rgb(72 44 5 / 28%);
 }
-

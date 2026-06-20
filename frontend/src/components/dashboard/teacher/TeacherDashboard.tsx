@@ -206,7 +206,7 @@ export function TeacherDashboard() {
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-[#2d1a0f] bg-[#3a281d] text-xs uppercase tracking-wider text-[#f4e4bd]">
+                <tr className="border-b border-[var(--dashboard-border)] bg-[var(--dashboard-table-header-bg)] text-xs uppercase tracking-wider text-[var(--dashboard-table-header-text)]">
                   <th className="px-3 py-3 font-semibold">試験名</th>
                   <th className="px-3 py-3 font-semibold">科目</th>
                   <th className="px-3 py-3 font-semibold">模範解答</th>

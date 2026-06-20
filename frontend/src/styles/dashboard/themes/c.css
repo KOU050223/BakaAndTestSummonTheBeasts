@@ -11,6 +11,14 @@
   --dashboard-radius: 0.45rem;
   --dashboard-shadow: 0 5px 14px rgb(48 58 53 / 16%), inset 0 1px #ffffff;
   --dashboard-blur: 0px;
+  --dashboard-bar-bg: rgb(39 51 47 / 14%);
+  --dashboard-score-good: #047857;
+  --dashboard-score-warn: #92400e;
+  --dashboard-score-warn-soft: rgb(146 64 14 / 10%);
+  --dashboard-score-warn-border: rgb(146 64 14 / 30%);
+  --dashboard-score-bad: #b91c1c;
+  --dashboard-score-bad-soft: rgb(185 28 28 / 10%);
+  --dashboard-score-bad-border: rgb(185 28 28 / 30%);
 }
 
 /* Cクラスは量産型の成形プラスチックと平滑な木製備品。 */
@@ -49,6 +57,7 @@
   --dashboard-accent: #234f3f;
   --dashboard-accent-soft: rgb(255 255 255 / 25%);
   --dashboard-border: rgb(78 57 39 / 34%);
+
   position: relative;
   background:
     repeating-linear-gradient(0deg, transparent 0 72px, rgb(84 54 31 / 5%) 73px 74px),
@@ -103,4 +112,3 @@
   background: #356b57;
   box-shadow: none;
 }
-

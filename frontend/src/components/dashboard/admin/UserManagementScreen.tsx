@@ -11,9 +11,9 @@ import { UserFormModal, type UserFormValues } from "./UserFormModal";
 
 // ロールバッジの配色。
 const roleBadgeClass: Record<Role, string> = {
-  student: "bg-sky-100 border border-sky-700/40 text-sky-900",
-  teacher: "bg-violet-100 border border-violet-700/40 text-violet-900",
-  school_admin: "bg-amber-100 border border-amber-700/40 text-amber-900",
+  student: "bg-amber-100 border border-amber-800/40 text-amber-950",
+  teacher: "bg-orange-100 border border-orange-800/40 text-orange-950",
+  school_admin: "bg-rose-100 border border-rose-800/40 text-rose-950",
 };
 
 // 絞り込みフィルタ（"all" は全件）。
@@ -187,7 +187,7 @@ export function UserManagementScreen({
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-[#2d1a0f] bg-[#3a281d] text-xs uppercase tracking-wider text-[#f4e4bd]">
+                <tr className="border-b border-[var(--dashboard-border)] bg-[var(--dashboard-table-header-bg)] text-xs uppercase tracking-wider text-[var(--dashboard-table-header-text)]">
                   <th className="px-5 py-3 font-semibold">氏名</th>
                   <th className="px-5 py-3 font-semibold">メールアドレス</th>
                   <th className="px-5 py-3 font-semibold">ロール</th>

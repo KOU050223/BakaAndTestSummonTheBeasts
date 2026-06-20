@@ -12,6 +12,7 @@
   --dashboard-radius: 0.75rem;
   --dashboard-shadow: 0 12px 28px rgb(30 64 175 / 12%);
   --dashboard-blur: 4px;
+  --dashboard-bar-bg: rgb(255 255 255 / 14%);
 }
 
 /* Bクラスは黒いスマートボードと銀色の機材フレーム。 */
@@ -25,6 +26,13 @@
   --dashboard-accent-soft: rgb(226 229 228 / 9%);
   --dashboard-border: #aeb4b4;
   --dashboard-radius: 0.35rem;
+  --dashboard-score-good: #86efac;
+  --dashboard-score-warn: #fcd34d;
+  --dashboard-score-warn-soft: rgb(252 211 77 / 12%);
+  --dashboard-score-warn-border: rgb(252 211 77 / 35%);
+  --dashboard-score-bad: #fca5a5;
+  --dashboard-score-bad-soft: rgb(252 165 165 / 12%);
+  --dashboard-score-bad-border: rgb(252 165 165 / 38%);
 }
 
 [data-theme="b"] .theme-panel {
@@ -68,6 +76,7 @@
   --dashboard-accent: #171a1c;
   --dashboard-accent-soft: rgb(255 255 255 / 30%);
   --dashboard-border: rgb(59 65 68 / 55%);
+
   position: relative;
   background:
     linear-gradient(105deg, #92999c, #f2f4f3 19%, #aeb4b6 43%, #eef0ef 67%, #858d90),
@@ -123,4 +132,3 @@
   background: linear-gradient(145deg, #151819, #555c5f);
   box-shadow: 0 0 0 2px #dce0df, 0 4px 11px rgb(0 0 0 / 30%);
 }
-

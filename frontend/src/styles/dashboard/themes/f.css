@@ -14,6 +14,14 @@
   --dashboard-shadow: 5px 6px 0 rgb(41 27 15 / 50%), inset 0 0 45px rgb(67 42 20 / 30%);
   --dashboard-blur: 0px;
   --dashboard-panel-transform: rotate(-0.1deg);
+  --dashboard-bar-bg: rgb(255 248 223 / 20%);
+  --dashboard-score-good: #bbf7d0;
+  --dashboard-score-warn: #fde68a;
+  --dashboard-score-warn-soft: rgb(253 230 138 / 13%);
+  --dashboard-score-warn-border: rgb(253 230 138 / 38%);
+  --dashboard-score-bad: #fecaca;
+  --dashboard-score-bad-soft: rgb(254 202 202 / 12%);
+  --dashboard-score-bad-border: rgb(254 202 202 / 38%);
 }
 
 [data-theme="f"] .theme-panel::before {
@@ -46,6 +54,7 @@
 [data-theme="f"] .dashboard-sidebar {
   --dashboard-text: #f3e3bd;
   --dashboard-muted: #d2b98b;
+
   background:
     repeating-linear-gradient(90deg, transparent 0 62px, rgb(42 26 14 / 12%) 63px 65px),
     linear-gradient(90deg, #49331f, #322317);

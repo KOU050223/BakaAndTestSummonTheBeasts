@@ -233,7 +233,7 @@ function AdminBattleLog() {
               aria-label="試召戦争ログ"
               className="min-w-[980px] w-full text-sm"
             >
-              <thead className="border-b border-[#2d1a0f] bg-[#3a281d] text-left text-xs uppercase tracking-wider text-[#f4e4bd]">
+              <thead className="border-b border-[var(--dashboard-border)] bg-[var(--dashboard-table-header-bg)] text-left text-xs uppercase tracking-wider text-[var(--dashboard-table-header-text)]">
                 <tr>
                   <th className="px-5 py-4 font-bold">日時</th>
                   <th className="px-5 py-4 font-bold">仕掛け側</th>

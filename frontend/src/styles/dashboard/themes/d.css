@@ -12,6 +12,14 @@
   --dashboard-radius: 0.18rem;
   --dashboard-shadow: 3px 5px 10px rgb(42 43 36 / 24%), inset 0 1px rgb(255 255 255 / 35%);
   --dashboard-blur: 0px;
+  --dashboard-bar-bg: rgb(56 57 48 / 16%);
+  --dashboard-score-good: #35624c;
+  --dashboard-score-warn: #7c4a12;
+  --dashboard-score-warn-soft: rgb(124 74 18 / 11%);
+  --dashboard-score-warn-border: rgb(124 74 18 / 32%);
+  --dashboard-score-bad: #9f2f2f;
+  --dashboard-score-bad-soft: rgb(159 47 47 / 10%);
+  --dashboard-score-bad-border: rgb(159 47 47 / 32%);
 }
 
 /* Dクラス: 色褪せた内装と、ひと昔前の事務用品。 */
@@ -51,6 +59,7 @@
   --dashboard-accent: #f0ecd6;
   --dashboard-accent-soft: rgb(238 235 214 / 11%);
   --dashboard-border: rgb(42 44 38 / 58%);
+
   background:
     repeating-linear-gradient(0deg, transparent 0 40px, rgb(255 255 255 / 2%) 41px),
     linear-gradient(100deg, #696b60, #7d7e70 48%, #5d6057);
@@ -90,4 +99,3 @@
   background: #555c50;
   box-shadow: none;
 }
-
