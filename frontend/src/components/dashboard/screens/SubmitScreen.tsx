@@ -343,25 +343,29 @@ function QuestionSetupStep({
   );
 }
 
-// ─── 教師：答案一覧 ────────────────────────────────────────────────────────────
+// ─── 教師：タブ切り替え採点ビュー ─────────────────────────────────────────────
 
-const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
-  pending:  { label: "OCR処理中", cls: "text-yellow-300" },
-  ocr_done: { label: "採点待ち",  cls: "text-sky-300" },
-  scored:   { label: "採点済み",  cls: "text-green-300" },
-};
+function StatusBadge({ status }: { status: string }) {
+  if (status === "scored")   return <span className="text-green-400 text-xs font-bold">✓</span>;
+  if (status === "ocr_done") return <span className="text-amber-400 text-xs font-bold">⚠</span>;
+  return <span className="text-slate-500 text-xs animate-pulse">⚙</span>;
+}
 
-function TeacherSheetList({
-  exam,
-  onSelect,
-}: {
-  exam: Exam;
-  onSelect: (sheet: AnswerSheetSummary) => void;
-}) {
+function TeacherGradingView({ exam }: { exam: Exam }) {
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+
   const { data: sheets, isLoading, refetch } = useQuery({
     queryKey: ["answer_sheets", exam.id],
     queryFn: () => listAnswerSheets(exam.id),
+    refetchInterval: (q) => {
+      const d = q.state.data;
+      if (!d) return false;
+      return d.some((s) => s.status === "pending") ? 3000 : false;
+    },
   });
+
+  // selectedId が未設定なら最初の答案をデフォルト選択とする
+  const selectedSheet = sheets?.find((s) => s.id === selectedId) ?? sheets?.[0] ?? null;
 
   if (isLoading) {
     return <p className="text-sky-300 animate-pulse text-center py-10">読み込み中...</p>;
@@ -380,26 +384,46 @@ function TeacherSheetList({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between mb-1">
-        <p className="text-blue-300 text-sm font-semibold">提出された答案</p>
-        <button onClick={() => refetch()} className="text-xs text-slate-400 hover:text-sky-300">
-          更新
+    <div className="flex flex-col">
+      {/* 生徒タブ */}
+      <div className="flex items-center gap-0 border-b border-sky-400/20 overflow-x-auto">
+        {sheets.map((s) => {
+          const isActive = selectedSheet?.id === s.id;
+          return (
+            <button
+              key={s.id}
+              onClick={() => setSelectedId(s.id)}
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors duration-150 ${
+                isActive
+                  ? "border-sky-400 text-sky-200 font-semibold bg-sky-400/8"
+                  : "border-transparent text-slate-400 hover:text-sky-300 hover:bg-white/3"
+              }`}
+            >
+              {s.student_name}
+              <StatusBadge status={s.status} />
+            </button>
+          );
+        })}
+        <button
+          onClick={() => refetch()}
+          className="ml-auto px-3 py-2 text-xs text-slate-500 hover:text-sky-300 shrink-0"
+          title="更新"
+        >
+          ↻
         </button>
       </div>
-      {sheets.map((s) => {
-        const st = STATUS_LABEL[s.status] ?? { label: s.status, cls: "text-slate-400" };
-        return (
-          <button
-            key={s.id}
-            onClick={() => onSelect(s)}
-            className="w-full text-left px-4 py-3 bg-white/5 border border-sky-400/20 rounded-sm hover:border-sky-400 hover:bg-sky-400/8 transition-all duration-200 flex items-center justify-between"
-          >
-            <span className="text-sky-100 font-semibold">{s.student_name}</span>
-            <span className={`text-xs font-bold ${st.cls}`}>{st.label}</span>
-          </button>
-        );
-      })}
+
+      {/* 採点パネル */}
+      {selectedSheet ? (
+        <GradingStep
+          key={selectedSheet.id}
+          exam={exam}
+          sheetSummary={selectedSheet}
+          onDone={() => refetch()}
+        />
+      ) : (
+        <p className="text-center text-slate-400 py-10 text-sm">生徒を選択してください</p>
+      )}
     </div>
   );
 }
@@ -701,13 +725,11 @@ function GradingStep({
 export function SubmitScreen() {
   const { user } = useCurrentUser();
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
-  const [selectedSheetSummary, setSelectedSheetSummary] = useState<AnswerSheetSummary | null>(null);
   const [studentDone, setStudentDone] = useState(false);
-  const [teacherStep, setTeacherStep] = useState<"questions" | "list">("questions");
+  const [teacherStep, setTeacherStep] = useState<"questions" | "grading">("questions");
 
   const reset = useCallback(() => {
     setSelectedExam(null);
-    setSelectedSheetSummary(null);
     setStudentDone(false);
     setTeacherStep("questions");
   }, []);
@@ -719,13 +741,9 @@ export function SubmitScreen() {
 
   const currentStep = () => {
     if (!selectedExam) return "exam";
-    if (isTeacher) {
-      if (!selectedSheetSummary) return teacherStep;
-      return "grade";
-    } else {
-      if (studentDone) return "done";
-      return "upload";
-    }
+    if (isTeacher)     return teacherStep;
+    if (studentDone)   return "done";
+    return "upload";
   };
 
   const stepLabel = () => {
@@ -734,13 +752,12 @@ export function SubmitScreen() {
       case "upload":    return "答案をアップロード";
       case "done":      return "提出完了";
       case "questions": return "問題設定";
-      case "list":      return "答案一覧";
-      case "grade":     return "採点";
+      case "grading":   return "採点";
     }
   };
 
   return (
-    <Panel className={`mx-auto mt-4 ${currentStep() === "grade" ? "max-w-[98vw]" : "max-w-2xl"}`}>
+    <Panel className={`mx-auto mt-4 ${isTeacher && teacherStep === "grading" ? "max-w-[98vw]" : "max-w-2xl"}`}>
       <div className="flex items-center gap-3 border-b border-sky-400/40 bg-gradient-to-r from-sky-400/20 to-sky-400/5 px-5 py-4">
         <LabelTag variant="info">{isTeacher ? "採点" : "提出"}</LabelTag>
         <h1 className="text-xl font-black tracking-wide text-white [text-shadow:0_0_10px_rgba(56,189,248,0.7)]">
@@ -757,20 +774,15 @@ export function SubmitScreen() {
           <>
             <span>›</span>
             <button
-              onClick={() => { setSelectedSheetSummary(null); setTeacherStep("questions"); }}
+              onClick={() => setTeacherStep("questions")}
               className={currentStep() === "questions" ? "text-sky-300 font-semibold" : "hover:text-sky-300"}
             >
               問題設定
             </button>
-            {(teacherStep === "list" || selectedSheetSummary) && (
+            {teacherStep === "grading" && (
               <>
                 <span>›</span>
-                <button
-                  onClick={() => setSelectedSheetSummary(null)}
-                  className={currentStep() === "list" ? "text-sky-300 font-semibold" : "hover:text-sky-300"}
-                >
-                  答案一覧
-                </button>
+                <span className="text-sky-300 font-semibold">採点</span>
               </>
             )}
           </>
@@ -786,12 +798,6 @@ export function SubmitScreen() {
             </button>
           </>
         )}
-        {selectedSheetSummary && (
-          <>
-            <span>›</span>
-            <span className="text-sky-300 font-semibold">採点</span>
-          </>
-        )}
         {studentDone && (
           <>
             <span>›</span>
@@ -801,7 +807,7 @@ export function SubmitScreen() {
         <span className="ml-auto text-slate-500">{stepLabel()}</span>
       </div>
 
-      <div className={currentStep() === "grade" ? "px-3 py-3" : "px-5 py-6"}>
+      <div className={isTeacher && teacherStep === "grading" ? "px-0 py-0" : "px-5 py-6"}>
         {currentStep() === "exam" && (
           <ExamSelector onSelect={setSelectedExam} />
         )}
@@ -821,21 +827,11 @@ export function SubmitScreen() {
         {currentStep() === "questions" && selectedExam && (
           <QuestionSetupStep
             exam={selectedExam}
-            onNext={() => setTeacherStep("list")}
+            onNext={() => setTeacherStep("grading")}
           />
         )}
-        {currentStep() === "list" && selectedExam && (
-          <TeacherSheetList
-            exam={selectedExam}
-            onSelect={setSelectedSheetSummary}
-          />
-        )}
-        {currentStep() === "grade" && selectedExam && selectedSheetSummary && (
-          <GradingStep
-            exam={selectedExam}
-            sheetSummary={selectedSheetSummary}
-            onDone={() => setSelectedSheetSummary(null)}
-          />
+        {currentStep() === "grading" && selectedExam && (
+          <TeacherGradingView exam={selectedExam} />
         )}
       </div>
     </Panel>
