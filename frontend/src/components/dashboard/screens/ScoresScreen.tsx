@@ -18,12 +18,23 @@ export function ScoresScreen() {
     enabled: user?.role === "student",
   });
 
+  const title =
+    user?.role === "student"
+      ? "成績・召喚獣ステータス"
+      : user?.role === "teacher"
+        ? "点数管理"
+        : "全体ランキング";
+
+  if (user?.role === "teacher") {
+    return <NavPlaceholder role={user.role} href="/scores" />;
+  }
+
   return (
     <Panel className="mx-auto mt-6 max-w-5xl">
       <div className="overflow-hidden rounded-lg border border-sky-500/20 bg-gradient-to-br from-slate-900/80 to-slate-900/60 shadow-md">
         <div className="px-5 py-4 flex items-center gap-3 border-b border-sky-600/20 bg-gradient-to-r from-sky-800/40 to-sky-900/10">
           <LabelTag variant="info">成績</LabelTag>
-          <h2 className="text-lg font-bold text-white">全体ランキング</h2>
+          <h2 className="text-lg font-bold text-white">{title}</h2>
         </div>
         <div className="p-4">
           {isLoading && (

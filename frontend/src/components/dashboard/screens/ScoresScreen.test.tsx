@@ -1,4 +1,5 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { render, screen } from "@testing-library/react";
 import { ScoresScreen } from "./ScoresScreen";
 
@@ -32,7 +33,9 @@ describe("ScoresScreen", () => {
       user: { id: 1, name: "霧島翔子", role: "student" },
     });
     render(<ScoresScreen />);
-    expect(screen.getByRole("heading", { name: "成績・召喚獣ステータス" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "成績・召喚獣ステータス" }),
+    ).toBeInTheDocument();
   });
 
   it("教師には NavPlaceholder（点数管理）を表示する", () => {
@@ -40,6 +43,9 @@ describe("ScoresScreen", () => {
       user: { id: 2, name: "文月学", role: "teacher" },
     });
     render(<ScoresScreen />);
-    expect(screen.getByRole("heading", { name: "点数管理" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "点数管理" }),
+    ).toBeInTheDocument();
+
   });
 });

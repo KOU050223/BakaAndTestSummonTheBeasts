@@ -62,26 +62,26 @@ export const NAV_BY_ROLE: Record<Role, NavSection[]> = {
         { label: "管理者ダッシュボード", href: "/", icon: "🖥️" },
         { label: "ユーザー管理", href: "/admin/users", icon: "👤" },
 
-        { label: "クラス設定", href: "/admin/classes", icon: "🏫" },
+        { label: "クラス設定", href: "/classes", icon: "🏫" },
+
       ],
     },
     {
       heading: "参照",
       items: [
-        { label: "全体成績", href: "/scores", icon: "📊" },
         { label: "試召戦争ログ", href: "/records", icon: "⚔️" },
       ],
     },
   ],
 };
 
-/** サイドバーの label を href から取得する。案B: Placeholder の title とサイドバーを一致させる単一ソース。 */
+// 指定のロールと href からサイドバー表示用ラベルを返すユーティリティ。
+// 該当する href がなければ "準備中" を返す（テストおよび UI の既定動作）。
 export function navLabel(role: Role, href: string): string {
-  for (const section of NAV_BY_ROLE[role]) {
-    const item = section.items.find((i) => i.href === href);
-    if (item) return item.label;
-  }
-  return "準備中";
+  const sections = NAV_BY_ROLE[role] ?? [];
+  const item = sections.flatMap((s) => s.items).find((it) => it.href === href);
+  return item ? item.label : "準備中";
+
 }
 
 // ロールの日本語表記。サイドバー左下のバッジなどで使う。

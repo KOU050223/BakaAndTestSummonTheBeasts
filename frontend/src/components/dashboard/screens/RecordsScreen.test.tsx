@@ -1,4 +1,5 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { render, screen } from "@testing-library/react";
 import { RecordsScreen } from "./RecordsScreen";
 
@@ -37,7 +38,10 @@ describe("RecordsScreen", () => {
       user: { id: 2, name: "文月学", role: "teacher" },
     });
     render(<RecordsScreen />);
-    expect(screen.getByRole("heading", { name: "生徒一覧" })).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("heading", { name: "生徒一覧" }),
+    ).toBeInTheDocument();
   });
 
   it("管理者には試召戦争ログを表示する", () => {
@@ -45,6 +49,8 @@ describe("RecordsScreen", () => {
       user: { id: 3, name: "管理者", role: "school_admin" },
     });
     render(<RecordsScreen />);
-    expect(screen.getByRole("heading", { name: "試召戦争ログ" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "試召戦争ログ" }),
+    ).toBeInTheDocument();
   });
 });
