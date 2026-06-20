@@ -83,42 +83,48 @@ RSpec.describe "Exams API", type: :request do
         type: :object,
         properties: {
           title:     { type: :string, example: "数学 小テスト1" },
-          subjectId: { type: :string, example: "math" },
-          classId:   { type: :string, example: "class_a" },
-          maxScore:  { type: :integer, example: 100 }
+          subject:   { type: :string, example: "math" },
+          class_id:  { type: :integer, example: 1 },
+          max_score: { type: :integer, example: 100 }
         },
-        required: %w[title subjectId classId maxScore]
+        required: %w[title subject class_id max_score]
       }
 
       response "201", "試験作成成功" do
         schema type: :object,
           properties: {
-            id:        { type: :string },
+            id:        { type: :integer },
             title:     { type: :string },
-            subjectId: { type: :string },
-            classId:   { type: :string },
-            maxScore:  { type: :integer }
+            subject:   { type: :string },
+            class_id:  { type: :integer },
+            max_score: { type: :integer }
           },
-          required: %w[id title subjectId classId maxScore]
+          required: %w[id title subject class_id max_score]
 
-        before { cookies[:token] = JwtService.encode(user_id: create(:user, :teacher).id) }
-        let(:body) { { title: "数学 小テスト1", subjectId: "math", classId: "class_a", maxScore: 100 } }
+        before do
+          @school_class = create(:school_class)
+          cookies[:token] = JwtService.encode(user_id: create(:user, :teacher).id)
+        end
+        let(:body) { { title: "数学 小テスト1", subject: "math", class_id: @school_class.id, max_score: 100 } }
         run_test!
       end
 
       response "201", "school_admin も試験を作成できる" do
         schema type: :object,
           properties: {
-            id:        { type: :string },
+            id:        { type: :integer },
             title:     { type: :string },
-            subjectId: { type: :string },
-            classId:   { type: :string },
-            maxScore:  { type: :integer }
+            subject:   { type: :string },
+            class_id:  { type: :integer },
+            max_score: { type: :integer }
           },
-          required: %w[id title subjectId classId maxScore]
+          required: %w[id title subject class_id max_score]
 
-        before { cookies[:token] = JwtService.encode(user_id: create(:user, :school_admin).id) }
-        let(:body) { { title: "数学 小テスト1", subjectId: "math", classId: "class_a", maxScore: 100 } }
+        before do
+          @school_class = create(:school_class)
+          cookies[:token] = JwtService.encode(user_id: create(:user, :school_admin).id)
+        end
+        let(:body) { { title: "数学 小テスト1", subject: "math", class_id: @school_class.id, max_score: 100 } }
         run_test!
       end
 

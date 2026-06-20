@@ -17,7 +17,8 @@ export type NavSection = {
 // セクション数や各セクションの項目数をロールごとに自由に組める
 // （Sidebar 側で件数を決め打ちで振り分ける必要がない）。
 // 生徒タブは提示されたダッシュボード画像に準拠。
-// 教師・管理者は現状プレースホルダのため仮のラベルを置いている。
+// URL はロール共通（フラットルート）。*Screen 側でロールごとに出し分ける（案B）。
+// 未実装画面は Placeholder のまま、title だけ NAV_BY_ROLE の label に合わせる（navLabel）。
 export const NAV_BY_ROLE: Record<Role, NavSection[]> = {
   student: [
     {
@@ -45,8 +46,9 @@ export const NAV_BY_ROLE: Record<Role, NavSection[]> = {
       heading: "採点管理",
       items: [
         { label: "試験作成", href: "/", icon: "📝" },
+        { label: "試験設定", href: "/exams", icon: "📋" },
         { label: "点数管理", href: "/scores", icon: "📊" },
-        { label: "AI採点", href: "/submit", icon: "📷" },
+        { label: "AI自動採点", href: "/submit", icon: "📷" },
       ],
     },
     {
@@ -63,18 +65,28 @@ export const NAV_BY_ROLE: Record<Role, NavSection[]> = {
       items: [
         { label: "管理者ダッシュボード", href: "/", icon: "🖥️" },
         { label: "ユーザー管理", href: "/admin/users", icon: "👤" },
-        { label: "クラス設定", href: "/submit", icon: "🏫" },
+
+        { label: "クラス設定", href: "/classes", icon: "🏫" },
+
       ],
     },
     {
       heading: "参照",
       items: [
-        { label: "全体成績", href: "/declare-war", icon: "📊" },
         { label: "試召戦争ログ", href: "/records", icon: "⚔️" },
       ],
     },
   ],
 };
+
+// 指定のロールと href からサイドバー表示用ラベルを返すユーティリティ。
+// 該当する href がなければ "準備中" を返す（テストおよび UI の既定動作）。
+export function navLabel(role: Role, href: string): string {
+  const sections = NAV_BY_ROLE[role] ?? [];
+  const item = sections.flatMap((s) => s.items).find((it) => it.href === href);
+  return item ? item.label : "準備中";
+
+}
 
 // ロールの日本語表記。サイドバー左下のバッジなどで使う。
 export const ROLE_LABEL: Record<Role, string> = {

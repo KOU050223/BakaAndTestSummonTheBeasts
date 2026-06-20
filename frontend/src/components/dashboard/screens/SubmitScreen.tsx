@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { $api } from "@/lib/api/client";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
+import { navLabel } from "@/lib/dashboard/navigation";
 import {
   uploadMyAnswerSheet,
   listAnswerSheets,
@@ -190,6 +191,7 @@ function QuestionSetupStep({
   });
 
   const [rows, setRows] = useState<QuestionInput[]>([emptyQuestion()]);
+  const [countInput, setCountInput] = useState("1");
   const [keyFile, setKeyFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const rowsInitialized = useRef(false);
@@ -198,9 +200,11 @@ function QuestionSetupStep({
   useEffect(() => {
     if (rowsInitialized.current || !detail?.questions?.length) return;
     rowsInitialized.current = true;
-    setRows(detail.questions.map((q) => ({
+    const loaded = detail.questions.map((q) => ({
       number: q.number, question_text: "", model_answer: "", points: q.points,
-    })));
+    }));
+    setRows(loaded);
+    setCountInput(String(loaded.length));
   }, [detail]);
 
   const { mutate: uploadKey, isPending: uploadingKey } = useMutation({
@@ -227,11 +231,13 @@ function QuestionSetupStep({
     setRows((prev) =>
       [...prev, { ...emptyQuestion(), number: newCount }].map((r, i) => ({ ...r, points: pts[i] }))
     );
+    setCountInput(String(newCount));
   };
   const removeRow = (i: number) => {
     const next = rows.filter((_, idx) => idx !== i);
     const pts = distributePoints(next.length);
     setRows(next.map((r, idx) => ({ ...r, number: idx + 1, points: pts[idx] })));
+    setCountInput(String(next.length));
   };
 
   if (isLoading) {
@@ -280,9 +286,10 @@ function QuestionSetupStep({
               type="number"
               min={1}
               max={200}
-              value={rows.length}
+              value={countInput}
               onChange={(e) => {
-                const n = parseInt(e.target.value);
+                setCountInput(e.target.value);
+                const n = parseInt(e.target.value, 10);
                 if (n >= 1 && n <= 200) {
                   const pts = distributePoints(n);
                   setRows(Array.from({ length: n }, (_, i) => ({
@@ -290,6 +297,7 @@ function QuestionSetupStep({
                   })));
                 }
               }}
+              onBlur={() => setCountInput(String(rows.length))}
               className="w-20 px-2 py-1 bg-white/5 border border-sky-400/30 rounded-sm text-sky-100 text-sm text-center outline-none focus:border-sky-400"
             />
           </div>
@@ -693,14 +701,12 @@ function GradingStep({
 export function SubmitScreen() {
   const { user } = useCurrentUser();
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
-  const [sheet, setSheet] = useState<AnswerSheet | null>(null);
   const [selectedSheetSummary, setSelectedSheetSummary] = useState<AnswerSheetSummary | null>(null);
   const [studentDone, setStudentDone] = useState(false);
   const [teacherStep, setTeacherStep] = useState<"questions" | "list">("questions");
 
   const reset = useCallback(() => {
     setSelectedExam(null);
-    setSheet(null);
     setSelectedSheetSummary(null);
     setStudentDone(false);
     setTeacherStep("questions");
@@ -709,7 +715,7 @@ export function SubmitScreen() {
   if (!user) return null;
 
   const isTeacher = user.role === "teacher" || user.role === "school_admin";
-  const title = isTeacher ? "OCR 採点" : "答案を提出";
+  const title = navLabel(user.role, "/submit");
 
   const currentStep = () => {
     if (!selectedExam) return "exam";
@@ -773,7 +779,7 @@ export function SubmitScreen() {
           <>
             <span>›</span>
             <button
-              onClick={() => { setStudentDone(false); setSheet(null); }}
+              onClick={() => setStudentDone(false)}
               className={currentStep() === "upload" ? "text-sky-300 font-semibold" : "hover:text-sky-300"}
             >
               アップロード
@@ -804,7 +810,7 @@ export function SubmitScreen() {
         {currentStep() === "upload" && selectedExam && (
           <StudentUploadStep
             exam={selectedExam}
-            onUploaded={(s) => { setSheet(s); setStudentDone(true); }}
+            onUploaded={() => setStudentDone(true)}
           />
         )}
         {currentStep() === "done" && (

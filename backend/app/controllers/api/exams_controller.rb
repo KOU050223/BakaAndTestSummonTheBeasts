@@ -28,13 +28,30 @@ module Api
     end
 
     def create
-      render json: {
-        id: "exam_1",
-        title: params[:title] || "数学 小テスト1",
-        subjectId: params[:subjectId] || "math",
-        classId: params[:classId] || "class_a",
-        maxScore: params[:maxScore] || 100
-      }, status: :created
+      exam = Exam.new(
+        title: params.require(:title),
+        subject: params.require(:subject),
+        school_class_id: params.require(:class_id),
+        max_score: params.fetch(:max_score, 100).to_i,
+        created_by: current_user
+      )
+
+      if exam.save
+        render json: {
+          id: exam.id,
+          title: exam.title,
+          subject: exam.subject,
+          class_id: exam.school_class_id,
+          max_score: exam.max_score
+        }, status: :created
+      else
+        render_error(
+          code: "validation_error",
+          message: "入力内容を確認してください",
+          status: :unprocessable_entity,
+          details: exam.errors.to_hash
+        )
+      end
     end
 
     private
