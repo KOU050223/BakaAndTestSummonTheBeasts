@@ -163,7 +163,7 @@ jobs:
     permissions:
       contents: read
       packages: read
-    environment: production
+    environment: Production
     concurrency:
       group: backend-production
       cancel-in-progress: false
