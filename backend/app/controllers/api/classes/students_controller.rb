@@ -7,14 +7,17 @@ module Api
       before_action :set_school_class, only: :index
 
       def index
-        students = @school_class.students.includes(scores: :exam).order(:id)
+        memberships = @school_class.class_memberships.includes(user: { scores: :exam }).order(:id)
+        leader_user_ids = @school_class.class_memberships.where(leader: true).pluck(:user_id).to_set
 
-        rendered = students.map do |student|
+        rendered = memberships.map do |membership|
+          student = membership.user
           summary = Classroom::StudentScoreSummary.call(student.scores)
           {
             id: student.id,
             name: student.name,
             grade: @school_class.grade,
+            leader: leader_user_ids.include?(student.id),
             totalScore: summary.total_score,
             topSubject: {
               name: summary.top_subject_label || "未受験",
