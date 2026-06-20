@@ -62,21 +62,22 @@ class GradeAnswerSheetJob < ApplicationJob
     )
 
     prompt = <<~TEXT
-      画像が2枚あります。
-      【1枚目】試験の正答一覧（模範解答）
-      【2枚目】生徒が提出した解答用紙
+      2つのPDFを採点してください。
+
+      【PDF 1枚目】模範解答（各問の正答が書かれた解答一覧）
+      【PDF 2枚目】生徒の解答用紙
 
       手順:
-      1. 1枚目から各問番号と正答の選択肢（ア・イ・ウ・エ 等）を正確に読み取る
-      2. 2枚目から各問番号と生徒の解答の選択肢を正確に読み取る
-      3. 問ごとに選択肢が**完全に一致**するか判定する
+      1. PDF1から「問番号→正答の選択肢」の対応表を作る（例: 1→ア, 2→イ, ...）
+      2. PDF2から「問番号→生徒の解答」の対応表を作る
+      3. 同じ問番号同士で選択肢を比較する
 
-      重要:
-      - 「ア」と「イ」は別物。文字が1文字でも違えば false にすること
-      - 読み取れない・判断できない場合は false にすること
-      - 2枚の画像が異なる年度・異なる試験であっても、問番号を合わせてそのまま比較すること
+      判定基準:
+      - 選択肢が一致すれば true、不一致なら false
+      - 2枚のPDFが同一内容であればすべて true になる
+      - 選択肢はア・イ・ウ・エ等。最もよく読み取れた文字で判定する
 
-      全問を確認し、以下のJSON形式のみを返してください（説明文不要）:
+      以下のJSON形式のみを返してください（他のテキスト不要）:
       {"1": true, "2": false, "3": true, ...}
     TEXT
 
@@ -106,7 +107,15 @@ class GradeAnswerSheetJob < ApplicationJob
       raise "Gemini API error #{json.dig('error', 'code')}: #{json.dig('error', 'message')}"
     end
 
-    text = json.dig("candidates", 0, "content", "parts", 0, "text").to_s
-    JSON.parse(text).transform_keys(&:to_i)
+    # Gemini 2.5 Flash (thinking model) may include a thought part before the JSON part.
+    # Pick the last non-thought text part to get the actual structured output.
+    parts = json.dig("candidates", 0, "content", "parts") || []
+    text = parts.reject { |p| p["thought"] }.last&.dig("text").to_s
+    Rails.logger.info "GradeAnswerSheetJob: Gemini response (truncated): #{text.truncate(300)}"
+
+    parsed = JSON.parse(text)
+    raise "Gemini returned empty results" if parsed.empty?
+
+    parsed.transform_keys(&:to_i)
   end
 end
