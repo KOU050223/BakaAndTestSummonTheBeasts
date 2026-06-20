@@ -28,6 +28,8 @@ describe("StudentDashboard", () => {
         role: "student",
         school_class: { id: 6, name: "Fクラス" },
       },
+      isLoading: false,
+      isError: false,
     });
     mockUseMyScores.mockReturnValue({
       summary: {
@@ -103,5 +105,58 @@ describe("StudentDashboard", () => {
     expect(
       screen.getByRole("link", { name: /答案を提出/ }),
     ).toHaveAttribute("href", "/submit");
+  });
+
+  it("生徒情報の読み込み中を表示する", () => {
+    mockUseCurrentUser.mockReturnValue({
+      user: undefined,
+      isLoading: true,
+      isError: false,
+    });
+
+    render(<StudentDashboard />);
+
+    expect(screen.getByRole("status")).toHaveTextContent("生徒情報を読み込み中");
+  });
+
+  it("生徒情報の取得失敗を表示する", () => {
+    mockUseCurrentUser.mockReturnValue({
+      user: undefined,
+      isLoading: false,
+      isError: true,
+    });
+
+    render(<StudentDashboard />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "生徒情報の取得に失敗しました",
+    );
+  });
+
+  it("不正な採点日時は日付不明として安全に表示する", () => {
+    mockUseMyScores.mockReturnValue({
+      summary: {
+        scores: [
+          {
+            exam_id: 3,
+            exam_title: "日時不明の試験",
+            subject: "math",
+            subject_label: "数学",
+            score: 40,
+            max_score: 100,
+            scored_at: "invalid-date",
+          },
+        ],
+        bySubject: {},
+        total: 40,
+        max: 100,
+      },
+      isLoading: false,
+      isError: false,
+    });
+
+    render(<StudentDashboard />);
+
+    expect(screen.getByText("日付不明")).toBeInTheDocument();
   });
 });

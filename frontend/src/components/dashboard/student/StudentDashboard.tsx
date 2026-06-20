@@ -36,8 +36,17 @@ const QUICK_ACTIONS = [
   },
 ] as const;
 
+const SCORE_DATE_FORMATTER = new Intl.DateTimeFormat("ja-JP", {
+  month: "2-digit",
+  day: "2-digit",
+});
+
 export function StudentDashboard() {
-  const { user } = useCurrentUser();
+  const {
+    user,
+    isLoading: userLoading,
+    isError: userError,
+  } = useCurrentUser();
   const { summary, isLoading: scoresLoading, isError: scoresError } =
     useMyScores(user?.role === "student");
   const {
@@ -46,6 +55,26 @@ export function StudentDashboard() {
     isError: summonsError,
   } = useSummon(user?.id);
 
+  if (userLoading) {
+    return (
+      <Panel className="mx-auto max-w-2xl">
+        <p role="status" className="animate-pulse py-16 text-center text-sky-300">
+          生徒情報を読み込み中…
+        </p>
+      </Panel>
+    );
+  }
+
+  if (userError) {
+    return (
+      <Panel className="mx-auto max-w-2xl">
+        <p role="alert" className="py-16 text-center text-red-300">
+          生徒情報の取得に失敗しました
+        </p>
+      </Panel>
+    );
+  }
+
   if (!user) return null;
 
   const scoreRate =
@@ -53,8 +82,7 @@ export function StudentDashboard() {
   const recentScores = [...summary.scores]
     .sort(
       (left, right) =>
-        new Date(right.scored_at).getTime() -
-        new Date(left.scored_at).getTime(),
+        scoreTimestamp(right.scored_at) - scoreTimestamp(left.scored_at),
     )
     .slice(0, 3);
   const featuredSummon = summons[0] ?? null;
@@ -339,8 +367,13 @@ function EmptyMessage({
 }
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("ja-JP", {
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date(value));
+  const timestamp = Date.parse(value);
+  if (Number.isNaN(timestamp)) return "日付不明";
+
+  return SCORE_DATE_FORMATTER.format(new Date(timestamp));
+}
+
+function scoreTimestamp(value: string) {
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? 0 : timestamp;
 }
