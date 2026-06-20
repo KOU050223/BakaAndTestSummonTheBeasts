@@ -23,6 +23,8 @@ PRではPi runnerを使用しない。
 - `RAILS_MASTER_KEY`: Rails credentials復号鍵
 - `DATABASE_URL`: Supabase PostgreSQL接続URL
 - `JWT_SECRET_KEY`: JWT署名鍵
+- `DEMO_ADMIN_PASSWORD`: デモ管理者の初回作成パスワード
+- `DEMO_USER_PASSWORD`: 教師・生徒の初回作成共通パスワード
 - `FRONTEND_URL=https://bakatest.uomi.site`
 
 Supabaseの`SUPABASE_URL`、publishable key、secret key、JWKS URLはPostgreSQL接続情報ではない。Issue #24の構成ではSupabase Data API/Authを使わないため、RailsのDB接続にはDashboardのConnect画面にあるPostgreSQL URLを使う。
@@ -46,6 +48,24 @@ curl --fail http://127.0.0.1:8000/up
 cat ~/.local/state/baka/backend-current-sha
 podman logs --tail 200 baka-backend
 ```
+
+## デモデータの初期投入
+
+初回デプロイとmigrationの完了後、Pi上で明示的に一度実行する。
+再実行してもレコードは重複しない。既存ユーザーのパスワードは変更しない。
+
+```bash
+task deploy:seed:demo
+```
+
+標準以外のenvファイルを使う場合は
+`DEPLOY_ENV_FILE=/path/to/backend.env task deploy:seed:demo` と指定する。
+
+作成されるログイン用メールアドレスは次のとおり。
+
+- 管理者: `admin@example.com`
+- 教師: `teacher@example.com`, `tetsujin@example.com`
+- 生徒例: `kirishima@example.com`
 
 8000番がlocalhostだけにbindされていることは次で確認する。
 
