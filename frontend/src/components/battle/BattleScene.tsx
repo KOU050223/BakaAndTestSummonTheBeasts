@@ -6,6 +6,36 @@ import { OrbitControls, Grid } from "@react-three/drei";
 import { VrmAvatar } from "./VrmAvatar";
 import { FieldZones } from "./FieldZones";
 import type { StateMessage } from "@/lib/battle/wsSchema";
+import { goAngleToThreeRotationY } from "@/lib/battle/coords";
+
+// 自分(index=0)と相手(index=1)で色を分ける。
+const MARKER_COLORS = ["#60a5fa", "#f87171"] as const;
+
+type PlayerMarkerProps = {
+  position: [number, number, number];
+  rotationY: number;
+  playerIndex: number;
+};
+
+// 未召喚プレイヤーの位置・向きを床マーカーで示す。
+// 薄い円盤（足元の存在感）＋小さな三角形（向き）で構成する。
+function PlayerMarker({ position, rotationY, playerIndex }: PlayerMarkerProps) {
+  const color = MARKER_COLORS[playerIndex % 2];
+  return (
+    <group position={position} rotation={[0, rotationY, 0]}>
+      {/* 足元の円盤 */}
+      <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[0.25, 32]} />
+        <meshBasicMaterial color={color} transparent opacity={0.6} />
+      </mesh>
+      {/* 向きを示す三角形（前方 +Z） */}
+      <mesh position={[0, 0.02, 0.3]} rotation={[-Math.PI / 2, 0, 0]}>
+        <coneGeometry args={[0.08, 0.2, 3]} />
+        <meshBasicMaterial color={color} />
+      </mesh>
+    </group>
+  );
+}
 
 // 全召喚獣で使い回す VRM モデル（将来は科目別に差し替え可能にする）。
 const DEFAULT_VRM_URL = "/cat.vrm";
@@ -45,12 +75,16 @@ export function BattleScene({ state }: BattleSceneProps) {
           <>
             {/* 科目フィールド円 */}
             <FieldZones fields={state.fields} />
-            {/* 召喚済みプレイヤーをサーバー権威の位置・向きで配置 */}
-            {players.map(([userId, p]) =>
-              p.summoned ? (
-                <VrmAvatar key={userId} url={DEFAULT_VRM_URL} position={[p.x, 0, p.z]} rotationY={p.angle} />
-              ) : null,
-            )}
+            {/* プレイヤーをサーバー権威の位置・向きで配置。召喚済みは VRM、未召喚は床マーカー */}
+            {/* goAngleToThreeRotationY で Go 座標系 → Three.js 座標系に変換する */}
+            {players.map(([userId, p], index) => {
+              const rotationY = goAngleToThreeRotationY(p.angle);
+              return p.summoned ? (
+                <VrmAvatar key={userId} url={DEFAULT_VRM_URL} position={[p.x, 0, p.z]} rotationY={rotationY} />
+              ) : (
+                <PlayerMarker key={userId} position={[p.x, 0, p.z]} rotationY={rotationY} playerIndex={index} />
+              );
+            })}
           </>
         ) : (
           <>
