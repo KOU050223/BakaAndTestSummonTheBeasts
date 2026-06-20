@@ -2,7 +2,10 @@ import createFetchClient from "openapi-fetch";
 import createClient from "openapi-react-query";
 import type { paths } from "./schema.d";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
+// Allow tests to import this module without requiring env in test environment.
+const apiBaseUrl =
+  process.env.NEXT_PUBLIC_API_URL ??
+  (process.env.NODE_ENV === "test" ? "http://localhost" : undefined);
 if (!apiBaseUrl) {
   throw new Error("NEXT_PUBLIC_API_URL is required");
 }
