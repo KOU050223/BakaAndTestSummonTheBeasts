@@ -41,7 +41,7 @@ module Api
         rows << [ "生徒名", "点数", "満点", "正答率(%)" ]
         scores.each do |s|
           rate = @exam.max_score > 0 ? (s.score.to_f / @exam.max_score * 100).round(1) : 0
-          rows << [ s.student.name, s.score, @exam.max_score, rate ]
+          rows << [ csv_safe(s.student.name), s.score, @exam.max_score, rate ]
         end
       end
       send_data "﻿#{csv}",
@@ -94,8 +94,10 @@ module Api
       tally = Hash.new { |h, k| h[k] = { correct: 0, total: 0 } }
       graded_sheets.each do |sheet|
         (sheet.ai_grading["results"] || {}).each do |q_num, correct|
-          tally[q_num.to_i][:total] += 1
-          tally[q_num.to_i][:correct] += 1 if correct
+          n = Integer(q_num, exception: false)
+          next if n.nil?
+          tally[n][:total] += 1
+          tally[n][:correct] += 1 if correct
         end
       end
       tally.sort_by { |k, _| k }.map do |number, stat|
@@ -106,6 +108,11 @@ module Api
           rate: stat[:total] > 0 ? (stat[:correct].to_f / stat[:total]).round(2) : 0.0
         }
       end
+    end
+
+    def csv_safe(value)
+      str = value.to_s
+      str.start_with?("=", "+", "-", "@", "\t", "\r") ? "'#{str}" : str
     end
 
     def answer_key_status(exam)
