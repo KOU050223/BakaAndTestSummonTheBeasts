@@ -173,6 +173,47 @@ export async function regradeAnswerSheet(
   if (!res.ok) throw new Error("再採点のリクエストに失敗しました");
 }
 
+export async function createClass(params: {
+  name: string;
+  grade: number;
+}): Promise<{ id: number; name: string; grade: number }> {
+  const res = await fetch(`${API_BASE}/api/classes`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as { error?: string }).error ?? "クラスの作成に失敗しました");
+  }
+  return res.json() as Promise<{ id: number; name: string; grade: number }>;
+}
+
+export async function createExam(params: {
+  title: string;
+  subject: string;
+  classId: number;
+  maxScore: number;
+}): Promise<{ id: number; title: string; subject: string }> {
+  const res = await fetch(`${API_BASE}/api/exams`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      title: params.title,
+      subject: params.subject,
+      class_id: params.classId,
+      max_score: params.maxScore,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as { error?: string }).error ?? "試験の作成に失敗しました");
+  }
+  return res.json() as Promise<{ id: number; title: string; subject: string }>;
+}
+
 export async function registerQuestions(
   examId: string | number,
   questions: QuestionInput[],
