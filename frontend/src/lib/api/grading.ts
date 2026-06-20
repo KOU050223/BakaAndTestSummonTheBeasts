@@ -185,7 +185,7 @@ export async function createClass(params: {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error((err as { error?: string }).error ?? "クラスの作成に失敗しました");
+    throw new Error((err as { error?: { message?: string } }).error?.message ?? "クラスの作成に失敗しました");
   }
   return res.json() as Promise<{ id: number; name: string; grade: number }>;
 }
@@ -209,7 +209,7 @@ export async function createExam(params: {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error((err as { error?: string }).error ?? "試験の作成に失敗しました");
+    throw new Error((err as { error?: { message?: string } }).error?.message ?? "試験の作成に失敗しました");
   }
   return res.json() as Promise<{ id: number; title: string; subject: string }>;
 }

@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Panel, LabelTag, Button } from "@/components/ui";
 import { useClasses } from "@/lib/classes/useClasses";
 import { createExam, createClass } from "@/lib/api/grading";
+import { useCurrentUser } from "@/lib/auth/useCurrentUser";
 
 const PRESET_SUBJECTS = [
   { code: "english", label: "英語" },
@@ -75,6 +76,7 @@ function ClassAddForm({ onAdded }: { onAdded: (c: { id: number; name: string; gr
 }
 
 export function ExamCreateScreen() {
+  const { user } = useCurrentUser();
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [subjectCode, setSubjectCode] = useState("math");
@@ -96,6 +98,17 @@ export function ExamCreateScreen() {
     onSuccess: (data) => setCreated(data),
     onError: (e: Error) => setError(e.message),
   });
+
+  if (user && user.role === "student") {
+    return (
+      <Panel className="mx-auto mt-6 max-w-2xl">
+        <div className="px-5 py-16 text-center">
+          <p className="text-4xl mb-3">🚫</p>
+          <p className="text-slate-400 text-sm">このページは教師専用です</p>
+        </div>
+      </Panel>
+    );
+  }
 
   if (created) {
     return (
