@@ -80,7 +80,7 @@ describe("NAV_BY_ROLE", () => {
 
 describe("navLabel", () => {
   it("ロールと href からサイドバー label を返す", () => {
-    expect(navLabel("teacher", "/")).toBe("試験作成");
+    expect(navLabel("teacher", "/exams")).toBe("試験作成");
     expect(navLabel("teacher", "/dashboard")).toBe("教師ダッシュボード");
     expect(navLabel("teacher", "/scores")).toBe("点数管理");
     expect(navLabel("teacher", "/records")).toBe("生徒一覧");

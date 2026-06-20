@@ -116,9 +116,9 @@ export function ExamCreateScreen() {
     return (
       <Panel className="mx-auto mt-6 max-w-2xl">
         <div className="flex items-center gap-3 border-b border-sky-400/40 bg-gradient-to-r from-sky-400/20 to-sky-400/5 px-5 py-4">
-          <LabelTag variant="info">試験設定</LabelTag>
+          <LabelTag variant="info">試験作成</LabelTag>
           <h1 className="text-xl font-black tracking-wide text-white [text-shadow:0_0_10px_rgba(56,189,248,0.7)]">
-            試験設定
+            試験作成
           </h1>
         </div>
         <div className="flex flex-col items-center gap-4 px-5 py-12">
@@ -150,9 +150,9 @@ export function ExamCreateScreen() {
   return (
     <Panel className="mx-auto mt-6 max-w-2xl">
       <div className="flex items-center gap-3 border-b border-sky-400/40 bg-gradient-to-r from-sky-400/20 to-sky-400/5 px-5 py-4">
-        <LabelTag variant="info">試験設定</LabelTag>
+        <LabelTag variant="info">試験作成</LabelTag>
         <h1 className="text-xl font-black tracking-wide text-white [text-shadow:0_0_10px_rgba(56,189,248,0.7)]">
-          試験設定
+          試験作成
         </h1>
       </div>
 

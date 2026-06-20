@@ -3,8 +3,8 @@ import { render, screen } from "@testing-library/react";
 import { NavPlaceholder } from "./NavPlaceholder";
 
 describe("NavPlaceholder", () => {
-  it("教師の / は試験作成と表示する", () => {
-    render(<NavPlaceholder role="teacher" href="/" />);
+  it("教師の /exams は試験作成と表示する", () => {
+    render(<NavPlaceholder role="teacher" href="/exams" />);
     expect(screen.getByRole("heading", { name: "試験作成" })).toBeInTheDocument();
     expect(screen.getByText("準備中")).toBeInTheDocument();
   });
