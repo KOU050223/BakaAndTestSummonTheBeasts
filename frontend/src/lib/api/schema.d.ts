@@ -677,7 +677,7 @@ export interface paths {
                         "application/json": components["schemas"]["error"];
                     };
                 };
-                /** @description 同じクラス同士など不正な布告 */
+                /** @description 生徒が所属しないクラスを attacker に指定（IDOR防止） */
                 422: {
                     headers: {
                         [name: string]: unknown;

@@ -208,6 +208,23 @@ RSpec.describe "Battles API", type: :request do
         run_test!
       end
 
+      response "422", "生徒が所属しないクラスを attacker に指定（IDOR防止）" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:my_class)    { create(:school_class, name: "A組") }
+        let(:other_class) { create(:school_class, name: "B組") }
+        let(:defender_class) { create(:school_class, name: "C組") }
+        let(:student) { create(:user) }
+        before do
+          create(:class_membership, user: student, school_class: my_class)
+          create(:class_membership, user: create(:user), school_class: other_class)
+          create(:class_membership, user: create(:user), school_class: defender_class)
+          cookies[:token] = JwtService.encode(user_id: student.id)
+        end
+        # 自分は A組所属なのに B組を attacker に詐称しようとする。
+        let(:body) { { attackerClassId: other_class.id.to_s, defenderClassId: defender_class.id.to_s, subjects: %w[math] } }
+        run_test!
+      end
+
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
         let(:body) { {} }

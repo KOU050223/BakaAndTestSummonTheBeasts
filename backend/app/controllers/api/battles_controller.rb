@@ -75,10 +75,18 @@ module Api
 
     private
 
-    # 宣戦布告側のクラスID。明示指定があれば優先し、なければ布告者の所属クラスを使う。
+    # 宣戦布告側のクラスID。
+    # 生徒は自分の所属クラスからのみ布告できる（他クラスを騙れないよう IDOR を防ぐ）。
+    # 教師は任意のクラスを attackerClassId で指定できる。
     def attacker_class_id
-      params[:attackerClassId].presence || current_user.school_class&.id ||
-        (raise ArgumentError, "宣戦布告するクラスを特定できません")
+      requested = params[:attackerClassId].presence
+      if requested
+        unless current_user.role == "teacher" || current_user.school_class&.id.to_s == requested.to_s
+          raise ArgumentError, "自分が所属しないクラスから宣戦布告できません"
+        end
+        return requested
+      end
+      current_user.school_class&.id || (raise ArgumentError, "宣戦布告するクラスを特定できません")
     end
 
     # 参加者IDを組み立てる。生徒が作成した場合は自分も参加者に含める。

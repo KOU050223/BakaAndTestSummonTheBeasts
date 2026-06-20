@@ -453,7 +453,7 @@ paths:
                 - subjects
                 - status
         '422':
-          description: 同じクラス同士など不正な布告
+          description: 生徒が所属しないクラスを attacker に指定（IDOR防止）
           content:
             application/json:
               schema:
