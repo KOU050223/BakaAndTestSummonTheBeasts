@@ -20,7 +20,7 @@ assert_contains 'VCS_REF=${{ github.sha }}'
 assert_contains 'needs: [scan_ruby, lint, test, deploy_test]'
 assert_contains 'run: ./deploy/tests/run-tests.sh'
 assert_contains 'runs-on: [self-hosted, Linux, ARM64, raspi-home, production]'
-assert_contains "if: github.event_name == 'push' && github.ref == 'refs/heads/main'"
+assert_contains "github.ref == 'refs/heads/main'"
 assert_contains './deploy/scripts/deploy-backend.sh "$GITHUB_SHA"'
 
 if grep -Fq 'pull_request_target:' "$WORKFLOW"; then
