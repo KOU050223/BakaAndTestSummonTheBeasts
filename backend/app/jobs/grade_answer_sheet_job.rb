@@ -4,6 +4,17 @@ require "base64"
 class GradeAnswerSheetJob < ApplicationJob
   queue_as :grading
 
+  # Gemini API / ネットワーク起因の一時的エラー。retry_on の対象にする。
+  GeminiError = Class.new(StandardError)
+
+  # 指数バックオフで最大3回リトライ。全消化後はブロックで failed に落とす。
+  retry_on GeminiError, wait: :polynomially_longer, attempts: 3 do |job, error|
+    sheet = AnswerSheet.find_by(id: job.arguments.first)
+    sheet&.update!(ai_grading: { "status" => "failed" })
+    Rails.logger.error "GradeAnswerSheetJob permanently failed after retries " \
+                       "(sheet=#{job.arguments.first}): #{error.message}"
+  end
+
   def perform(answer_sheet_id)
     sheet = AnswerSheet.find(answer_sheet_id)
     exam  = sheet.exam
@@ -25,6 +36,8 @@ class GradeAnswerSheetJob < ApplicationJob
     end
 
     sheet.update!(ai_grading: { "status" => "done", "results" => results })
+  rescue GeminiError
+    raise # retry_on に委譲する
   rescue => e
     Rails.logger.error "GradeAnswerSheetJob failed (sheet=#{answer_sheet_id}): #{e.message}"
     sheet&.update!(ai_grading: { "status" => "failed" })
@@ -94,6 +107,7 @@ class GradeAnswerSheetJob < ApplicationJob
 
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
+    http.open_timeout = 10
     http.read_timeout = 60
 
     req = Net::HTTP::Post.new(uri)
@@ -104,7 +118,7 @@ class GradeAnswerSheetJob < ApplicationJob
     json = JSON.parse(res.body)
 
     if json["error"]
-      raise "Gemini API error #{json.dig('error', 'code')}: #{json.dig('error', 'message')}"
+      raise GeminiError, "Gemini API error #{json.dig('error', 'code')}: #{json.dig('error', 'message')}"
     end
 
     # Gemini 2.5 Flash (thinking model) may include a thought part before the JSON part.
@@ -113,11 +127,13 @@ class GradeAnswerSheetJob < ApplicationJob
     text = parts.reject { |p| p["thought"] }.last&.dig("text").to_s
     Rails.logger.info "GradeAnswerSheetJob: Gemini response (truncated): #{text.truncate(300)}"
 
-    raise "Gemini returned no parseable text (all parts were thought blocks?)" if text.blank?
+    raise GeminiError, "Gemini returned no parseable text (all parts were thought blocks?)" if text.blank?
 
     parsed = JSON.parse(text)
-    raise "Gemini returned empty results" if parsed.empty?
+    raise GeminiError, "Gemini returned empty results" if parsed.empty?
 
     parsed.transform_keys(&:to_i)
+  rescue Net::OpenTimeout, Net::ReadTimeout => e
+    raise GeminiError, "Gemini network timeout: #{e.message}"
   end
 end
