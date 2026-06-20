@@ -76,7 +76,7 @@ function ClassAddForm({ onAdded }: { onAdded: (c: { id: number; name: string; gr
 }
 
 export function ExamCreateScreen() {
-  const { user } = useCurrentUser();
+  const { user, isLoading: userLoading } = useCurrentUser();
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [subjectCode, setSubjectCode] = useState("math");
@@ -99,7 +99,9 @@ export function ExamCreateScreen() {
     onError: (e: Error) => setError(e.message),
   });
 
-  if (user && user.role === "student") {
+  if (userLoading) return null;
+
+  if (user?.role === "student") {
     return (
       <Panel className="mx-auto mt-6 max-w-2xl">
         <div className="px-5 py-16 text-center">
