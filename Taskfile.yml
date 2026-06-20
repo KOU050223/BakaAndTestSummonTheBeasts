@@ -270,16 +270,7 @@ tasks:
 
   deploy:seed:demo:
     desc: デプロイ先へデモ環境用の初期データを投入する
-    cmd: |
-      deploy_env_file="${DEPLOY_ENV_FILE:-$HOME/.config/baka/backend.env}"
-      if [ ! -r "$deploy_env_file" ]; then
-        echo "deployment environment file is not readable: $deploy_env_file" >&2
-        exit 2
-      fi
-      podman run --rm --network=host \
-        --env-file "$deploy_env_file" \
-        localhost/baka-backend:current \
-        ./bin/rails db:seed:demo
+    cmd: ./deploy/scripts/seed-demo.sh
 
   db:setup:
     desc: DB作成・マイグレーション・シードをまとめて実行する
