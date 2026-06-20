@@ -43,6 +43,8 @@ export const playerStateSchema = z.object({
   // 中立（どのフィールドにもいない）は null。
   currentSubject: z.string().nullable(),
   summoned: z.boolean(),
+  // この tick で攻撃を発動したか（攻撃アニメーションの再生トリガー）。
+  attacking: z.boolean(),
   summons: z.record(z.string(), summonStateSchema),
 });
 

@@ -21,8 +21,8 @@ const stateWithPlayers = (overrides?: Partial<StateMessage>): StateMessage => ({
   tick: 10,
   fields: [],
   players: {
-    "1": { x: 0, z: 0, angle: 0, currentSubject: "math", summoned: true, summons: { math: { hp: 100 } } },
-    "2": { x: 1, z: 1, angle: 0, currentSubject: "math", summoned: true, summons: { math: { hp: 80 } } },
+    "1": { x: 0, z: 0, angle: 0, currentSubject: "math", summoned: true, attacking: false, summons: { math: { hp: 100 } } },
+    "2": { x: 1, z: 1, angle: 0, currentSubject: "math", summoned: true, attacking: false, summons: { math: { hp: 80 } } },
   },
   ...overrides,
 });

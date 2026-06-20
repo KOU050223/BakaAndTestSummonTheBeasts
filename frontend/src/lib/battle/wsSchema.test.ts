@@ -20,6 +20,7 @@ describe("wsSchema", () => {
             angle: 1.57,
             currentSubject: "math",
             summoned: true,
+            attacking: false,
             summons: { math: { hp: 142 }, english: { hp: 100 } },
           },
         },
@@ -41,7 +42,7 @@ describe("wsSchema", () => {
         tick: 1,
         fields: [],
         players: {
-          "38": { x: 0, z: 0, angle: 0, currentSubject: null, summoned: false, summons: {} },
+          "38": { x: 0, z: 0, angle: 0, currentSubject: null, summoned: false, attacking: false, summons: {} },
         },
       };
 
