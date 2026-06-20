@@ -5,7 +5,6 @@ import {
   navLabel,
   type NavSection,
 } from "./navigation";
-import { NAV_BY_ROLE, ROLE_LABEL, navLabel, type NavSection } from "./navigation";
 
 // セクションをまたいで全タブを平坦化する
 const flatItems = (sections: NavSection[]) =>
