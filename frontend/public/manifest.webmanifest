@@ -1,0 +1,18 @@
+{
+  "name": "試験召喚システム",
+  "short_name": "試験召喚",
+  "description": "試験の成績から召喚獣を育て、クラス対抗の試召戦争を楽しみながら学べる教育支援プラットフォーム。",
+  "lang": "ja",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#08162e",
+  "theme_color": "#38bdf8",
+  "icons": [
+    {
+      "src": "/site-icon.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
