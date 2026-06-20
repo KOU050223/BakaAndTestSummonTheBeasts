@@ -48,4 +48,17 @@ describe("ScoresScreen", () => {
     ).toBeInTheDocument();
 
   });
+
+  it("管理者には全体ランキング画面を表示する", () => {
+    mockUseCurrentUser.mockReturnValue({
+      user: { id: 3, name: "管理者", role: "school_admin" },
+    });
+    render(<ScoresScreen />);
+
+    expect(
+      screen.getByRole("heading", { name: "全体ランキング" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "全体成績ランキング" }))
+      .toBeInTheDocument();
+  });
 });

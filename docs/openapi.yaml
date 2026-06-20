@@ -264,6 +264,48 @@ paths:
               - email
               - password
         required: true
+  "/api/battles/opponents":
+    get:
+      summary: 対戦相手候補一覧取得
+      tags:
+      - Battles
+      security:
+      - cookie_auth: []
+      description: 対戦相手にできる生徒一覧（自分は除く、クラスを問わない）。宣戦布告の相手選択に使う。
+      responses:
+        '200':
+          description: 対戦相手候補一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  opponents:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                      required:
+                      - id
+                      - name
+                required:
+                - opponents
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: 権限なし（school_admin は禁止）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/api/battles":
     get:
       summary: バトル一覧取得
@@ -286,17 +328,19 @@ paths:
                       properties:
                         battleId:
                           type: string
-                        subjectId:
-                          type: string
+                        subjects:
+                          type: array
+                          items:
+                            type: string
                         status:
                           type: string
                         opponentName:
                           type: string
+                          nullable: true
                       required:
                       - battleId
-                      - subjectId
+                      - subjects
                       - status
-                      - opponentName
                 required:
                 - battles
         '401':
@@ -320,7 +364,7 @@ paths:
       parameters: []
       responses:
         '201':
-          description: 教師もバトル作成できる
+          description: バトル作成成功
           content:
             application/json:
               schema:
@@ -328,14 +372,22 @@ paths:
                 properties:
                   battleId:
                     type: string
-                  subjectId:
-                    type: string
+                  subjects:
+                    type: array
+                    items:
+                      type: string
                   status:
                     type: string
                 required:
                 - battleId
-                - subjectId
+                - subjects
                 - status
+        '422':
+          description: 対戦科目が空（バリデーションエラー）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: 未認証
           content:
@@ -354,11 +406,22 @@ paths:
             schema:
               type: object
               properties:
-                subjectId:
+                opponentId:
                   type: string
-                  example: math
+                  example: '2'
+                  description: 対戦相手の生徒ID
+                subjects:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                  - math
+                  - english
+                  - physics
+                  description: 対戦科目（召喚フィールド）
               required:
-              - subjectId
+              - opponentId
+              - subjects
         required: true
   "/api/battles/{id}/result":
     get:
@@ -386,8 +449,10 @@ paths:
                     type: string
                   winnerId:
                     type: string
+                    nullable: true
                   loserId:
                     type: string
+                    nullable: true
                   turnCount:
                     type: integer
                   logs:
@@ -413,18 +478,61 @@ paths:
                       - damage
                 required:
                 - battleId
-                - winnerId
-                - loserId
                 - turnCount
                 - logs
+        '404':
+          description: バトルが存在しない
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: 未認証
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/api/battles/{id}/token":
+    get:
+      summary: WebSocket接続用トークン発行
+      tags:
+      - Battles
+      security:
+      - cookie_auth: []
+      description: Go Game Server への WebSocket 接続に使う JWT を発行する。バトルの参加者にのみ発行する。
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: バトルID
+        schema:
+          type: string
+      responses:
+        '200':
+          description: トークン発行成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                required:
+                - token
         '403':
-          description: 権限なし（school_admin は禁止）
+          description: バトルの参加者でない
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: バトルが存在しない
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: 未認証
           content:
             application/json:
               schema:

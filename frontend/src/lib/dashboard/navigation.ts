@@ -34,6 +34,9 @@ export const NAV_BY_ROLE: Record<Role, NavSection[]> = {
       heading: "試召戦争",
       items: [
         { label: "宣戦布告", href: "/declare-war", icon: "⚔️" },
+        // バトル一覧（入室導線）。宣戦布告で作成したバトルや、相手から挑まれた
+        // 待機中バトルがここに並ぶ。個別バトルは /wars/:id/battle。
+        { label: "バトル", href: "/wars", icon: "🎮" },
         { label: "戦績", href: "/records", icon: "🏆" },
       ],
     },
@@ -63,14 +66,13 @@ export const NAV_BY_ROLE: Record<Role, NavSection[]> = {
       items: [
         { label: "管理者ダッシュボード", href: "/", icon: "🖥️" },
         { label: "ユーザー管理", href: "/admin/users", icon: "👤" },
-
         { label: "クラス設定", href: "/classes", icon: "🏫" },
-
       ],
     },
     {
       heading: "参照",
       items: [
+        { label: "全体成績", href: "/scores", icon: "📊" },
         { label: "試召戦争ログ", href: "/records", icon: "⚔️" },
       ],
     },
@@ -83,7 +85,6 @@ export function navLabel(role: Role, href: string): string {
   const sections = NAV_BY_ROLE[role] ?? [];
   const item = sections.flatMap((s) => s.items).find((it) => it.href === href);
   return item ? item.label : "準備中";
-
 }
 
 // ロールの日本語表記。サイドバー左下のバッジなどで使う。

@@ -13,12 +13,18 @@
     "generate": "openapi-typescript ../docs/openapi.yaml -o src/lib/api/schema.d.ts"
   },
   "dependencies": {
+    "@pixiv/three-vrm": "^3.5.4",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
     "@tanstack/react-query": "^5.101.0",
     "next": "16.2.9",
     "openapi-fetch": "^0.17.0",
     "openapi-react-query": "^0.5.4",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "three": "^0.184.0",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -28,6 +34,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.184.1",
     "@vitejs/plugin-react": "^6.0.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",

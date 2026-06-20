@@ -107,7 +107,10 @@ function AdminRankings() {
         </div>
         <div className="p-4">
           <div className="overflow-x-auto">
-            <table className="min-w-full table-fixed">
+            <table
+              aria-label="全体成績ランキング"
+              className="min-w-full table-fixed"
+            >
               <colgroup>
                 <col className="w-28" />
                 <col className="w-[55%]" />

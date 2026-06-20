@@ -9,6 +9,10 @@ includes:
     taskfile: ./frontend/Taskfile.yml
     dir: ./frontend
     internal: true
+  game:
+    taskfile: ./game/Taskfile.yml
+    dir: ./game
+    internal: true
 
 tasks:
   default:
@@ -34,6 +38,7 @@ tasks:
       - task: backend:dev
       # - task: backend:jobs
       - task: frontend:dev
+      - task: game:dev
 
   lint:
     desc: 全サービスのlintをまとめて実行する
@@ -124,7 +129,7 @@ tasks:
         if [ ! -f ".env" ]; then
           cp .env.example .env
           echo "✅ .env を .env.example からコピーしました"
-          echo "   ⚠️  .env を開いて DB_PASSWORD と JWT_SECRET_KEY を設定してください"
+          echo "   ⚠️  .env を開いて DB_PASSWORD を設定してください"
         else
           echo "✅ .env は既に存在します（スキップ）"
         fi
@@ -138,13 +143,19 @@ tasks:
           echo "✅ backend/.env は既に存在します（スキップ）"
         fi
 
-        # .env に JWT_SECRET_KEY が "your_jwt_secret_key_here" のままなら警告
-        if grep -q "your_jwt_secret_key_here" .env 2>/dev/null; then
-          echo ""
-          echo "⚠️  .env の JWT_SECRET_KEY がデフォルト値のままです。"
-          echo "   'openssl rand -hex 64' で生成した値を設定してください:"
-          echo "   $(openssl rand -hex 64 2>/dev/null || echo '<openssl が使えません>')"
+        # game/.env
+        if [ ! -f "game/.env" ]; then
+          cp game/.env.example game/.env
+          echo "✅ game/.env を game/.env.example からコピーしました"
+        else
+          echo "✅ game/.env は既に存在します（スキップ）"
         fi
+
+        echo ""
+        echo "⚠️  backend/.env と game/.env の以下の値を、手動で同じ値に設定してください:"
+        echo "   - JWT_SECRET_KEY"
+        echo "   - INTERNAL_API_SECRET"
+        echo "   生成例: openssl rand -hex 64"
 
   setup:install:
     desc: 依存関係のインストール
@@ -271,4 +282,3 @@ tasks:
     desc: マイグレーションの状態を確認する
     dir: ./backend
     cmd: bundle exec rails db:migrate:status
-

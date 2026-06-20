@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_17_200000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_19_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -56,6 +56,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_17_200000) do
     t.index ["student_id"], name: "index_answer_sheets_on_student_id"
   end
 
+  create_table "battle_fields", force: :cascade do |t|
+    t.bigint "battle_id", null: false
+    t.float "center_x", default: 0.0, null: false
+    t.float "center_z", default: 0.0, null: false
+    t.datetime "created_at", null: false
+    t.float "radius", default: 3.0, null: false
+    t.string "subject", null: false
+    t.datetime "updated_at", null: false
+    t.index ["battle_id", "subject"], name: "index_battle_fields_on_battle_id_and_subject", unique: true
+    t.index ["battle_id"], name: "index_battle_fields_on_battle_id"
+  end
+
   create_table "battle_logs", force: :cascade do |t|
     t.string "action", null: false
     t.bigint "actor_id", null: false
@@ -74,10 +86,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_17_200000) do
   create_table "battle_players", force: :cascade do |t|
     t.bigint "battle_id", null: false
     t.datetime "created_at", null: false
-    t.integer "initial_attack", null: false
-    t.integer "initial_defense", null: false
-    t.integer "initial_hp", null: false
-    t.integer "initial_speed", null: false
     t.bigint "student_id", null: false
     t.datetime "updated_at", null: false
     t.index ["battle_id", "student_id"], name: "index_battle_players_on_battle_id_and_student_id", unique: true
@@ -85,11 +93,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_17_200000) do
     t.index ["student_id"], name: "index_battle_players_on_student_id"
   end
 
+  create_table "battle_summons", force: :cascade do |t|
+    t.bigint "battle_player_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "initial_attack", null: false
+    t.integer "initial_defense", null: false
+    t.integer "initial_hp", null: false
+    t.integer "initial_speed", null: false
+    t.string "subject", null: false
+    t.datetime "updated_at", null: false
+    t.index ["battle_player_id", "subject"], name: "index_battle_summons_on_battle_player_id_and_subject", unique: true
+    t.index ["battle_player_id"], name: "index_battle_summons_on_battle_player_id"
+  end
+
   create_table "battles", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "created_by_id", null: false
     t.string "status", default: "waiting", null: false
-    t.string "subject", null: false
     t.integer "turn_count"
     t.datetime "updated_at", null: false
     t.bigint "winner_id"
@@ -180,11 +200,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_17_200000) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "answer_sheets", "exams"
   add_foreign_key "answer_sheets", "users", column: "student_id"
+  add_foreign_key "battle_fields", "battles"
   add_foreign_key "battle_logs", "battles"
   add_foreign_key "battle_logs", "users", column: "actor_id"
   add_foreign_key "battle_logs", "users", column: "target_id"
   add_foreign_key "battle_players", "battles"
   add_foreign_key "battle_players", "users", column: "student_id"
+  add_foreign_key "battle_summons", "battle_players"
   add_foreign_key "battles", "users", column: "created_by_id"
   add_foreign_key "battles", "users", column: "winner_id"
   add_foreign_key "class_memberships", "school_classes"

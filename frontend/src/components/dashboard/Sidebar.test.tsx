@@ -24,6 +24,14 @@ const studentUser: User = {
   school_class: null,
 };
 
+const schoolAdminUser: User = {
+  ...studentUser,
+  id: 2,
+  name: "管理者",
+  email: "admin@fumizuki.ac.jp",
+  role: "school_admin",
+};
+
 describe("Sidebar", () => {
   it("ロールに対応するタブを描画する（生徒は5タブ）", () => {
     render(<Sidebar user={studentUser} />);
@@ -46,5 +54,22 @@ describe("Sidebar", () => {
 
     const inactive = screen.getByRole("link", { name: /答案を提出/ });
     expect(inactive).not.toHaveAttribute("aria-current");
+  });
+
+  it("管理者には全体成績へのリンクを表示する", () => {
+    render(<Sidebar user={schoolAdminUser} />);
+
+    expect(screen.getByRole("link", { name: /全体成績/ })).toHaveAttribute(
+      "href",
+      "/scores",
+    );
+  });
+
+  it("管理者には試召戦争ログへのリンクを表示する", () => {
+    render(<Sidebar user={schoolAdminUser} />);
+
+    expect(
+      screen.getByRole("link", { name: /試召戦争ログ/ }),
+    ).toHaveAttribute("href", "/records");
   });
 });
