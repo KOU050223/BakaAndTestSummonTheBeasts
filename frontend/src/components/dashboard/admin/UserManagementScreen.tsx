@@ -37,9 +37,17 @@ function StatCard({ label, value, sub, accent }: { label: string; value: number;
   );
 }
 
-export function UserManagementScreen() {
+export function UserManagementScreen({
+  selectable,
+  onSelect,
+  initialFilter = "all",
+}: {
+  selectable?: boolean;
+  onSelect?: (user: User) => void;
+  initialFilter?: RoleFilter;
+}) {
   const queryClient = useQueryClient();
-  const [filter, setFilter] = useState<RoleFilter>("all");
+  const [filter, setFilter] = useState<RoleFilter>(initialFilter);
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -128,7 +136,7 @@ export function UserManagementScreen() {
           </h1>
           <p className="mt-1 text-sm text-slate-300">生徒・教師アカウントの登録・編集・削除</p>
         </div>
-        <Button onClick={openCreate}>＋ 1件追加</Button>
+        <Button onClick={openCreate}>＋追加</Button>
       </div>
 
       {/* 統計カード */}
@@ -189,7 +197,11 @@ export function UserManagementScreen() {
               </thead>
               <tbody>
                 {filteredUsers.map((user) => (
-                  <tr key={user.id} className="border-b border-sky-400/10 transition-colors hover:bg-sky-400/5">
+                  <tr
+                    key={user.id}
+                    className={`border-b border-sky-400/10 transition-colors ${selectable ? "hover:bg-sky-400/8 cursor-pointer" : "hover:bg-sky-400/5"}`}
+                    onClick={selectable ? () => onSelect?.(user) : undefined}
+                  >
                     <td className="px-5 py-3 font-bold text-white">{user.name}</td>
                     <td className="px-5 py-3 font-mono text-slate-300">{user.email}</td>
                     <td className="px-5 py-3">
@@ -199,21 +211,25 @@ export function UserManagementScreen() {
                     </td>
                     <td className="px-5 py-3 text-slate-300">{user.school_class?.name ?? "—"}</td>
                     <td className="px-5 py-3">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => openEdit(user)}
-                          className="rounded-sm border border-sky-400/40 px-3 py-1 text-xs font-bold text-sky-200 transition-colors hover:bg-sky-400/10"
-                        >
-                          編集
-                        </button>
-                        <button
-                          onClick={() => handleDelete(user)}
-                          disabled={deleteMutation.isPending}
-                          className="rounded-sm border border-red-500/50 px-3 py-1 text-xs font-bold text-red-300 transition-colors hover:bg-red-500/15 disabled:opacity-50"
-                        >
-                          削除
-                        </button>
-                      </div>
+                      {!selectable ? (
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => openEdit(user)}
+                            className="rounded-sm border border-sky-400/40 px-3 py-1 text-xs font-bold text-sky-200 transition-colors hover:bg-sky-400/10"
+                          >
+                            編集
+                          </button>
+                          <button
+                            onClick={() => handleDelete(user)}
+                            disabled={deleteMutation.isPending}
+                            className="rounded-sm border border-red-500/50 px-3 py-1 text-xs font-bold text-red-300 transition-colors hover:bg-red-500/15 disabled:opacity-50"
+                          >
+                            削除
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-slate-400 text-right">選択</div>
+                      )}
                     </td>
                   </tr>
                 ))}
