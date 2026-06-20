@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { $api } from "@/lib/api/client";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
 import { useOpponents } from "@/lib/battle/useOpponents";
-import { useClasses } from "@/lib/classes/useClasses";
+import { useOpponentClasses } from "@/lib/battle/useOpponentClasses";
 import { useSummon } from "@/lib/summon/useSummon";
 import { Button, Panel } from "@/components/ui";
 
@@ -19,7 +19,7 @@ export function DeclareWarScreen() {
   const router = useRouter();
   const { user } = useCurrentUser();
   const { opponents } = useOpponents();
-  const { classes } = useClasses();
+  const { classes } = useOpponentClasses();
   const { summons } = useSummon(user?.id);
 
   const [mode, setMode] = useState<Mode>("solo");

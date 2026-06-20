@@ -30,11 +30,11 @@ vi.mock("@/lib/summon/useSummon", () => ({
   }),
 }));
 
-vi.mock("@/lib/classes/useClasses", () => ({
-  useClasses: () => ({
+vi.mock("@/lib/battle/useOpponentClasses", () => ({
+  useOpponentClasses: () => ({
     classes: [
-      { id: 10, name: "A組", grade: 2, averageScore: 0, studentCount: 3 },
-      { id: 20, name: "B組", grade: 2, averageScore: 0, studentCount: 4 },
+      { id: 10, name: "A組", grade: 2 },
+      { id: 20, name: "B組", grade: 2 },
     ],
     isLoading: false,
   }),

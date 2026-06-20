@@ -53,6 +53,62 @@ RSpec.describe "Battles API", type: :request do
     end
   end
 
+  path "/api/battles/opponent_classes" do
+    get "クラス戦の相手クラス候補一覧取得" do
+      tags "Battles"
+      produces "application/json"
+      security [ cookie_auth: [] ]
+      description "クラス戦の宣戦布告で相手クラスを選ぶための軽量一覧。生徒が在籍するクラスのみ返す（平均点・人数は含めない）。生徒・教師が利用できる。"
+
+      response "200", "相手クラス候補一覧" do
+        schema type: :object,
+          properties: {
+            classes: {
+              type: :array,
+              items: {
+                type: :object,
+                properties: {
+                  id:    { type: :integer },
+                  name:  { type: :string },
+                  grade: { type: :integer }
+                },
+                required: %w[id name grade]
+              }
+            }
+          },
+          required: %w[classes]
+
+        let(:my_class)    { create(:school_class, name: "A組") }
+        let(:other_class) { create(:school_class, name: "B組") }
+        before do
+          me = create(:user)
+          create(:class_membership, user: me, school_class: my_class)
+          create(:class_membership, user: create(:user), school_class: other_class)
+          # 生徒のいないクラスは候補に出ない。
+          create(:school_class, name: "空き組")
+          cookies[:token] = JwtService.encode(user_id: me.id)
+        end
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          names = body["classes"].map { |c| c["name"] }
+          expect(names).to include("A組", "B組")
+          expect(names).not_to include("空き組")
+        end
+      end
+
+      response "401", "未認証" do
+        schema "$ref" => "#/components/schemas/error"
+        run_test!
+      end
+
+      response "403", "権限なし（school_admin は禁止）" do
+        schema "$ref" => "#/components/schemas/error"
+        before { cookies[:token] = JwtService.encode(user_id: create(:user, :school_admin).id) }
+        run_test!
+      end
+    end
+  end
+
   path "/api/battles" do
     get "バトル一覧取得" do
       tags "Battles"

@@ -2,7 +2,7 @@ module Api
   # バトル一覧・作成・結果取得（docs/apiSpec.md §3.7, §3.8）。
   # バトル進行は Go Game Server が担い、Rails は作成（スナップショット）と結果保存を担当する。
   class BattlesController < BaseController
-    before_action -> { require_role!(:student, :teacher) }, only: %i[index create result token opponents declare_war]
+    before_action -> { require_role!(:student, :teacher) }, only: %i[index create result token opponents opponent_classes declare_war]
 
     # 自分が参加している（または作成した）バトル一覧。
     def index
@@ -20,6 +20,16 @@ module Api
     def opponents
       candidates = User.where(role: "student").where.not(id: current_user.id).order(:id)
       render json: { opponents: candidates.map { |s| { id: s.id, name: s.name } } }, status: :ok
+    end
+
+    # クラス戦の相手クラス候補一覧（生徒が在籍するクラスのみ）。
+    # 生徒・教師の宣戦布告画面で相手クラスを選ぶのに使う軽量版。
+    # クラス管理画面の平均点・人数などの機密情報は含めない。
+    def opponent_classes
+      classes = SchoolClass
+        .where(id: ClassMembership.joins(:user).where(users: { role: "student" }).select(:school_class_id))
+        .order(:grade, :name)
+      render json: { classes: classes.map { |c| { id: c.id, name: c.name, grade: c.grade } } }, status: :ok
     end
 
     def create

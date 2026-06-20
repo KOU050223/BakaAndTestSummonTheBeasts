@@ -50,6 +50,7 @@ Rails.application.routes.draw do
     resources :battles, only: [ :index, :create ] do
       collection do
         get :opponents
+        get :opponent_classes
         post :declare_war
       end
       member do

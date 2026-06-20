@@ -461,6 +461,69 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/battles/opponent_classes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * クラス戦の相手クラス候補一覧取得
+         * @description クラス戦の宣戦布告で相手クラスを選ぶための軽量一覧。生徒が在籍するクラスのみ返す（平均点・人数は含めない）。生徒・教師が利用できる。
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description 相手クラス候補一覧 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            classes: {
+                                id: number;
+                                name: string;
+                                grade: number;
+                            }[];
+                        };
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description 権限なし（school_admin は禁止） */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/battles": {
         parameters: {
             query?: never;
