@@ -9,10 +9,12 @@ import { useCurrentUser } from "@/lib/auth/useCurrentUser";
 import { navLabel } from "@/lib/dashboard/navigation";
 import { useEffect, useMemo, useState } from "react";
 
+// OpenAPI 型と実 API 応答（subject / answer_key_status）の差を吸収する。
 type TeacherExam = {
   id: number | string;
   title: string;
-  subject: string;
+  subjectId?: string;
+  subject?: string;
   max_score?: number;
   answer_key_status?: "none" | "processing" | "done";
 };
@@ -84,7 +86,10 @@ export function TeacherDashboard() {
   const { data: battlesData } = $api.useQuery("get", "/api/battles", { refetchInterval: 5000 });
 
   const exams = useMemo(
-    () => (Array.isArray(examsData?.exams) ? (examsData.exams as TeacherExam[]) : []),
+    () =>
+      Array.isArray(examsData?.exams)
+        ? (examsData.exams as unknown as TeacherExam[])
+        : [],
     [examsData],
   );
 
@@ -216,7 +221,9 @@ export function TeacherDashboard() {
                   return (
                     <tr key={exam.id} className="border-b border-sky-400/10 hover:bg-sky-400/5">
                       <td className="px-3 py-3 font-bold text-white">{exam.title}</td>
-                      <td className="px-3 py-3 text-slate-300">{subjectLabel(exam.subject)}</td>
+                      <td className="px-3 py-3 text-slate-300">
+                        {subjectLabel(exam.subject ?? exam.subjectId ?? "")}
+                      </td>
                       <td className="px-3 py-3 text-slate-300">
                         {ANSWER_KEY_LABELS[keyStatus] ?? keyStatus}
                       </td>

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Panel } from "@/components/ui/Panel";
-import type { ClassSubjectAverage, ClassSummary } from "@/lib/api/types";
+import type { ClassSubjectAverage } from "@/lib/api/types";
 import { useClasses } from "@/lib/classes/useClasses";
 import {
   formatClassAverageScore,

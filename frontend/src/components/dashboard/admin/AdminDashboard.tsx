@@ -61,7 +61,6 @@ export function AdminDashboard() {
 
   const stats = {
     users: usersData?.stats?.total_count?.toString() ?? "—",
-    classes: Array.isArray(classesData?.classes) ? String(classesData.classes.length) : "—",
     // 公開済み試験のみをカウント。exams オブジェクトに status フィールドがない場合は全件を表示。
     exams: Array.isArray(examsData?.exams)
       ? String(
