@@ -25,5 +25,4 @@ if grep -Eq '=(replace-me|postgresql://user:password@host:)' "$env_file"; then
   exit 2
 fi
 
-systemctl --user daemon-reload
 printf 'installed backend Quadlet configuration\n'
