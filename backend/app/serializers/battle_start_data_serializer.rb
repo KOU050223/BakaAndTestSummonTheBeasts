@@ -31,6 +31,8 @@ class BattleStartDataSerializer
     {
       userId: player.student_id.to_s,
       name: player.student.name,
+      teamId: player.team_id.to_s,
+      leader: player.leader,
       summons: player.battle_summons.map { |s| summon_json(s) }
     }
   end

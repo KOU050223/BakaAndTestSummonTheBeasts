@@ -65,10 +65,29 @@ RSpec.describe Battles::Create do
     expect(summon.initial_attack).to eq(default.attack)
   end
 
-  it "1対1以外（プレイヤー2人でない）は弾く" do
+  it "参加者が2人未満なら弾く" do
     expect {
       described_class.new(created_by: creator, student_ids: [ player_a.id ], subjects: subjects).call
     }.to raise_error(ArgumentError)
+  end
+
+  it "team_id 付きの participants で N:N バトルを作成できる" do
+    player_c = create(:user)
+    player_d = create(:user)
+    battle = described_class.new(
+      created_by: creator,
+      subjects: %w[math],
+      participants: [
+        { student_id: player_a.id, team_id: "1" },
+        { student_id: player_b.id, team_id: "1" },
+        { student_id: player_c.id, team_id: "2" },
+        { student_id: player_d.id, team_id: "2" }
+      ]
+    ).call
+
+    teams = battle.battle_players.group_by(&:team_id).transform_values { |ps| ps.map(&:student_id) }
+    expect(teams["1"]).to match_array([ player_a.id, player_b.id ])
+    expect(teams["2"]).to match_array([ player_c.id, player_d.id ])
   end
 
   it "対戦科目が空なら弾く" do

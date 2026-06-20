@@ -2,7 +2,7 @@ module Api
   # バトル一覧・作成・結果取得（docs/apiSpec.md §3.7, §3.8）。
   # バトル進行は Go Game Server が担い、Rails は作成（スナップショット）と結果保存を担当する。
   class BattlesController < BaseController
-    before_action -> { require_role!(:student, :teacher) }, only: %i[index create result token opponents]
+    before_action -> { require_role!(:student, :teacher) }, only: %i[index create result token opponents declare_war]
 
     # 自分が参加している（または作成した）バトル一覧。
     def index
@@ -34,6 +34,23 @@ module Api
       render_error(code: "invalid_request", message: e.message, status: :unprocessable_entity)
     end
 
+    # クラス単位の宣戦布告で N:N バトルを作成する。
+    # 宣戦布告者は自クラスを attacker とし、相手クラス(defenderClassId)へ布告する。
+    def declare_war
+      battle = Battles::DeclareWar.new(
+        created_by: current_user,
+        attacker_class_id: attacker_class_id,
+        defender_class_id: params[:defenderClassId],
+        subjects: Array(params[:subjects])
+      ).call
+
+      render json: { battleId: battle.id.to_s, subjects: battle.subjects, status: battle.status }, status: :created
+    rescue ArgumentError => e
+      render_error(code: "invalid_request", message: e.message, status: :unprocessable_entity)
+    rescue ActiveRecord::RecordNotFound
+      render_error(code: "not_found", message: "クラスが見つかりません", status: :not_found)
+    end
+
     def result
       battle = Battle.find_by(id: params[:id])
       return render_error(code: "not_found", message: "バトルが見つかりません", status: :not_found) if battle.nil?
@@ -57,6 +74,12 @@ module Api
     end
 
     private
+
+    # 宣戦布告側のクラスID。明示指定があれば優先し、なければ布告者の所属クラスを使う。
+    def attacker_class_id
+      params[:attackerClassId].presence || current_user.school_class&.id ||
+        (raise ArgumentError, "宣戦布告するクラスを特定できません")
+    end
 
     # 参加者IDを組み立てる。生徒が作成した場合は自分も参加者に含める。
     def participant_ids

@@ -423,6 +423,86 @@ paths:
               - opponentId
               - subjects
         required: true
+  "/api/battles/declare_war":
+    post:
+      summary: クラス単位の宣戦布告（N:N対戦作成）
+      tags:
+      - Battles
+      security:
+      - cookie_auth: []
+      description: 宣戦布告したクラスと相手クラスの生徒全員を陣営に分けて N:N バトルを作成する。attackerClassId 省略時は布告者の所属クラスを使う。
+      parameters: []
+      responses:
+        '201':
+          description: 宣戦布告成功（N:Nバトル作成）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  battleId:
+                    type: string
+                  subjects:
+                    type: array
+                    items:
+                      type: string
+                  status:
+                    type: string
+                required:
+                - battleId
+                - subjects
+                - status
+        '422':
+          description: 同じクラス同士など不正な布告
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: クラスが存在しない
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: 権限なし（school_admin は禁止）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                attackerClassId:
+                  type: string
+                  nullable: true
+                  example: '1'
+                  description: 宣戦布告する側のクラスID（省略時は布告者の所属クラス）
+                defenderClassId:
+                  type: string
+                  example: '2'
+                  description: 宣戦布告される側のクラスID
+                subjects:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                  - math
+                  - english
+                  description: 対戦科目（召喚フィールド）
+              required:
+              - defenderClassId
+              - subjects
+        required: true
   "/api/battles/{id}/result":
     get:
       summary: バトル結果取得
@@ -726,21 +806,21 @@ paths:
                 type: object
                 properties:
                   id:
-                    type: string
+                    type: integer
                   title:
                     type: string
-                  subjectId:
+                  subject:
                     type: string
-                  classId:
-                    type: string
-                  maxScore:
+                  class_id:
+                    type: integer
+                  max_score:
                     type: integer
                 required:
                 - id
                 - title
-                - subjectId
-                - classId
-                - maxScore
+                - subject
+                - class_id
+                - max_score
         '401':
           description: 未認証
           content:
@@ -762,20 +842,20 @@ paths:
                 title:
                   type: string
                   example: 数学 小テスト1
-                subjectId:
+                subject:
                   type: string
                   example: math
-                classId:
-                  type: string
-                  example: class_a
-                maxScore:
+                class_id:
+                  type: integer
+                  example: 1
+                max_score:
                   type: integer
                   example: 100
               required:
               - title
-              - subjectId
-              - classId
-              - maxScore
+              - subject
+              - class_id
+              - max_score
         required: true
   "/api/exams/{exam_id}/scores":
     get:

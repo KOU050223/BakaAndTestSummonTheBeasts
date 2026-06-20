@@ -147,6 +147,82 @@ RSpec.describe "Battles API", type: :request do
     end
   end
 
+  path "/api/battles/declare_war" do
+    post "クラス単位の宣戦布告（N:N対戦作成）" do
+      tags "Battles"
+      consumes "application/json"
+      produces "application/json"
+      security [ cookie_auth: [] ]
+      description "宣戦布告したクラスと相手クラスの生徒全員を陣営に分けて N:N バトルを作成する。attackerClassId 省略時は布告者の所属クラスを使う。"
+
+      parameter name: :body, in: :body, required: true, schema: {
+        type: :object,
+        properties: {
+          attackerClassId: { type: :string, nullable: true, example: "1", description: "宣戦布告する側のクラスID（省略時は布告者の所属クラス）" },
+          defenderClassId: { type: :string, example: "2", description: "宣戦布告される側のクラスID" },
+          subjects:        { type: :array, items: { type: :string }, example: %w[math english], description: "対戦科目（召喚フィールド）" }
+        },
+        required: %w[defenderClassId subjects]
+      }
+
+      response "201", "宣戦布告成功（N:Nバトル作成）" do
+        schema type: :object,
+          properties: {
+            battleId: { type: :string },
+            subjects: { type: :array, items: { type: :string } },
+            status:   { type: :string }
+          },
+          required: %w[battleId subjects status]
+
+        let(:attacker_class) { create(:school_class, name: "A組") }
+        let(:defender_class) { create(:school_class, name: "B組") }
+        let(:teacher) { create(:user, :teacher) }
+        before do
+          create(:class_membership, user: create(:user), school_class: attacker_class)
+          create(:class_membership, user: create(:user), school_class: defender_class)
+          cookies[:token] = JwtService.encode(user_id: teacher.id)
+        end
+        let(:body) { { attackerClassId: attacker_class.id.to_s, defenderClassId: defender_class.id.to_s, subjects: %w[math] } }
+        run_test!
+      end
+
+      response "422", "同じクラス同士など不正な布告" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:attacker_class) { create(:school_class, name: "A組") }
+        before do
+          create(:class_membership, user: create(:user), school_class: attacker_class)
+          cookies[:token] = JwtService.encode(user_id: create(:user, :teacher).id)
+        end
+        let(:body) { { attackerClassId: attacker_class.id.to_s, defenderClassId: attacker_class.id.to_s, subjects: %w[math] } }
+        run_test!
+      end
+
+      response "404", "クラスが存在しない" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:attacker_class) { create(:school_class, name: "A組") }
+        before do
+          create(:class_membership, user: create(:user), school_class: attacker_class)
+          cookies[:token] = JwtService.encode(user_id: create(:user, :teacher).id)
+        end
+        let(:body) { { attackerClassId: attacker_class.id.to_s, defenderClassId: "999999", subjects: %w[math] } }
+        run_test!
+      end
+
+      response "401", "未認証" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:body) { {} }
+        run_test!
+      end
+
+      response "403", "権限なし（school_admin は禁止）" do
+        schema "$ref" => "#/components/schemas/error"
+        before { cookies[:token] = JwtService.encode(user_id: create(:user, :school_admin).id) }
+        let(:body) { {} }
+        run_test!
+      end
+    end
+  end
+
   path "/api/battles/{id}/result" do
     get "バトル結果取得" do
       tags "Battles"
