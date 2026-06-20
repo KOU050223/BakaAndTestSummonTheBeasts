@@ -109,13 +109,14 @@ RSpec.configure do |config|
             },
             required: %w[classes]
           },
-          # クラス内生徒（総合スコア・最高科目）。複数箇所で再利用する。
+          # クラス内生徒（総合スコア・最高科目・リーダーフラグ）。複数箇所で再利用する。
           ClassStudent: {
             type: :object,
             properties: {
               id:         { type: :integer },
               name:       { type: :string },
               grade:      { type: :integer },
+              leader:     { type: :boolean, description: "クラスのリーダーかどうか" },
               totalScore: { type: :integer },
               topSubject: {
                 type: :object,
@@ -126,7 +127,16 @@ RSpec.configure do |config|
                 required: %w[name score]
               }
             },
-            required: %w[id name grade totalScore topSubject]
+            required: %w[id name grade leader totalScore topSubject]
+          },
+          # リーダー設定の結果。
+          ClassLeaderResponse: {
+            type: :object,
+            properties: {
+              classId:  { type: :integer },
+              leaderId: { type: :integer, nullable: true }
+            },
+            required: %w[classId]
           },
           ClassStudentListResponse: {
             type: :object,

@@ -34,6 +34,7 @@ class Battles::DeclareWar
   def validate!
     raise ArgumentError, "宣戦布告するクラスと相手クラスは別である必要がある" if @attacker_class_id == @defender_class_id
     raise ArgumentError, "両クラスに生徒が1人以上必要" if attacker_students.empty? || defender_students.empty?
+    raise ArgumentError, "各クラスのリーダーは1人までです" if attacker_students.count(&:leader) > 1 || defender_students.count(&:leader) > 1
   end
 
   # 両クラスの生徒を team_id 付きの参加者へ変換する。team_id にはクラスID（文字列）を使う。
@@ -41,22 +42,26 @@ class Battles::DeclareWar
     build(attacker_students, @attacker_class_id) + build(defender_students, @defender_class_id)
   end
 
-  def build(students, class_id)
-    students.map do |student|
-      Battles::Create::Participant.new(student_id: student.id, team_id: class_id.to_s, leader: false)
+  def build(memberships, class_id)
+    memberships.map do |membership|
+      Battles::Create::Participant.new(
+        student_id: membership.user_id,
+        team_id: class_id.to_s,
+        leader: membership.leader
+      )
     end
   end
 
   def attacker_students
-    @attacker_students ||= class_students(@attacker_class_id)
+    @attacker_students ||= class_memberships(@attacker_class_id)
   end
 
   def defender_students
-    @defender_students ||= class_students(@defender_class_id)
+    @defender_students ||= class_memberships(@defender_class_id)
   end
 
-  def class_students(class_id)
+  def class_memberships(class_id)
     school_class = SchoolClass.find(class_id)
-    school_class.students.where(role: "student").to_a
+    school_class.class_memberships.joins(:user).where(users: { role: "student" }).to_a
   end
 end
