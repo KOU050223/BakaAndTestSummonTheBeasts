@@ -1275,15 +1275,28 @@ export interface components {
                 name?: string;
             } | null;
         };
+        ClassSubjectAverage: {
+            subject: string;
+            subjectLabel: string;
+            averageScore: number;
+        };
         ClassSummary: {
             id: number;
             name: string;
             grade: number;
+            /** @description 全教科合計点のクラス平均 */
             averageScore: number;
             studentCount: number;
+            subjectAverages: components["schemas"]["ClassSubjectAverage"][];
         };
         ClassListResponse: {
             classes: components["schemas"]["ClassSummary"][];
+            /** @description 学年内在籍生徒の全教科合計点の最高値（grade 指定時のみ） */
+            gradeMaxTotalScore?: number;
+            /** @description 学年内在籍生徒の教科別合計点の最高値（grade 指定時のみ） */
+            gradeMaxScoreBySubject?: {
+                [key: string]: number;
+            };
         };
         ClassStudent: {
             id: number;

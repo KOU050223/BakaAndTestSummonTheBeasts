@@ -42,6 +42,7 @@ export const NAV_BY_ROLE: Record<Role, NavSection[]> = {
     {
       heading: "採点管理",
       items: [
+        { label: "教師ダッシュボード", href: "/dashboard", icon: "🖥️" },
         { label: "試験作成", href: "/", icon: "📝" },
         { label: "試験設定", href: "/exams", icon: "📋" },
         { label: "点数管理", href: "/scores", icon: "📊" },

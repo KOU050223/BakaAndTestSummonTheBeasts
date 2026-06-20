@@ -41,13 +41,10 @@ describe("NAV_BY_ROLE", () => {
     ]);
   });
 
-  it("各ロールの先頭タブはトップ（/）を指す", () => {
-    // 先頭ラベルはロールごとに異なる（生徒=ダッシュボード, 教師=試験作成 等）が、
-    // どのロールでも先頭タブは / を指す（ログイン直後の着地点）。
-    for (const sections of Object.values(NAV_BY_ROLE)) {
-      const first = flatItems(sections)[0];
-      expect(first.href).toBe("/");
-    }
+  it("各ロールの先頭タブはログイン直後の着地点を指す", () => {
+    expect(flatItems(NAV_BY_ROLE.student)[0].href).toBe("/");
+    expect(flatItems(NAV_BY_ROLE.teacher)[0].href).toBe("/dashboard");
+    expect(flatItems(NAV_BY_ROLE.school_admin)[0].href).toBe("/");
   });
 
   it("管理者のクラス設定は /classes を指す", () => {
@@ -55,11 +52,23 @@ describe("NAV_BY_ROLE", () => {
     const classSetting = adminItems.find((item) => item.label === "クラス設定");
     expect(classSetting?.href).toBe("/classes");
   });
+
+  it("教師の先頭タブは教師ダッシュボード", () => {
+    const labels = flatItems(NAV_BY_ROLE.teacher).map((item) => item.label);
+    expect(labels[0]).toBe("教師ダッシュボード");
+  });
+
+  it("教師ダッシュボードは /dashboard を指す", () => {
+    const teacherItems = flatItems(NAV_BY_ROLE.teacher);
+    const dashboard = teacherItems.find((item) => item.label === "教師ダッシュボード");
+    expect(dashboard?.href).toBe("/dashboard");
+  });
 });
 
 describe("navLabel", () => {
   it("ロールと href からサイドバー label を返す", () => {
     expect(navLabel("teacher", "/")).toBe("試験作成");
+    expect(navLabel("teacher", "/dashboard")).toBe("教師ダッシュボード");
     expect(navLabel("teacher", "/scores")).toBe("点数管理");
     expect(navLabel("teacher", "/records")).toBe("生徒一覧");
     expect(navLabel("student", "/records")).toBe("戦績");
@@ -76,19 +85,5 @@ describe("ROLE_LABEL", () => {
     expect(ROLE_LABEL.student).toBe("生徒");
     expect(ROLE_LABEL.teacher).toBe("教師");
     expect(ROLE_LABEL.school_admin).toBe("管理者");
-  });
-});
-
-describe("navLabel", () => {
-  it("ロールと href からサイドバー label を返す", () => {
-    expect(navLabel("teacher", "/")).toBe("試験作成");
-    expect(navLabel("teacher", "/scores")).toBe("点数管理");
-    expect(navLabel("teacher", "/records")).toBe("生徒一覧");
-    expect(navLabel("student", "/records")).toBe("戦績");
-    expect(navLabel("school_admin", "/classes")).toBe("クラス設定");
-  });
-
-  it("ナビに無い href は準備中を返す", () => {
-    expect(navLabel("school_admin", "/scores")).toBe("準備中");
   });
 });

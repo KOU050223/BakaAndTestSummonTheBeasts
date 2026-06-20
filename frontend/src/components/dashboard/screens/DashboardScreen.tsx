@@ -1,8 +1,8 @@
 "use client";
 
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
+import { NavPlaceholder } from "../NavPlaceholder";
 import { StudentDashboard } from "../student/StudentDashboard";
-import { TeacherDashboard } from "../teacher/TeacherDashboard";
 import { AdminDashboard } from "../admin/AdminDashboard";
 
 // 「ダッシュボード」タブの画面。role に応じて中身を出し分ける。
@@ -16,7 +16,7 @@ export function DashboardScreen() {
     case "student":
       return <StudentDashboard />;
     case "teacher":
-      return <TeacherDashboard />;
+      return <NavPlaceholder role="teacher" href="/" />;
     case "school_admin":
       return <AdminDashboard />;
     default:
