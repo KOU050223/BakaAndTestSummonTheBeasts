@@ -29,7 +29,7 @@ describe("NAV_BY_ROLE", () => {
     }
   });
 
-  it("生徒は6つのタブを持つ（メイン4 + 試召戦争2）", () => {
+  it("生徒は7つのタブを持つ（メイン4 + 試召戦争3）", () => {
     const labels = flatItems(NAV_BY_ROLE.student).map((item) => item.label);
     expect(labels).toEqual([
       "ダッシュボード",
@@ -37,6 +37,7 @@ describe("NAV_BY_ROLE", () => {
       "召喚獣プレビュー",
       "答案を提出",
       "宣戦布告",
+      "バトル",
       "戦績",
     ]);
   });
@@ -63,6 +64,18 @@ describe("NAV_BY_ROLE", () => {
     const dashboard = teacherItems.find((item) => item.label === "教師ダッシュボード");
     expect(dashboard?.href).toBe("/dashboard");
   });
+
+  it("管理者の全体成績は /scores を指す", () => {
+    const adminItems = flatItems(NAV_BY_ROLE.school_admin);
+    const overallScores = adminItems.find((item) => item.label === "全体成績");
+    expect(overallScores?.href).toBe("/scores");
+  });
+
+  it("管理者の試召戦争ログは /records を指す", () => {
+    const adminItems = flatItems(NAV_BY_ROLE.school_admin);
+    const battleLog = adminItems.find((item) => item.label === "試召戦争ログ");
+    expect(battleLog?.href).toBe("/records");
+  });
 });
 
 describe("navLabel", () => {
@@ -73,10 +86,12 @@ describe("navLabel", () => {
     expect(navLabel("teacher", "/records")).toBe("生徒一覧");
     expect(navLabel("student", "/records")).toBe("戦績");
     expect(navLabel("school_admin", "/classes")).toBe("クラス設定");
+    expect(navLabel("school_admin", "/scores")).toBe("全体成績");
+    expect(navLabel("school_admin", "/records")).toBe("試召戦争ログ");
   });
 
   it("ナビに無い href は準備中を返す", () => {
-    expect(navLabel("school_admin", "/scores")).toBe("準備中");
+    expect(navLabel("school_admin", "/summon")).toBe("準備中");
   });
 });
 
