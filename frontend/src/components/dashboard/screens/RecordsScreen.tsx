@@ -1,7 +1,15 @@
-import { Placeholder } from "@/components/ui";
+"use client";
 
-// 「戦績」タブの画面。
-// TODO: 戦績取得 API 実装後にこの中身を本実装へ置き換える。
+import { useCurrentUser } from "@/lib/auth/useCurrentUser";
+import { NavPlaceholder } from "../NavPlaceholder";
+import { useEffect, useMemo, useState } from "react";
+import { Panel } from "@/components/ui/Panel";
+import { $api } from "@/lib/api/client";
+
 export function RecordsScreen() {
-  return <Placeholder title="戦績" />;
+  const { user } = useCurrentUser();
+
+  if (!user) return null;
+
+  return <NavPlaceholder role={user.role} href="/records" />;
 }

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+set -u
+printf 'sleep %s\n' "$*" >>"$FAKE_COMMAND_LOG"
