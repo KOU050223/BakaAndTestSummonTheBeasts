@@ -14,11 +14,13 @@ import {
   uploadAnswerKey,
   registerQuestions,
   regradeAnswerSheet,
+  getExamSummary,
   type AnswerSheet,
   type AnswerSheetSummary,
   type ExamQuestion,
   type ExamDetail,
   type QuestionInput,
+  type ExamSummary,
 } from "@/lib/api/grading";
 import { Panel, LabelTag, Button, Placeholder } from "@/components/ui";
 
@@ -343,6 +345,65 @@ function QuestionSetupStep({
   );
 }
 
+// ─── 教師：採点結果サマリー ────────────────────────────────────────────────────
+
+function SummaryPanel({ summary }: { summary: ExamSummary }) {
+  const pct = summary.max_score > 0 && summary.average_score != null
+    ? Math.round((summary.average_score / summary.max_score) * 100)
+    : null;
+
+  return (
+    <div className="px-5 py-6 flex flex-col gap-6">
+      {/* 概要カード */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { label: "提出数", value: `${summary.total_count}人` },
+          { label: "採点済み", value: `${summary.scored_count}人` },
+          {
+            label: "平均点",
+            value: summary.average_score != null
+              ? `${summary.average_score}点`
+              : "—",
+            sub: `/ ${summary.max_score}点${pct != null ? ` (${pct}%)` : ""}`,
+          },
+        ].map(({ label, value, sub }) => (
+          <div key={label} className="flex flex-col gap-1 px-4 py-3 bg-white/5 border border-sky-400/20 rounded-sm text-center">
+            <p className="text-slate-400 text-xs">{label}</p>
+            <p className="text-sky-100 text-xl font-bold">{value}</p>
+            {sub && <p className="text-slate-500 text-xs">{sub}</p>}
+          </div>
+        ))}
+      </div>
+
+      {/* 問ごとの正答率 */}
+      {summary.question_stats.length > 0 ? (
+        <div>
+          <p className="text-blue-300 text-sm font-semibold mb-3">問ごとの正答率</p>
+          <div className="flex flex-col gap-2">
+            {summary.question_stats.map((q) => {
+              const ratePct = Math.round(q.rate * 100);
+              const barColor = ratePct >= 70 ? "bg-green-400/60" : ratePct >= 40 ? "bg-amber-400/60" : "bg-red-400/60";
+              return (
+                <div key={q.number} className="flex items-center gap-3">
+                  <span className="text-slate-400 text-xs w-10 text-right shrink-0">問{q.number}</span>
+                  <div className="flex-1 bg-white/5 rounded-sm h-5 overflow-hidden">
+                    <div className={`h-full ${barColor} transition-all duration-500`} style={{ width: `${ratePct}%` }} />
+                  </div>
+                  <span className="text-slate-300 text-xs w-20 text-right shrink-0">
+                    {q.correct_count}/{q.total}人 ({ratePct}%)
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <p className="text-slate-400 text-sm text-center py-4">採点済みの答案がありません</p>
+      )}
+    </div>
+  );
+}
+
 // ─── 教師：タブ切り替え採点ビュー ─────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: string }) {
@@ -354,6 +415,7 @@ function StatusBadge({ status }: { status: string }) {
 function TeacherGradingView({ exam }: { exam: Exam }) {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [gradingKey, setGradingKey] = useState(0);
+  const [showSummary, setShowSummary] = useState(false);
 
   const { data: sheets, isLoading, refetch } = useQuery({
     queryKey: ["answer_sheets", exam.id],
@@ -363,6 +425,13 @@ function TeacherGradingView({ exam }: { exam: Exam }) {
       if (!d) return false;
       return d.some((s) => s.status === "pending") ? 3000 : false;
     },
+  });
+
+  const { data: summary } = useQuery({
+    queryKey: ["exam_summary", exam.id],
+    queryFn: () => getExamSummary(exam.id),
+    enabled: showSummary,
+    staleTime: 30_000,
   });
 
   // selectedId が未設定なら最初の答案をデフォルト選択とする
@@ -386,14 +455,14 @@ function TeacherGradingView({ exam }: { exam: Exam }) {
 
   return (
     <div className="flex flex-col">
-      {/* 生徒タブ */}
+      {/* 生徒タブ + 統計タブ */}
       <div className="flex items-center gap-0 border-b border-sky-400/20 overflow-x-auto">
         {sheets.map((s) => {
-          const isActive = selectedSheet?.id === s.id;
+          const isActive = !showSummary && selectedSheet?.id === s.id;
           return (
             <button
               key={s.id}
-              onClick={() => setSelectedId(s.id)}
+              onClick={() => { setShowSummary(false); setSelectedId(s.id); }}
               className={`flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors duration-150 ${
                 isActive
                   ? "border-sky-400 text-sky-200 font-semibold bg-sky-400/8"
@@ -406,6 +475,16 @@ function TeacherGradingView({ exam }: { exam: Exam }) {
           );
         })}
         <button
+          onClick={() => setShowSummary(true)}
+          className={`flex items-center gap-1 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors duration-150 ${
+            showSummary
+              ? "border-violet-400 text-violet-200 font-semibold bg-violet-400/8"
+              : "border-transparent text-slate-500 hover:text-violet-300 hover:bg-white/3"
+          }`}
+        >
+          📊 統計
+        </button>
+        <button
           onClick={() => refetch()}
           className="ml-auto px-3 py-2 text-xs text-slate-500 hover:text-sky-300 shrink-0"
           title="更新"
@@ -414,8 +493,12 @@ function TeacherGradingView({ exam }: { exam: Exam }) {
         </button>
       </div>
 
-      {/* 採点パネル */}
-      {selectedSheet ? (
+      {/* 採点 or 統計パネル */}
+      {showSummary ? (
+        summary
+          ? <SummaryPanel summary={summary} />
+          : <p className="text-center text-slate-400 py-10 text-sm animate-pulse">読み込み中...</p>
+      ) : selectedSheet ? (
         <GradingStep
           key={`${selectedSheet.id}-${gradingKey}`}
           exam={exam}

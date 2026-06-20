@@ -28,6 +28,7 @@ Rails.application.routes.draw do
     resources :exams, only: [ :index, :create ] do
       member do
         post :upload_answer_key
+        get  :summary
       end
       resources :scores, only: [ :index ], module: :exams
       resources :questions, only: [ :index, :create ], module: :exams
