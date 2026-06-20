@@ -36,7 +36,7 @@ module Api
 
     def grades
       require "csv"
-      scores = Score.includes(:student).where(exam: @exam).order("users.name")
+      scores = Score.joins(:student).includes(:student).where(exam: @exam).order("users.name")
       csv = CSV.generate(encoding: "UTF-8") do |rows|
         rows << [ "生徒名", "点数", "満点", "正答率(%)" ]
         scores.each do |s|
