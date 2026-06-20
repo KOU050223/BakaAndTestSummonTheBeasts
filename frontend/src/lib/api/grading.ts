@@ -214,6 +214,43 @@ export async function createExam(params: {
   return res.json() as Promise<{ id: number; title: string; subject: string }>;
 }
 
+export type QuestionStat = {
+  number: number;
+  correct_count: number;
+  total: number;
+  rate: number;
+};
+
+export type ExamSummary = {
+  total_count: number;
+  scored_count: number;
+  average_score: number | null;
+  max_score: number;
+  question_stats: QuestionStat[];
+};
+
+export async function getExamSummary(examId: string | number): Promise<ExamSummary> {
+  const res = await fetch(`${API_BASE}/api/exams/${examId}/summary`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("統計の取得に失敗しました");
+  return res.json() as Promise<ExamSummary>;
+}
+
+export async function downloadGradesCsv(examId: number, examTitle: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/exams/${examId}/grades`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("CSVのダウンロードに失敗しました");
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${examTitle}_成績.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export async function registerQuestions(
   examId: string | number,
   questions: QuestionInput[],

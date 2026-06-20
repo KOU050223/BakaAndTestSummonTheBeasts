@@ -114,11 +114,13 @@ export function ExamCreateScreen() {
 
   if (created) {
     return (
+
       <Panel className="authority-panel-content mx-auto mt-6 max-w-2xl">
         <div className="authority-panel-header flex items-center gap-3 border-b px-5 py-4">
           <LabelTag variant="info">試験設定</LabelTag>
           <h1 className="text-xl font-black tracking-wide text-[var(--dashboard-text)]">
             試験設定
+
           </h1>
         </div>
         <div className="flex flex-col items-center gap-4 px-5 py-12">
@@ -148,11 +150,13 @@ export function ExamCreateScreen() {
   }
 
   return (
+
     <Panel className="authority-panel-content mx-auto mt-6 max-w-2xl">
       <div className="authority-panel-header flex items-center gap-3 border-b px-5 py-4">
         <LabelTag variant="info">試験設定</LabelTag>
         <h1 className="text-xl font-black tracking-wide text-[var(--dashboard-text)]">
           試験設定
+
         </h1>
       </div>
 

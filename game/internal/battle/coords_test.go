@@ -160,7 +160,7 @@ func TestTurnDirections(t *testing.T) {
 // TestMoveAfterTurn は旋回後の前進が新しい向きに沿っていることを検証する。
 func TestMoveAfterTurn(t *testing.T) {
 	t.Run("右旋回後に前進すると新しい+X寄り方向に進む", func(t *testing.T) {
-		r := newMoveRoom(0) // 初期: +X 前方
+		r := newMoveRoom(0)                          // 初期: +X 前方
 		r.Step(map[string]Input{"P": {Right: true}}) // Angle 増加（+Z 方向へ旋回）
 		angleAfterTurn := r.Players["P"].Angle
 		r.Step(map[string]Input{"P": {Forward: true}})

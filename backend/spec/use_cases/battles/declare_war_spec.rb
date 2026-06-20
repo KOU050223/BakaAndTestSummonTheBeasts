@@ -65,4 +65,23 @@ RSpec.describe Battles::DeclareWar do
       ).call
     }.to raise_error(ArgumentError)
   end
+
+  context "リーダー設定" do
+    it "クラスにリーダーが設定されている場合、battle_players.leader が true になる" do
+      leader = attacker_students.first
+      attacker_class.class_memberships.find_by(user: leader).update!(leader: true)
+
+      battle = run
+      leader_player = battle.battle_players.find_by(student_id: leader.id)
+      non_leader_player = battle.battle_players.find_by(student_id: attacker_students.last.id)
+
+      expect(leader_player.leader).to be true
+      expect(non_leader_player.leader).to be false
+    end
+
+    it "リーダーが設定されていない場合、全員 leader: false になる" do
+      battle = run
+      expect(battle.battle_players.where(leader: true).count).to eq(0)
+    end
+  end
 end

@@ -20,6 +20,7 @@ Rails.application.routes.draw do
     # クラス編成
     resources :classes, only: [ :index, :create ] do
       resources :students, only: [ :index ], module: :classes
+      resource :leader, only: [ :update ], module: :classes
     end
     # クラス振り分けの一括反映（自動振り分けの保存）
     patch "classes/assignments", to: "classes/assignments#update"
@@ -28,6 +29,8 @@ Rails.application.routes.draw do
     resources :exams, only: [ :index, :create ] do
       member do
         post :upload_answer_key
+        get  :summary
+        get  :grades
       end
       resources :scores, only: [ :index ], module: :exams
       resources :questions, only: [ :index, :create ], module: :exams

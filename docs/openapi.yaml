@@ -794,6 +794,55 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/api/classes/{class_id}/leader":
+    patch:
+      summary: クラスのリーダーを設定する
+      tags:
+      - Classes
+      security:
+      - cookie_auth: []
+      parameters:
+      - name: class_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                studentId:
+                  type: integer
+                  nullable: true
+                  description: リーダーに設定する生徒ID。null でリーダー解除
+      responses:
+        '200':
+          description: リーダー設定成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ClassLeaderResponse"
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: 権限なし（teacher のみ）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: クラスまたは生徒が存在しない
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/api/exams":
     get:
       summary: 試験一覧取得
@@ -1328,6 +1377,9 @@ components:
           type: string
         grade:
           type: integer
+        leader:
+          type: boolean
+          description: クラスのリーダーかどうか
         totalScore:
           type: integer
         topSubject:
@@ -1344,8 +1396,19 @@ components:
       - id
       - name
       - grade
+      - leader
       - totalScore
       - topSubject
+    ClassLeaderResponse:
+      type: object
+      properties:
+        classId:
+          type: integer
+        leaderId:
+          type: integer
+          nullable: true
+      required:
+      - classId
     ClassStudentListResponse:
       type: object
       properties:

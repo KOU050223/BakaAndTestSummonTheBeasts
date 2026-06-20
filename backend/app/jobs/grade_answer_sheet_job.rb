@@ -2,7 +2,18 @@ require "net/http"
 require "base64"
 
 class GradeAnswerSheetJob < ApplicationJob
-  queue_as :default
+  queue_as :grading
+
+  # Gemini API / ネットワーク起因の一時的エラー。retry_on の対象にする。
+  GeminiError = Class.new(StandardError)
+
+  # 指数バックオフで最大3回リトライ。全消化後はブロックで failed に落とす。
+  retry_on GeminiError, wait: :polynomially_longer, attempts: 3 do |job, error|
+    sheet = AnswerSheet.find_by(id: job.arguments.first)
+    sheet&.update!(ai_grading: { "status" => "failed" })
+    Rails.logger.error "GradeAnswerSheetJob permanently failed after retries " \
+                       "(sheet=#{job.arguments.first}): #{error.message}"
+  end
 
   def perform(answer_sheet_id)
     sheet = AnswerSheet.find(answer_sheet_id)
@@ -25,6 +36,8 @@ class GradeAnswerSheetJob < ApplicationJob
     end
 
     sheet.update!(ai_grading: { "status" => "done", "results" => results })
+  rescue GeminiError
+    raise # retry_on に委譲する
   rescue => e
     Rails.logger.error "GradeAnswerSheetJob failed (sheet=#{answer_sheet_id}): #{e.message}"
     sheet&.update!(ai_grading: { "status" => "failed" })
@@ -62,20 +75,20 @@ class GradeAnswerSheetJob < ApplicationJob
     )
 
     prompt = <<~TEXT
-      2つのPDFを採点してください。
+      2つのファイルを採点してください。ファイルはPDFまたは画像（手書き答案を含む）です。
 
-      【PDF 1枚目】模範解答（各問の正答が書かれた解答一覧）
-      【PDF 2枚目】生徒の解答用紙
+      【ファイル1】模範解答（各問の正答が書かれた解答一覧）
+      【ファイル2】生徒の解答用紙（印刷済みまたは手書き）
 
       手順:
-      1. PDF1から「問番号→正答の選択肢」の対応表を作る（例: 1→ア, 2→イ, ...）
-      2. PDF2から「問番号→生徒の解答」の対応表を作る
-      3. 同じ問番号同士で選択肢を比較する
+      1. ファイル1から「問番号→正答」の対応表を作る（例: 1→ア, 2→イ, ...）
+      2. ファイル2から「問番号→生徒の解答」の対応表を作る（手書きの場合は最も読み取れた文字で判定）
+      3. 同じ問番号同士で答えを比較する
 
       判定基準:
-      - 選択肢が一致すれば true、不一致なら false
-      - 2枚のPDFが同一内容であればすべて true になる
-      - 選択肢はア・イ・ウ・エ等。最もよく読み取れた文字で判定する
+      - 答えが一致すれば true、不一致なら false
+      - 2つのファイルが同一内容であればすべて true になる
+      - 選択肢はア・イ・ウ・エ等。手書きで崩れていても最善推定で判定する
 
       以下のJSON形式のみを返してください（他のテキスト不要）:
       {"1": true, "2": false, "3": true, ...}
@@ -94,6 +107,7 @@ class GradeAnswerSheetJob < ApplicationJob
 
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
+    http.open_timeout = 10
     http.read_timeout = 60
 
     req = Net::HTTP::Post.new(uri)
@@ -104,7 +118,7 @@ class GradeAnswerSheetJob < ApplicationJob
     json = JSON.parse(res.body)
 
     if json["error"]
-      raise "Gemini API error #{json.dig('error', 'code')}: #{json.dig('error', 'message')}"
+      raise GeminiError, "Gemini API error #{json.dig('error', 'code')}: #{json.dig('error', 'message')}"
     end
 
     # Gemini 2.5 Flash (thinking model) may include a thought part before the JSON part.
@@ -113,11 +127,13 @@ class GradeAnswerSheetJob < ApplicationJob
     text = parts.reject { |p| p["thought"] }.last&.dig("text").to_s
     Rails.logger.info "GradeAnswerSheetJob: Gemini response (truncated): #{text.truncate(300)}"
 
-    raise "Gemini returned no parseable text (all parts were thought blocks?)" if text.blank?
+    raise GeminiError, "Gemini returned no parseable text (all parts were thought blocks?)" if text.blank?
 
     parsed = JSON.parse(text)
-    raise "Gemini returned empty results" if parsed.empty?
+    raise GeminiError, "Gemini returned empty results" if parsed.empty?
 
     parsed.transform_keys(&:to_i)
+  rescue Net::OpenTimeout, Net::ReadTimeout => e
+    raise GeminiError, "Gemini network timeout: #{e.message}"
   end
 end

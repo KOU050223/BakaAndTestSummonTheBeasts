@@ -13,6 +13,9 @@ import (
 )
 
 func main() {
+	// HOST は bind するアドレス。Network=host で動かす本番では 127.0.0.1 を指定し、
+	// 外部に直接公開しない（リバースプロキシ経由で公開する）。空なら全インターフェース。
+	host := os.Getenv("HOST")
 	port := envOr("PORT", "8080")
 	railsURL := envOr("RAILS_INTERNAL_URL", "http://localhost:8000")
 	internalSecret := os.Getenv("INTERNAL_API_SECRET")
@@ -29,8 +32,9 @@ func main() {
 	r := gin.Default()
 	handler.Register(r)
 
-	log.Printf("game server listening on :%s (rails=%s)", port, railsURL)
-	if err := r.Run(":" + port); err != nil {
+	addr := host + ":" + port
+	log.Printf("game server listening on %s (rails=%s)", addr, railsURL)
+	if err := r.Run(addr); err != nil {
 		log.Fatal(err)
 	}
 }

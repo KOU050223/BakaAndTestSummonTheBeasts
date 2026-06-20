@@ -1,7 +1,7 @@
 module Api
   class ExamsController < BaseController
-    before_action -> { require_role!(:teacher, :school_admin) }, only: %i[create upload_answer_key]
-    before_action :set_exam, only: :upload_answer_key
+    before_action -> { require_role!(:teacher, :school_admin) }, only: %i[create upload_answer_key summary grades]
+    before_action :set_exam, only: %i[upload_answer_key summary grades]
 
     def index
       exams = case current_user.role
@@ -18,6 +18,36 @@ module Api
           )
         }
       }
+    end
+
+    def summary
+      sheets = @exam.answer_sheets.to_a
+      graded = sheets.select { |s| s.ai_grading&.dig("status") == "done" }
+      scores = Score.where(exam: @exam)
+
+      render json: {
+        total_count: sheets.size,
+        scored_count: scores.count,
+        average_score: scores.empty? ? nil : (scores.sum(:score).to_f / scores.count).round(1),
+        max_score: @exam.max_score,
+        question_stats: question_stats(graded)
+      }
+    end
+
+    def grades
+      require "csv"
+      scores = Score.joins(:student).includes(:student).where(exam: @exam).order("users.name")
+      csv = CSV.generate(encoding: "UTF-8") do |rows|
+        rows << [ "生徒名", "点数", "満点", "正答率(%)" ]
+        scores.each do |s|
+          rate = @exam.max_score > 0 ? (s.score.to_f / @exam.max_score * 100).round(1) : 0
+          rows << [ csv_safe(s.student.name), s.score, @exam.max_score, rate ]
+        end
+      end
+      send_data "﻿#{csv}",
+        filename: "#{@exam.title}_成績.csv",
+        type: "text/csv; charset=utf-8",
+        disposition: "attachment"
     end
 
     def upload_answer_key
@@ -58,6 +88,31 @@ module Api
 
     def set_exam
       @exam = Exam.find_by!(id: params[:id], created_by: current_user)
+    end
+
+    def question_stats(graded_sheets)
+      tally = Hash.new { |h, k| h[k] = { correct: 0, total: 0 } }
+      graded_sheets.each do |sheet|
+        (sheet.ai_grading["results"] || {}).each do |q_num, correct|
+          n = Integer(q_num, exception: false)
+          next if n.nil?
+          tally[n][:total] += 1
+          tally[n][:correct] += 1 if correct
+        end
+      end
+      tally.sort_by { |k, _| k }.map do |number, stat|
+        {
+          number: number,
+          correct_count: stat[:correct],
+          total: stat[:total],
+          rate: stat[:total] > 0 ? (stat[:correct].to_f / stat[:total]).round(2) : 0.0
+        }
+      end
+    end
+
+    def csv_safe(value)
+      str = value.to_s
+      str.start_with?("=", "+", "-", "@", "\t", "\r") ? "'#{str}" : str
     end
 
     def answer_key_status(exam)
