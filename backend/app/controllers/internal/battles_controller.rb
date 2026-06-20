@@ -1,30 +1,42 @@
 module Internal
-  # Go Game Server 連携 internal API のスタブ。apiSpec.md §4 準拠。
-  # start-data: バトル開始時にプレイヤー情報・召喚獣ステータスをGoへ渡す。
-  # finish:     バトル終了時に勝敗・ログをGoから受け取り永続化する。
-  # TODO: Battle集約からの実データ取得・Battle::Finish UseCase（冪等）に差し替える。
+  # Go Game Server 連携 internal API（docs/apiSpec.md §4）。
+  # start-data: バトル開始時にフィールド配置・科目別召喚獣ステータスを Go へ渡す。
+  # finish:     バトル終了時に勝敗・行動ログを Go から受け取り永続化する（冪等）。
   class BattlesController < BaseController
     def start_data
-      math_a = Summon::StatusCalculator.call(82)
-      math_b = Summon::StatusCalculator.call(55)
+      battle = ::Battle.includes(battle_fields: [], battle_players: %i[student battle_summons]).find_by(id: params[:battle_id])
+      return render json: { error: { code: "not_found", message: "battle not found" } }, status: :not_found if battle.nil?
 
-      render json: {
-        battleId: params[:battle_id],
-        subject: "math",
-        players: [
-          { userId: "user_1", name: "Aさん",
-            summon: { hp: math_a.hp, attack: math_a.attack, defense: math_a.defense, speed: math_a.speed } },
-          { userId: "user_2", name: "Bさん",
-            summon: { hp: math_b.hp, attack: math_b.attack, defense: math_b.defense, speed: math_b.speed } }
-        ]
-      }, status: :ok
+      render json: BattleStartDataSerializer.new(battle), status: :ok
     end
 
     def finish
-      render json: {
-        battleId: params[:battle_id],
-        status: "finished"
-      }, status: :ok
+      battle = ::Battle.find_by(id: params[:battle_id])
+      return render json: { error: { code: "not_found", message: "battle not found" } }, status: :not_found if battle.nil?
+
+      Battles::Finish.new(
+        battle: battle,
+        winner_id: params[:winnerId],
+        loser_id: params[:loserId],
+        logs: finish_logs
+      ).call
+
+      render json: { battleId: battle.id.to_s, status: battle.reload.status }, status: :ok
+    end
+
+    private
+
+    # ログ配列を symbol キーのハッシュ列へ正規化する（Battles::Finish の入力形式）。
+    def finish_logs
+      Array(params[:logs]).map do |log|
+        {
+          turn: log[:turn],
+          actor_id: log[:actorId],
+          target_id: log[:targetId],
+          action: log[:action],
+          damage: log[:damage]
+        }
+      end
     end
   end
 end

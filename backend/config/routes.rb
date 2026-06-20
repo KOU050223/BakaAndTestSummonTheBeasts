@@ -48,8 +48,12 @@ Rails.application.routes.draw do
 
     # バトル（Go Game Server連携部はモック）
     resources :battles, only: [ :index, :create ] do
+      collection do
+        get :opponents
+      end
       member do
         get :result
+        get :token
       end
     end
   end

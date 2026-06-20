@@ -1,6 +1,58 @@
 require "swagger_helper"
 
 RSpec.describe "Battles API", type: :request do
+  path "/api/battles/opponents" do
+    get "対戦相手候補一覧取得" do
+      tags "Battles"
+      produces "application/json"
+      security [ cookie_auth: [] ]
+      description "対戦相手にできる生徒一覧（自分は除く、クラスを問わない）。宣戦布告の相手選択に使う。"
+
+      response "200", "対戦相手候補一覧" do
+        schema type: :object,
+          properties: {
+            opponents: {
+              type: :array,
+              items: {
+                type: :object,
+                properties: {
+                  id:   { type: :integer },
+                  name: { type: :string }
+                },
+                required: %w[id name]
+              }
+            }
+          },
+          required: %w[opponents]
+
+        let(:me) { create(:user) }
+        before do
+          # クラスを問わず、他の生徒は全員候補になる。
+          create(:user)
+          create(:user)
+          cookies[:token] = JwtService.encode(user_id: me.id)
+        end
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          ids = body["opponents"].map { |o| o["id"] }
+          expect(ids).not_to include(me.id)
+          expect(ids.size).to eq(2)
+        end
+      end
+
+      response "401", "未認証" do
+        schema "$ref" => "#/components/schemas/error"
+        run_test!
+      end
+
+      response "403", "権限なし（school_admin は禁止）" do
+        schema "$ref" => "#/components/schemas/error"
+        before { cookies[:token] = JwtService.encode(user_id: create(:user, :school_admin).id) }
+        run_test!
+      end
+    end
+  end
+
   path "/api/battles" do
     get "バトル一覧取得" do
       tags "Battles"
@@ -16,11 +68,11 @@ RSpec.describe "Battles API", type: :request do
                 type: :object,
                 properties: {
                   battleId:     { type: :string },
-                  subjectId:    { type: :string },
+                  subjects:     { type: :array, items: { type: :string } },
                   status:       { type: :string },
-                  opponentName: { type: :string }
+                  opponentName: { type: :string, nullable: true }
                 },
-                required: %w[battleId subjectId status opponentName]
+                required: %w[battleId subjects status]
               }
             }
           },
@@ -51,36 +103,32 @@ RSpec.describe "Battles API", type: :request do
       parameter name: :body, in: :body, required: true, schema: {
         type: :object,
         properties: {
-          subjectId: { type: :string, example: "math" }
+          opponentId: { type: :string, example: "2", description: "対戦相手の生徒ID" },
+          subjects:   { type: :array, items: { type: :string }, example: %w[math english physics], description: "対戦科目（召喚フィールド）" }
         },
-        required: %w[subjectId]
+        required: %w[opponentId subjects]
       }
 
       response "201", "バトル作成成功" do
         schema type: :object,
           properties: {
-            battleId:  { type: :string },
-            subjectId: { type: :string },
-            status:    { type: :string }
+            battleId: { type: :string },
+            subjects: { type: :array, items: { type: :string } },
+            status:   { type: :string }
           },
-          required: %w[battleId subjectId status]
+          required: %w[battleId subjects status]
 
+        let(:opponent) { create(:user) }
         before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
-        let(:body) { { subjectId: "math" } }
+        let(:body) { { opponentId: opponent.id.to_s, subjects: %w[math english physics] } }
         run_test!
       end
 
-      response "201", "教師もバトル作成できる" do
-        schema type: :object,
-          properties: {
-            battleId:  { type: :string },
-            subjectId: { type: :string },
-            status:    { type: :string }
-          },
-          required: %w[battleId subjectId status]
-
-        before { cookies[:token] = JwtService.encode(user_id: create(:user, :teacher).id) }
-        let(:body) { { subjectId: "math" } }
+      response "422", "対戦科目が空（バリデーションエラー）" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:opponent) { create(:user) }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
+        let(:body) { { opponentId: opponent.id.to_s, subjects: [] } }
         run_test!
       end
 
@@ -111,8 +159,8 @@ RSpec.describe "Battles API", type: :request do
         schema type: :object,
           properties: {
             battleId:  { type: :string },
-            winnerId:  { type: :string },
-            loserId:   { type: :string },
+            winnerId:  { type: :string, nullable: true },
+            loserId:   { type: :string, nullable: true },
             turnCount: { type: :integer },
             logs: {
               type: :array,
@@ -129,23 +177,78 @@ RSpec.describe "Battles API", type: :request do
               }
             }
           },
-          required: %w[battleId winnerId loserId turnCount logs]
+          required: %w[battleId turnCount logs]
 
+        let(:battle) do
+          b = create(:battle, status: "finished", turn_count: 0)
+          create(:battle_player, battle: b, student: create(:user))
+          b
+        end
+        let(:id) { battle.id.to_s }
         before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
-        let(:id) { "battle_1" }
+        run_test!
+      end
+
+      response "404", "バトルが存在しない" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:id) { "999999" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
         run_test!
       end
 
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
-        let(:id) { "battle_1" }
+        let(:id) { "1" }
+        run_test!
+      end
+    end
+  end
+
+  path "/api/battles/{id}/token" do
+    get "WebSocket接続用トークン発行" do
+      tags "Battles"
+      produces "application/json"
+      security [ cookie_auth: [] ]
+      description "Go Game Server への WebSocket 接続に使う JWT を発行する。バトルの参加者にのみ発行する。"
+
+      parameter name: :id, in: :path, type: :string, required: true, description: "バトルID"
+
+      response "200", "トークン発行成功" do
+        schema type: :object,
+          properties: {
+            token: { type: :string }
+          },
+          required: %w[token]
+
+        let(:student) { create(:user) }
+        let(:battle) do
+          b = create(:battle)
+          create(:battle_player, battle: b, student: student)
+          b
+        end
+        let(:id) { battle.id.to_s }
+        before { cookies[:token] = JwtService.encode(user_id: student.id) }
         run_test!
       end
 
-      response "403", "権限なし（school_admin は禁止）" do
+      response "403", "バトルの参加者でない" do
         schema "$ref" => "#/components/schemas/error"
-        before { cookies[:token] = JwtService.encode(user_id: create(:user, :school_admin).id) }
-        let(:id) { "battle_1" }
+        let(:battle) { create(:battle) }
+        let(:id) { battle.id.to_s }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
+        run_test!
+      end
+
+      response "404", "バトルが存在しない" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:id) { "999999" }
+        before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
+        run_test!
+      end
+
+      response "401", "未認証" do
+        schema "$ref" => "#/components/schemas/error"
+        let(:id) { "1" }
         run_test!
       end
     end

@@ -1,0 +1,55 @@
+version: '3'
+
+tasks:
+  default:
+    aliases:
+      - list
+    desc: タスク一覧
+    cmd: task -l
+
+  install-deps:
+    desc: 依存関係をインストール
+    cmd: go mod download
+
+  dev:
+    desc: 開発サーバーを起動
+    dotenv: [".env"]
+    cmd: go run ./cmd/server/main.go
+
+  build:
+    desc: ゲームサーバーをビルドする
+    cmd: go build -o "${TMPDIR:-/tmp}/baka-test-game-server" ./cmd/server
+
+  format:
+    desc: Goコードのフォーマットを確認する
+    cmd: |
+      files=$(gofmt -l .)
+      if [ -n "$files" ]; then
+        echo "以下のファイルを gofmt してください:"
+        echo "$files"
+        exit 1
+      fi
+
+  format:fix:
+    desc: Goコードをgofmtで整形する
+    cmd: find . -type f -name '*.go' -print0 | xargs -0 gofmt -w
+
+  lint:
+    desc: golangci-lintで静的解析する
+    cmd: golangci-lint run ./...
+
+  test:
+    desc: Goのテストを実行する
+    cmd: go test ./...
+
+  test:race:
+    desc: Race Detector付きでGoのテストを実行する
+    cmd: go test -race ./...
+
+  ci:
+    desc: CI相当のチェックを実行する（format + lint + test:race + build）
+    cmds:
+      - task: format
+      - task: lint
+      - task: test:race
+      - task: build
