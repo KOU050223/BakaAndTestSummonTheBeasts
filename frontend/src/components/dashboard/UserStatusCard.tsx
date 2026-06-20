@@ -34,16 +34,16 @@ export function UserStatusCard({ user }: UserStatusCardProps) {
   const initial = user.name.trim().charAt(0) || "?";
 
   return (
-    <div className="border-t border-sky-400/30 px-4 py-3">
+    <div className="dashboard-user-status border-t border-[var(--dashboard-border)] px-4 py-3">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-indigo-500 text-base font-black text-white shadow-[0_0_12px_rgba(56,189,248,0.5)]">
+        <div className="dashboard-user-avatar flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-indigo-500 text-base font-black text-white shadow-[0_0_12px_rgba(56,189,248,0.5)]">
           {initial}
         </div>
         <div className="flex min-w-0 flex-col">
-          <span className="truncate text-sm font-bold text-white">
+          <span className="truncate text-sm font-bold text-[var(--dashboard-text)]">
             {user.name}
           </span>
-          <span className="flex items-center gap-1.5 text-[0.7rem] text-slate-400/80">
+          <span className="flex items-center gap-1.5 text-[0.7rem] text-[var(--dashboard-muted)] opacity-80">
             <LabelTag variant="info">{ROLE_LABEL[user.role]}</LabelTag>
             {user.school_class && (
               <span className="truncate">{user.school_class.name}</span>

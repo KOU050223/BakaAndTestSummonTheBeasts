@@ -1,0 +1,61 @@
+/*
+ * コンポーネントはこのセマンティック変数だけを参照する。
+ * A〜Eを作り込む際は各テーマの値を差し替え、JSXの構造は維持する。
+ */
+.dashboard-theme {
+  --dashboard-bg: linear-gradient(135deg, #151b25, #223045 52%, #141a22);
+  --dashboard-texture: none;
+  --dashboard-texture-position: center top;
+  --dashboard-texture-size: auto;
+  --dashboard-background-blend: normal;
+  --dashboard-surface: rgb(15 27 43 / 88%);
+  --dashboard-sidebar: color-mix(in srgb, var(--dashboard-surface), black 12%);
+  --dashboard-surface-soft: rgb(255 255 255 / 5%);
+  --dashboard-text: #f8fafc;
+  --dashboard-muted: #94a3b8;
+  --dashboard-accent: #38bdf8;
+  --dashboard-accent-soft: rgb(56 189 248 / 14%);
+  --dashboard-border: rgb(56 189 248 / 65%);
+  --dashboard-font: var(--font-geist-sans), sans-serif;
+  --dashboard-radius: 0.25rem;
+  --dashboard-shadow: 0 0 20px rgb(56 189 248 / 30%);
+  --dashboard-blur: 12px;
+  --dashboard-panel-transform: none;
+  --dashboard-table-header-bg: #1e293b;
+  --dashboard-table-header-text: #e2e8f0;
+  --dashboard-bar-bg: rgb(0 0 0 / 12%);
+  --dashboard-score-good: #86efac;
+  --dashboard-score-warn: #fcd34d;
+  --dashboard-score-warn-soft: rgb(252 211 77 / 12%);
+  --dashboard-score-warn-border: rgb(252 211 77 / 35%);
+  --dashboard-score-bad: #fca5a5;
+  --dashboard-score-bad-soft: rgb(252 165 165 / 12%);
+  --dashboard-score-bad-border: rgb(252 165 165 / 38%);
+
+  background-color: #151b25;
+  background-image: var(--dashboard-texture), var(--dashboard-bg);
+  background-position: var(--dashboard-texture-position), center;
+  background-repeat: no-repeat;
+  background-size: var(--dashboard-texture-size), auto;
+  background-attachment: fixed;
+  background-blend-mode: var(--dashboard-background-blend);
+}
+
+.theme-panel {
+  border-radius: var(--dashboard-radius);
+  transform: var(--dashboard-panel-transform);
+}
+
+.theme-card {
+  border: 1px solid color-mix(in srgb, var(--dashboard-border), transparent 25%);
+  border-radius: var(--dashboard-radius);
+  background: var(--dashboard-surface-soft);
+}
+
+.theme-tape {
+  display: none;
+}
+
+.theme-summon-image {
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--dashboard-accent), transparent 35%));
+}

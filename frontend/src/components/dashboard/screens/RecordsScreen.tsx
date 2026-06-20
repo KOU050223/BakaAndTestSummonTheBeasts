@@ -102,9 +102,9 @@ const STATUS_LABEL: Record<BattleLogRow["status"], string> = {
 };
 
 const STATUS_CLASS: Record<BattleLogRow["status"], string> = {
-  waiting: "border-amber-400/30 bg-amber-400/10 text-amber-200",
-  active: "border-red-400/30 bg-red-400/10 text-red-200",
-  finished: "border-emerald-400/30 bg-emerald-400/10 text-emerald-200",
+  waiting: "border-amber-700/40 bg-amber-100 text-amber-900",
+  active: "border-red-700/40 bg-red-100 text-red-900",
+  finished: "border-emerald-700/40 bg-emerald-100 text-emerald-900",
 };
 
 export function RecordsScreen() {
@@ -154,14 +154,14 @@ function AdminBattleLog() {
   return (
     <div className="mx-auto mt-6 flex max-w-7xl flex-col gap-5">
       <Panel>
-        <div className="border-b border-sky-400/20 bg-gradient-to-r from-sky-500/15 to-transparent px-6 py-5">
+        <div className="border-b border-[var(--dashboard-border)] bg-[linear-gradient(90deg,var(--dashboard-accent-soft),transparent)] px-6 py-5">
           <div className="flex items-center gap-3">
             <LabelTag variant="info">管理者</LabelTag>
-            <h1 className="text-2xl font-black tracking-wide text-white">
+            <h1 className="text-2xl font-black tracking-wide text-[var(--dashboard-text)]">
               試召戦争ログ
             </h1> 
           </div>
-          <p className="mt-2 text-sm text-slate-300">
+          <p className="mt-2 text-sm text-[var(--dashboard-muted)]">
             全クラス間の試召戦争について、対戦者・科目・スコア・結果を確認できます。
           </p>
         </div>
@@ -179,10 +179,10 @@ function AdminBattleLog() {
       </Panel>
 
       <Panel>
-        <div className="flex flex-col gap-3 border-b border-sky-400/20 p-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-3 border-b border-[var(--dashboard-border)] p-4 lg:flex-row lg:items-center lg:justify-between">
           <label className="relative block min-w-0 flex-1 lg:max-w-xl">
             <span className="sr-only">ユーザー名または科目で検索</span>
-            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--dashboard-muted)]">
               🔍
             </span>
             <input
@@ -190,7 +190,7 @@ function AdminBattleLog() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="ユーザー名・科目で検索…"
-              className="w-full rounded-md border border-sky-400/25 bg-slate-950/50 py-3 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+              className="w-full rounded-md border border-[var(--dashboard-border)] bg-white/70 py-3 pl-11 pr-4 text-sm text-[var(--dashboard-text)] outline-none transition placeholder:text-[var(--dashboard-muted)] focus:border-[var(--dashboard-accent)] focus:ring-2 focus:ring-[var(--dashboard-accent-soft)]"
             />
           </label>
 
@@ -210,8 +210,8 @@ function AdminBattleLog() {
                 onClick={() => setStatusFilter(value)}
                 className={`rounded-md border px-4 py-2 text-sm font-bold transition ${
                   statusFilter === value
-                    ? "border-sky-300 bg-sky-400/20 text-sky-100 shadow-[0_0_12px_rgba(56,189,248,0.2)]"
-                    : "border-slate-600 bg-slate-800/70 text-slate-300 hover:border-sky-400/50 hover:text-sky-200"
+                    ? "border-[var(--dashboard-accent)] bg-[var(--dashboard-accent)] text-white shadow-sm"
+                    : "border-[var(--dashboard-border)] bg-white/55 text-[var(--dashboard-text)] hover:bg-white/80"
                 }`}
               >
                 {label}
@@ -224,7 +224,7 @@ function AdminBattleLog() {
           {filteredBattles.length === 0 ? (
             <div className="py-16 text-center">
               <p className="text-4xl">⚔️</p>
-              <p className="mt-3 text-sm text-slate-400">
+              <p className="mt-3 text-sm text-[var(--dashboard-muted)]">
                 条件に一致する試召戦争ログはありません。
               </p>
             </div>
@@ -233,7 +233,7 @@ function AdminBattleLog() {
               aria-label="試召戦争ログ"
               className="min-w-[980px] w-full text-sm"
             >
-              <thead className="border-b border-sky-400/20 bg-slate-900/70 text-left text-xs uppercase tracking-wider text-slate-400">
+              <thead className="border-b border-[var(--dashboard-border)] bg-[var(--dashboard-table-header-bg)] text-left text-xs uppercase tracking-wider text-[var(--dashboard-table-header-text)]">
                 <tr>
                   <th className="px-5 py-4 font-bold">日時</th>
                   <th className="px-5 py-4 font-bold">仕掛け側</th>
@@ -244,7 +244,7 @@ function AdminBattleLog() {
                   <th className="px-5 py-4 font-bold">状態</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-sky-400/10">
+              <tbody className="divide-y divide-[var(--dashboard-border)]/25">
                 {filteredBattles.map((battle) => (
                   <BattleLogTableRow key={battle.battleId} battle={battle} />
                 ))}
@@ -266,29 +266,29 @@ function BattleLogTableRow({ battle }: { battle: BattleLogRow }) {
       : "—";
 
   return (
-    <tr className="bg-slate-950/20 text-slate-200 transition hover:bg-sky-400/5">
-      <td className="whitespace-nowrap px-5 py-4 text-slate-400">
+    <tr className="bg-white/28 text-[var(--dashboard-text)] transition hover:bg-white/55">
+      <td className="whitespace-nowrap px-5 py-4 text-[var(--dashboard-muted)]">
         {formatOccurredAt(battle.occurredAt)}
       </td>
-      <td className="px-5 py-4 font-bold text-white">
+      <td className="px-5 py-4 font-bold text-[var(--dashboard-text)]">
         {battle.challengerName}
       </td>
-      <td className="px-5 py-4 font-bold text-white">
+      <td className="px-5 py-4 font-bold text-[var(--dashboard-text)]">
         {battle.defenderName ?? "対戦相手未定"}
       </td>
       <td className="px-5 py-4">
-        <span className="inline-flex rounded-md border border-violet-400/25 bg-violet-400/10 px-2.5 py-1 font-bold text-violet-200">
+        <span className="inline-flex rounded-md border border-violet-800/30 bg-violet-100 px-2.5 py-1 font-bold text-violet-900">
           {battle.subjectLabel}
         </span>
       </td>
-      <td className="whitespace-nowrap px-5 py-4 text-center font-black text-white">
+      <td className="whitespace-nowrap px-5 py-4 text-center font-black text-[var(--dashboard-text)]">
         {hasScore
           ? `${battle.challengerScore} vs ${battle.defenderScore}`
           : "—"}
       </td>
       <td
         className={`whitespace-nowrap px-5 py-4 font-bold ${
-          battle.winnerName ? "text-emerald-300" : "text-slate-500"
+          battle.winnerName ? "text-emerald-800" : "text-[var(--dashboard-muted)]"
         }`}
       >
         {result}
@@ -314,15 +314,15 @@ function SummaryCard({
   tone: "sky" | "red" | "amber" | "emerald";
 }) {
   const valueClass = {
-    sky: "text-sky-300",
-    red: "text-red-300",
-    amber: "text-amber-300",
-    emerald: "text-emerald-300",
+    sky: "text-sky-800",
+    red: "text-red-800",
+    amber: "text-amber-800",
+    emerald: "text-emerald-800",
   }[tone];
 
   return (
-    <div className="rounded-lg border border-sky-400/15 bg-slate-950/35 px-5 py-4">
-      <p className="text-xs font-bold tracking-wider text-slate-400">{label}</p>
+    <div className="theme-card rounded-lg px-5 py-4">
+      <p className="text-xs font-bold tracking-wider text-[var(--dashboard-muted)]">{label}</p>
       <p className={`mt-2 text-3xl font-black ${valueClass}`}>{value}</p>
     </div>
   );

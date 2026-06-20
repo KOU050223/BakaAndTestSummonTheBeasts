@@ -889,16 +889,16 @@ export function SubmitScreen() {
   };
 
   return (
-    <Panel className={`mx-auto mt-4 ${isTeacher && teacherStep === "grading" ? "max-w-[98vw]" : "max-w-2xl"}`}>
-      <div className="flex items-center gap-3 border-b border-sky-400/40 bg-gradient-to-r from-sky-400/20 to-sky-400/5 px-5 py-4">
+    <Panel className={`authority-panel-content mx-auto mt-4 ${isTeacher && teacherStep === "grading" ? "max-w-[98vw]" : "max-w-2xl"}`}>
+      <div className="authority-panel-header flex items-center gap-3 border-b px-5 py-4">
         <LabelTag variant="info">{isTeacher ? "採点" : "提出"}</LabelTag>
-        <h1 className="text-xl font-black tracking-wide text-white [text-shadow:0_0_10px_rgba(56,189,248,0.7)]">
+        <h1 className="text-xl font-black tracking-wide text-[var(--dashboard-text)]">
           {title}
         </h1>
       </div>
 
       {/* パンくず */}
-      <div className="flex items-center gap-2 px-5 py-2.5 border-b border-sky-400/20 bg-black/10 text-xs text-slate-400">
+      <div className="authority-breadcrumb flex items-center gap-2 border-b px-5 py-2.5 text-xs text-[var(--dashboard-muted)]">
         <button onClick={reset} className={selectedExam ? "hover:text-sky-300" : "text-sky-300 font-semibold"}>
           試験選択
         </button>

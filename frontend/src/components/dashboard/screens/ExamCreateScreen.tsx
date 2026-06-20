@@ -103,7 +103,7 @@ export function ExamCreateScreen() {
 
   if (user?.role === "student") {
     return (
-      <Panel className="mx-auto mt-6 max-w-2xl">
+      <Panel className="authority-panel-content mx-auto mt-6 max-w-2xl">
         <div className="px-5 py-16 text-center">
           <p className="text-4xl mb-3">🚫</p>
           <p className="text-slate-400 text-sm">このページは教師専用です</p>
@@ -114,11 +114,13 @@ export function ExamCreateScreen() {
 
   if (created) {
     return (
-      <Panel className="mx-auto mt-6 max-w-2xl">
-        <div className="flex items-center gap-3 border-b border-sky-400/40 bg-gradient-to-r from-sky-400/20 to-sky-400/5 px-5 py-4">
-          <LabelTag variant="info">試験作成</LabelTag>
-          <h1 className="text-xl font-black tracking-wide text-white [text-shadow:0_0_10px_rgba(56,189,248,0.7)]">
-            試験作成
+
+      <Panel className="authority-panel-content mx-auto mt-6 max-w-2xl">
+        <div className="authority-panel-header flex items-center gap-3 border-b px-5 py-4">
+          <LabelTag variant="info">試験設定</LabelTag>
+          <h1 className="text-xl font-black tracking-wide text-[var(--dashboard-text)]">
+            試験設定
+
           </h1>
         </div>
         <div className="flex flex-col items-center gap-4 px-5 py-12">
@@ -148,11 +150,13 @@ export function ExamCreateScreen() {
   }
 
   return (
-    <Panel className="mx-auto mt-6 max-w-2xl">
-      <div className="flex items-center gap-3 border-b border-sky-400/40 bg-gradient-to-r from-sky-400/20 to-sky-400/5 px-5 py-4">
-        <LabelTag variant="info">試験作成</LabelTag>
-        <h1 className="text-xl font-black tracking-wide text-white [text-shadow:0_0_10px_rgba(56,189,248,0.7)]">
-          試験作成
+
+    <Panel className="authority-panel-content mx-auto mt-6 max-w-2xl">
+      <div className="authority-panel-header flex items-center gap-3 border-b px-5 py-4">
+        <LabelTag variant="info">試験設定</LabelTag>
+        <h1 className="text-xl font-black tracking-wide text-[var(--dashboard-text)]">
+          試験設定
+
         </h1>
       </div>
 
