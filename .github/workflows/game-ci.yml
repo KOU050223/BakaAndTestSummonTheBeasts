@@ -1,0 +1,129 @@
+name: Game CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'game/**'
+      - 'deploy/**'
+      - '.github/workflows/game-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'game/**'
+      - 'deploy/**'
+      - '.github/workflows/game-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: game
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: game/go.mod
+          cache-dependency-path: game/go.sum
+
+      - name: Set up Task
+        uses: arduino/setup-task@v2
+
+      - name: Install golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          working-directory: game
+          args: --timeout=5m
+
+      - name: Check formatting
+        run: task format
+
+      - name: Run tests with race detector
+        run: task test:race
+
+      - name: Build
+        run: task build
+
+  deploy_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Test deployment scripts and configuration
+        run: ./deploy/tests/run-tests.sh
+
+  build_game_image:
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    needs: [check, deploy_test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push game image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: game/Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: ghcr.io/kou050223/baka-and-test-summon-the-beasts-game:${{ github.sha }}
+          build-args: |
+            VCS_REF=${{ github.sha }}
+          cache-from: type=gha,scope=game-arm64
+          cache-to: type=gha,mode=max,scope=game-arm64
+
+  deploy_game:
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    needs: build_game_image
+    runs-on: [self-hosted, Linux, ARM64, raspi-home, production]
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: read
+    environment: Production
+    concurrency:
+      group: game-production
+      cancel-in-progress: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Log in to GHCR with Podman
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s' "$GHCR_TOKEN" | podman login ghcr.io --username "${{ github.actor }}" --password-stdin
+
+      - name: Install Quadlet configuration
+        run: ./deploy/scripts/install-game.sh
+
+      - name: Deploy game
+        run: ./deploy/scripts/deploy-game.sh "$GITHUB_SHA"
+
+      - name: Log out from GHCR
+        if: always()
+        run: podman logout ghcr.io || true
