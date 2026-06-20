@@ -66,16 +66,29 @@ RSpec.configure do |config|
           },
           # クラス管理画面向けのクラス概要（学年・平均スコア・在籍人数）。
           # 一覧と生徒一覧の両エンドポイントで共有するため共通定義する。
+          ClassSubjectAverage: {
+            type: :object,
+            properties: {
+              subject:       { type: :string },
+              subjectLabel:  { type: :string },
+              averageScore:  { type: :integer }
+            },
+            required: %w[subject subjectLabel averageScore]
+          },
           ClassSummary: {
             type: :object,
             properties: {
               id:           { type: :integer },
               name:         { type: :string },
               grade:        { type: :integer },
-              averageScore: { type: :integer },
-              studentCount: { type: :integer }
+              averageScore: { type: :integer, description: "全教科合計点のクラス平均" },
+              studentCount: { type: :integer },
+              subjectAverages: {
+                type: :array,
+                items: { '$ref' => '#/components/schemas/ClassSubjectAverage' }
+              }
             },
-            required: %w[id name grade averageScore studentCount]
+            required: %w[id name grade averageScore studentCount subjectAverages]
           },
           ClassListResponse: {
             type: :object,
@@ -83,6 +96,15 @@ RSpec.configure do |config|
               classes: {
                 type: :array,
                 items: { '$ref' => '#/components/schemas/ClassSummary' }
+              },
+              gradeMaxTotalScore: {
+                type: :integer,
+                description: "学年内在籍生徒の全教科合計点の最高値（grade 指定時のみ）"
+              },
+              gradeMaxScoreBySubject: {
+                type: :object,
+                additionalProperties: { type: :integer },
+                description: "学年内在籍生徒の教科別合計点の最高値（grade 指定時のみ）"
               }
             },
             required: %w[classes]

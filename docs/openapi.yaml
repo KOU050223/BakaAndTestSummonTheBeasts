@@ -1139,6 +1139,19 @@ components:
       - role
       - created_at
       - school_class
+    ClassSubjectAverage:
+      type: object
+      properties:
+        subject:
+          type: string
+        subjectLabel:
+          type: string
+        averageScore:
+          type: integer
+      required:
+      - subject
+      - subjectLabel
+      - averageScore
     ClassSummary:
       type: object
       properties:
@@ -1150,14 +1163,20 @@ components:
           type: integer
         averageScore:
           type: integer
+          description: 全教科合計点のクラス平均
         studentCount:
           type: integer
+        subjectAverages:
+          type: array
+          items:
+            "$ref": "#/components/schemas/ClassSubjectAverage"
       required:
       - id
       - name
       - grade
       - averageScore
       - studentCount
+      - subjectAverages
     ClassListResponse:
       type: object
       properties:
@@ -1165,6 +1184,14 @@ components:
           type: array
           items:
             "$ref": "#/components/schemas/ClassSummary"
+        gradeMaxTotalScore:
+          type: integer
+          description: 学年内在籍生徒の全教科合計点の最高値（grade 指定時のみ）
+        gradeMaxScoreBySubject:
+          type: object
+          additionalProperties:
+            type: integer
+          description: 学年内在籍生徒の教科別合計点の最高値（grade 指定時のみ）
       required:
       - classes
     ClassStudent:

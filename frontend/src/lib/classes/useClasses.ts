@@ -30,7 +30,14 @@ export function useClasses(grade?: number) {
     },
   );
 
-  return { classes: data?.classes, isLoading, isError, error };
+  return {
+    classes: data?.classes,
+    gradeMaxTotalScore: data?.gradeMaxTotalScore ?? 0,
+    gradeMaxScoreBySubject: data?.gradeMaxScoreBySubject ?? {},
+    isLoading,
+    isError,
+    error,
+  };
 }
 
 // 指定クラスの所属生徒一覧を取得する。classId が未指定の間はリクエストしない。

@@ -5,6 +5,10 @@ FactoryBot.define do
     password { "password123" }
     role { "student" }
 
+    trait :student do
+      role { "student" }
+    end
+
     trait :teacher do
       role { "teacher" }
     end

@@ -8,11 +8,17 @@ module Api
       classes = SchoolClass.order(:grade, :name)
       classes = classes.where(grade: params[:grade]) if params[:grade].present?
 
-      # 在籍人数と総合スコア合計を eager load し、クラスごとに集計する。
-      # 平均スコアは点数合計のみで算出するため exam までは preload しない。
-      classes = classes.includes(students: :scores)
+      classes = classes.includes(students: { scores: :exam })
+      class_list = classes.to_a
+      grade_summary = params[:grade].present? ? Classroom::GradeScoreSummary.call(class_list) : nil
 
-      render json: { classes: classes.map { |c| serialize(c) } }, status: :ok
+      payload = { classes: class_list.map { |c| serialize(c) } }
+      if grade_summary
+        payload[:gradeMaxTotalScore] = grade_summary.max_total_score
+        payload[:gradeMaxScoreBySubject] = grade_summary.max_score_by_subject
+      end
+
+      render json: payload, status: :ok
     end
 
     def create
@@ -27,7 +33,8 @@ module Api
           name: school_class.name,
           grade: school_class.grade,
           averageScore: 0,
-          studentCount: 0
+          studentCount: 0,
+          subjectAverages: []
         }, status: :created
       else
         render_error(
@@ -42,16 +49,19 @@ module Api
     private
 
     def serialize(school_class)
-      students = school_class.students
-      total_scores = students.map { |s| s.scores.sum(&:score) }
-      average = total_scores.empty? ? 0 : (total_scores.sum.to_f / total_scores.size).round
-
       {
         id: school_class.id,
         name: school_class.name,
         grade: school_class.grade,
-        averageScore: average,
-        studentCount: students.size
+        averageScore: Classroom::ClassScoreSummary.total_average(school_class),
+        studentCount: school_class.students.size,
+        subjectAverages: Classroom::ClassScoreSummary.subject_averages(school_class).map { |sa|
+          {
+            subject: sa.subject,
+            subjectLabel: sa.subject_label,
+            averageScore: sa.average_score
+          }
+        }
       }
     end
   end

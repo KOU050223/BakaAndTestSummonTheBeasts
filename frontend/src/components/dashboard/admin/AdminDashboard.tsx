@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ClassAverageScoreChart } from "@/components/dashboard/ClassAverageScoreChart";
 import { Panel } from "@/components/ui/Panel";
 import { $api } from "@/lib/api/client";
 import { listAnswerSheets } from "@/lib/api/grading";
@@ -8,7 +9,6 @@ import { useEffect, useState } from "react";
 
 // Minimal local types to avoid `any` in this file
 type Exam = { id: number | string; status?: string };
-type ClassInfo = { id: number | string; name: string; studentCount?: number; averageScore?: number };
 type BattleSummary = { battleId: string };
 type BattleResultLog = { turn: number; actorId: string | number; action: string; targetId: string | number; damage: number };
 type BattleResult = { battleId: string; logs?: BattleResultLog[] };
@@ -53,7 +53,6 @@ export function AdminDashboard() {
     "/api/admin/users"
   );
 
-  const { data: classesData } = $api.useQuery("get", "/api/classes");
   const { data: examsData } = $api.useQuery("get", "/api/exams");
   // 5秒毎にポーリングして進行中バトル数を自動更新する
   const { data: battlesData } = $api.useQuery("get", "/api/battles", { refetchInterval: 5000 });
@@ -62,7 +61,6 @@ export function AdminDashboard() {
 
   const stats = {
     users: usersData?.stats?.total_count?.toString() ?? "—",
-    classes: Array.isArray(classesData?.classes) ? String(classesData.classes.length) : "—",
     // 公開済み試験のみをカウント。exams オブジェクトに status フィールドがない場合は全件を表示。
     exams: Array.isArray(examsData?.exams)
       ? String(
@@ -171,32 +169,7 @@ export function AdminDashboard() {
       )}
 
       <div className="mt-8">
-        {/* クラス別平均スコア（横棒グラフ） */}
-        <Panel className="p-4">
-          <h3 className="text-lg font-bold text-white">クラス別平均スコア</h3>
-          <div className="mt-3 flex flex-col gap-3">
-            {Array.isArray(classesData?.classes) && classesData.classes.length > 0 ? (
-              (classesData.classes as ClassInfo[]).map((c: ClassInfo) => {
-                const avg = Number(c.averageScore ?? 0);
-                const pct = Math.max(0, Math.min(100, Math.round(avg)));
-                const barClass = avg < 50 ? "bg-red-500" : avg < 75 ? "bg-amber-400" : "bg-emerald-400";
-                return (
-                  <div key={c.id} className="flex items-center gap-4">
-                    <div className="w-36 text-sm text-slate-300">{c.name} <span className="text-xs text-slate-500">({c.studentCount})</span></div>
-                    <div className="flex-1">
-                      <div className="h-4 rounded-sm bg-white/5 overflow-hidden">
-                        <div className={`h-4 ${barClass}`} style={{ width: pct + "%" }} />
-                      </div>
-                    </div>
-                    <div className="w-12 text-right text-sm font-bold text-white">{avg.toFixed(1)}</div>
-                  </div>
-                );
-              })
-            ) : (
-              <p className="text-slate-400">クラス情報がありません。</p>
-            )}
-          </div>
-        </Panel>
+        <ClassAverageScoreChart />
 
         <div className="mt-4">
           <Panel className="p-4">
