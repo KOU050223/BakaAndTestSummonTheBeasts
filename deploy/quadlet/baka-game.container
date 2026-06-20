@@ -1,0 +1,25 @@
+[Unit]
+Description=Baka and Test Game WebSocket Server
+Wants=network-online.target
+After=network-online.target
+
+[Container]
+Image=localhost/baka-game:current
+ContainerName=baka-game
+# host ネットワークで動かし、同じ Pi 上の backend(127.0.0.1:8000) と
+# Redis(127.0.0.1:6379) にループバック経由で到達する。
+# 外部公開は HOST=127.0.0.1 で bind してリバースプロキシ経由に限定する。
+Network=host
+EnvironmentFile=%h/.config/baka/game.env
+LogDriver=k8s-file
+LogOpt=max-size=10mb
+Pull=never
+NoNewPrivileges=true
+
+[Service]
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target
