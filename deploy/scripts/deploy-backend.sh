@@ -36,6 +36,7 @@ if podman image exists "$current_image"; then
 fi
 
 podman tag "$image" "$current_image"
+export XDG_RUNTIME_DIR="/run/user/$(id -u)"
 systemctl --user daemon-reload
 restart_failed=0
 if ! systemctl --user restart "$service_name"; then
