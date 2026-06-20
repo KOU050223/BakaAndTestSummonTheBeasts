@@ -108,13 +108,40 @@ module Api
     end
 
     def index_json(battle)
-      opponent = battle.battle_players.map(&:student).find { |s| s.id != current_user.id }
+      players = battle.battle_players.to_a
       {
         battleId: battle.id.to_s,
         subjects: battle.subjects,
         status: battle.status,
-        opponentName: opponent&.name
+        opponentName: opponent_label(battle, players)
       }
+    end
+
+    # 一覧に出す対戦相手の表示名。
+    # N:N（チーム戦）なら相手チームのクラス名、1:1 なら相手プレイヤー名を返す。
+    def opponent_label(battle, players)
+      mine = players.find { |p| p.student_id == current_user.id }
+
+      if team_battle?(players)
+        opponent_team_id = opponent_team_id_for(players, mine)
+        return nil if opponent_team_id.nil?
+
+        school_class = SchoolClass.find_by(id: opponent_team_id)
+        return school_class ? "#{school_class.grade}年#{school_class.name}" : "相手クラス"
+      end
+
+      players.map(&:student).find { |s| s.id != current_user.id }&.name
+    end
+
+    # チーム戦か（team_id を持つ参加者がいるか）。
+    def team_battle?(players)
+      players.any? { |p| p.team_id.present? }
+    end
+
+    # 自分と異なるチームIDのうち最初のもの（相手チーム）。
+    def opponent_team_id_for(players, mine)
+      my_team = mine&.team_id
+      players.map(&:team_id).compact.find { |t| t != my_team }
     end
   end
 end
