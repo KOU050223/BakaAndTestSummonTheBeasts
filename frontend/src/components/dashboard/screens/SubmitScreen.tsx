@@ -115,7 +115,7 @@ function StudentUploadStep({
                 <span className="text-2xl">📄</span>
                 <div>
                   <p className="text-sky-100 text-sm font-bold">{file.name}</p>
-                  <p className="text-slate-400 text-xs">PDF ファイル</p>
+                  <p className="text-slate-400 text-xs">PDF / 画像ファイル</p>
                 </div>
               </div>
             ) : (
@@ -258,17 +258,17 @@ function QuestionSetupStep({
         </div>
       )}
 
-      {/* 解答PDF アップロード */}
+      {/* 解答ファイル アップロード */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <p className="text-blue-300 text-sm font-semibold">解答PDF</p>
+          <p className="text-blue-300 text-sm font-semibold">解答ファイル（PDF・画像）</p>
           {detail?.answer_key_attached && <LabelTag variant="info">アップロード済</LabelTag>}
         </div>
 
         <div className="flex gap-2 items-center">
           <label className="flex-1 flex items-center gap-2 px-3 py-2 bg-white/5 border border-dashed border-sky-400/30 rounded-sm cursor-pointer hover:border-sky-400 text-sm text-slate-400">
             <input type="file" accept="image/*,application/pdf" className="sr-only" onChange={(e) => setKeyFile(e.target.files?.[0] ?? null)} />
-            {keyFile ? keyFile.name : "解答PDFを選択"}
+            {keyFile ? keyFile.name : "解答ファイルを選択（PDF・画像）"}
           </label>
           <Button onClick={() => uploadKey()} disabled={!keyFile || uploadingKey}>
             {uploadingKey ? "送信中..." : "アップロード"}
@@ -618,7 +618,7 @@ function GradingStep({
   return (
     <div className="grid grid-cols-[1fr_360px] gap-3 h-[calc(100vh-180px)]">
 
-      {/* ─── 左: PDF 2枚 上下 ─── */}
+      {/* ─── 左: ファイル 2枚 上下 ─── */}
       <div className="flex flex-col gap-2 min-h-0">
         <FileViewer label="模範解答" url={sheet.answer_key_url} contentType={sheet.answer_key_content_type} className="flex-1" />
         <FileViewer label="生徒の答案" url={sheet.image_url} contentType={sheet.image_content_type} className="flex-1" />
