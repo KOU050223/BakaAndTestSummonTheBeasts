@@ -36,7 +36,6 @@ export function ScoresScreen() {
           <LabelTag variant="info">成績</LabelTag>
           <h2 className="text-lg font-bold text-white">{title}</h2>
         </div>
-
         <div className="p-4">
           {isLoading && (
             <p className="text-sky-300 animate-pulse text-center py-10">読み込み中...</p>

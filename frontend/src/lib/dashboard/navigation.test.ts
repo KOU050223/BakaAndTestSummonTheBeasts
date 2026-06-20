@@ -5,6 +5,7 @@ import {
   navLabel,
   type NavSection,
 } from "./navigation";
+import { NAV_BY_ROLE, ROLE_LABEL, navLabel, type NavSection } from "./navigation";
 
 // セクションをまたいで全タブを平坦化する
 const flatItems = (sections: NavSection[]) =>
@@ -76,5 +77,19 @@ describe("ROLE_LABEL", () => {
     expect(ROLE_LABEL.student).toBe("生徒");
     expect(ROLE_LABEL.teacher).toBe("教師");
     expect(ROLE_LABEL.school_admin).toBe("管理者");
+  });
+});
+
+describe("navLabel", () => {
+  it("ロールと href からサイドバー label を返す", () => {
+    expect(navLabel("teacher", "/")).toBe("試験作成");
+    expect(navLabel("teacher", "/scores")).toBe("点数管理");
+    expect(navLabel("teacher", "/records")).toBe("生徒一覧");
+    expect(navLabel("student", "/records")).toBe("戦績");
+    expect(navLabel("school_admin", "/classes")).toBe("クラス設定");
+  });
+
+  it("ナビに無い href は準備中を返す", () => {
+    expect(navLabel("school_admin", "/scores")).toBe("準備中");
   });
 });

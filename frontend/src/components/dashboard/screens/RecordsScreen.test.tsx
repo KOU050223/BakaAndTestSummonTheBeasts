@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { render, screen } from "@testing-library/react";
 import { RecordsScreen } from "./RecordsScreen";
 
@@ -37,6 +38,7 @@ describe("RecordsScreen", () => {
       user: { id: 2, name: "文月学", role: "teacher" },
     });
     render(<RecordsScreen />);
+
     expect(
       screen.getByRole("heading", { name: "生徒一覧" }),
     ).toBeInTheDocument();
