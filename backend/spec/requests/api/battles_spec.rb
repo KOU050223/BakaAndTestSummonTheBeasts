@@ -310,6 +310,8 @@ RSpec.describe "Battles API", type: :request do
             battleId:  { type: :string },
             winnerId:  { type: :string, nullable: true },
             loserId:   { type: :string, nullable: true },
+            winnerTeamId: { type: :string, nullable: true },
+            loserTeamId:  { type: :string, nullable: true },
             turnCount: { type: :integer },
             logs: {
               type: :array,
@@ -329,13 +331,26 @@ RSpec.describe "Battles API", type: :request do
           required: %w[battleId turnCount logs]
 
         let(:battle) do
-          b = create(:battle, status: "finished", turn_count: 0)
+          b = create(
+            :battle,
+            status: "finished",
+            turn_count: 0,
+            winner: create(:user),
+            loser: create(:user),
+            winner_team: create(:school_class, name: "A組"),
+            loser_team: create(:school_class, name: "B組")
+          )
           create(:battle_player, battle: b, student: create(:user))
           b
         end
         let(:id) { battle.id.to_s }
         before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
-        run_test!
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          expect(body["winnerTeamId"]).to eq(battle.winner_team_id.to_s)
+          expect(body["loserTeamId"]).to eq(battle.loser_team_id.to_s)
+          expect(body["loserId"]).to eq(battle.loser_id.to_s)
+        end
       end
 
       response "404", "バトルが存在しない" do

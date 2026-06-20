@@ -5,12 +5,12 @@ class BattleResultSerializer
   end
 
   def as_json(*)
-    loser = @battle.battle_players.map(&:student_id).find { |id| id != @battle.winner_id }
-
     {
       battleId: @battle.id.to_s,
       winnerId: @battle.winner_id&.to_s,
-      loserId: loser&.to_s,
+      loserId: @battle.loser_id&.to_s,
+      winnerTeamId: @battle.winner_team_id&.to_s,
+      loserTeamId: @battle.loser_team_id&.to_s,
       turnCount: @battle.turn_count || 0,
       logs: @battle.battle_logs.order(:turn).map { |log| log_json(log) }
     }

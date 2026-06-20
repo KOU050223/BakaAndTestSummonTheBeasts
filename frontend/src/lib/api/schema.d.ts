@@ -787,6 +787,8 @@ export interface paths {
                             battleId: string;
                             winnerId?: string | null;
                             loserId?: string | null;
+                            winnerTeamId?: string | null;
+                            loserTeamId?: string | null;
                             turnCount: number;
                             logs: {
                                 turn: number;
@@ -978,6 +980,78 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/classes/{class_id}/leader": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** クラスのリーダーを設定する */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    class_id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description リーダーに設定する生徒ID。null でリーダー解除 */
+                        studentId?: number | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description リーダーを解除する（studentId: null） */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ClassLeaderResponse"];
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description 権限なし（school_admin は禁止） */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description 生徒がこのクラスに所属していない */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/api/classes": {
         parameters: {
             query?: never;
@@ -1099,78 +1173,6 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
-        trace?: never;
-    };
-    "/api/classes/{class_id}/leader": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** クラスのリーダーを設定する */
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    class_id: number;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @description リーダーに設定する生徒ID。null でリーダー解除 */
-                        studentId?: number | null;
-                    };
-                };
-            };
-            responses: {
-                /** @description リーダー設定成功 */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ClassLeaderResponse"];
-                    };
-                };
-                /** @description 未認証 */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["error"];
-                    };
-                };
-                /** @description 権限なし（teacher のみ） */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["error"];
-                    };
-                };
-                /** @description クラスまたは生徒が存在しない */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["error"];
-                    };
-                };
-            };
-        };
         trace?: never;
     };
     "/api/exams": {
@@ -1701,14 +1703,13 @@ export interface components {
                 score: number;
             };
         };
-        ClassStudentListResponse: {
-            classId: number;
-            students: components["schemas"]["ClassStudent"][];
-        };
-        /** @description リーダー設定の結果 */
         ClassLeaderResponse: {
             classId: number;
             leaderId?: number | null;
+        };
+        ClassStudentListResponse: {
+            classId: number;
+            students: components["schemas"]["ClassStudent"][];
         };
         AssignmentUpdateResponse: {
             updatedCount: number;

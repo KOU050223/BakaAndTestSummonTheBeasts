@@ -18,6 +18,8 @@ module Internal
         battle: battle,
         winner_id: params[:winnerId],
         loser_id: params[:loserId],
+        winner_team_id: params[:winnerTeam].presence,
+        loser_team_id: params[:loserTeam].presence,
         logs: finish_logs
       ).call
 

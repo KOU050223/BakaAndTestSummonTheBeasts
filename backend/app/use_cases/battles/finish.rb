@@ -7,23 +7,28 @@ class Battles::Finish
   # @param winner_id [Integer] 勝者の生徒ID
   # @param loser_id [Integer] 敗者の生徒ID
   # @param logs [Array<Hash>] 行動ログ（turn/actor_id/target_id/action/damage を含むハッシュ列）
-  def initialize(battle:, winner_id:, loser_id:, logs: [])
+  def initialize(battle:, winner_id:, loser_id:, winner_team_id: nil, loser_team_id: nil, logs: [])
     @battle = battle
     @winner_id = winner_id
     @loser_id = loser_id
+    @winner_team_id = winner_team_id
+    @loser_team_id = loser_team_id
     @logs = Array(logs)
   end
 
   # @return [Battle]
   def call
-    # 冪等性：確定済みのバトルは何もしない。
-    return @battle if @battle.status == "finished"
+    @battle.with_lock do
+      # ロック取得時に最新状態へ再読み込みされるため、並行・遅延した再通知も no-op になる。
+      return @battle if @battle.status == "finished"
 
-    ActiveRecord::Base.transaction do
       @logs.each { |log| create_log(log) }
       @battle.update!(
         status: "finished",
         winner_id: @winner_id,
+        loser_id: @loser_id,
+        winner_team_id: @winner_team_id,
+        loser_team_id: @loser_team_id,
         turn_count: @logs.map { |l| l[:turn] || l["turn"] }.compact.max || 0
       )
       @battle

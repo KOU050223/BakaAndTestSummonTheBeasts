@@ -15,6 +15,8 @@ RSpec.describe "Internal Battles API", type: :request do
   let(:creator)  { create(:user, :teacher) }
   let(:player_a) { create(:user) }
   let(:player_b) { create(:user) }
+  let(:class_a)  { create(:school_class, name: "A組") }
+  let(:class_b)  { create(:school_class, name: "B組") }
 
   let(:battle) do
     create(:summon_status, student: player_a, subject: "math", hp: 140, attack: 30, defense: 12, speed: 8)
@@ -57,6 +59,8 @@ RSpec.describe "Internal Battles API", type: :request do
       {
         winnerId: player_a.id.to_s,
         loserId: player_b.id.to_s,
+        winnerTeam: class_a.id.to_s,
+        loserTeam: class_b.id.to_s,
         logs: [ { turn: 1, actorId: player_a.id.to_s, targetId: player_b.id.to_s, action: "attack", damage: 20 } ]
       }
     end
@@ -68,6 +72,9 @@ RSpec.describe "Internal Battles API", type: :request do
 
       battle.reload
       expect(battle.winner_id).to eq(player_a.id)
+      expect(battle.loser_id).to eq(player_b.id)
+      expect(battle.winner_team).to eq(class_a)
+      expect(battle.loser_team).to eq(class_b)
       expect(battle.battle_logs.count).to eq(1)
     end
 

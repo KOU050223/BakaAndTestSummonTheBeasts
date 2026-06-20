@@ -578,6 +578,12 @@ paths:
                   loserId:
                     type: string
                     nullable: true
+                  winnerTeamId:
+                    type: string
+                    nullable: true
+                  loserTeamId:
+                    type: string
+                    nullable: true
                   turnCount:
                     type: integer
                   logs:
@@ -722,6 +728,55 @@ paths:
               required:
               - assignments
         required: true
+  "/api/classes/{class_id}/leader":
+    patch:
+      summary: クラスのリーダーを設定する
+      tags:
+      - Classes
+      security:
+      - cookie_auth: []
+      parameters:
+      - name: class_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: 'リーダーを解除する（studentId: null）'
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ClassLeaderResponse"
+        '401':
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: 権限なし（school_admin は禁止）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: 生徒がこのクラスに所属していない
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                studentId:
+                  type: integer
+                  nullable: true
+                  description: リーダーに設定する生徒ID。null でリーダー解除
+        required: true
   "/api/classes":
     get:
       summary: クラス一覧取得
@@ -790,55 +845,6 @@ paths:
                 "$ref": "#/components/schemas/error"
         '404':
           description: クラスが存在しない
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/error"
-  "/api/classes/{class_id}/leader":
-    patch:
-      summary: クラスのリーダーを設定する
-      tags:
-      - Classes
-      security:
-      - cookie_auth: []
-      parameters:
-      - name: class_id
-        in: path
-        required: true
-        schema:
-          type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                studentId:
-                  type: integer
-                  nullable: true
-                  description: リーダーに設定する生徒ID。null でリーダー解除
-      responses:
-        '200':
-          description: リーダー設定成功
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/ClassLeaderResponse"
-        '401':
-          description: 未認証
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/error"
-        '403':
-          description: 権限なし（teacher のみ）
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/error"
-        '404':
-          description: クラスまたは生徒が存在しない
           content:
             application/json:
               schema:

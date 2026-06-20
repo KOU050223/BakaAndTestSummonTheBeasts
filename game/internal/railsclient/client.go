@@ -87,9 +87,11 @@ func (c *Client) FetchStartData(ctx context.Context, battleID string) (*StartDat
 // --- finish のリクエスト型 ---
 
 type FinishRequest struct {
-	WinnerID string      `json:"winnerId"`
-	LoserID  string      `json:"loserId"`
-	Logs     []FinishLog `json:"logs"`
+	WinnerID   string      `json:"winnerId"`
+	LoserID    string      `json:"loserId"`
+	WinnerTeam string      `json:"winnerTeam,omitempty"`
+	LoserTeam  string      `json:"loserTeam,omitempty"`
+	Logs       []FinishLog `json:"logs"`
 }
 
 type FinishLog struct {
