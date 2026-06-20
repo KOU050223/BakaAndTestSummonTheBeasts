@@ -62,10 +62,10 @@ describe("NAV_BY_ROLE", () => {
     expect(overallScores?.href).toBe("/scores");
   });
 
-  it("管理者の召喚獣戦争ログは /records を指す", () => {
+  it("管理者の試召戦争ログは /records を指す", () => {
     const adminItems = flatItems(NAV_BY_ROLE.school_admin);
     const battleLog = adminItems.find(
-      (item) => item.label === "召喚獣戦争ログ",
+      (item) => item.label === "試召戦争ログ",
     );
     expect(battleLog?.href).toBe("/records");
   });
@@ -79,7 +79,7 @@ describe("navLabel", () => {
     expect(navLabel("student", "/records")).toBe("戦績");
     expect(navLabel("school_admin", "/classes")).toBe("クラス設定");
     expect(navLabel("school_admin", "/scores")).toBe("全体成績");
-    expect(navLabel("school_admin", "/records")).toBe("召喚獣戦争ログ");
+    expect(navLabel("school_admin", "/records")).toBe("試召戦争ログ");
   });
 
   it("ナビに無い href は準備中を返す", () => {

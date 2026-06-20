@@ -68,7 +68,7 @@ export const NAV_BY_ROLE: Record<Role, NavSection[]> = {
       heading: "参照",
       items: [
         { label: "全体成績", href: "/scores", icon: "📊" },
-        { label: "召喚獣戦争ログ", href: "/records", icon: "⚔️" },
+        { label: "試召戦争ログ", href: "/records", icon: "⚔️" },
       ],
     },
   ],

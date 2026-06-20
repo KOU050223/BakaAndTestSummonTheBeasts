@@ -230,8 +230,7 @@ function AdminBattleLog() {
             </div>
           ) : (
             <table
-              aria-label="試召戦争ログ
-              "
+              aria-label="試召戦争ログ"
               className="min-w-[980px] w-full text-sm"
             >
               <thead className="border-b border-sky-400/20 bg-slate-900/70 text-left text-xs uppercase tracking-wider text-slate-400">

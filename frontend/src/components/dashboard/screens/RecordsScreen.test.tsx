@@ -14,7 +14,7 @@ vi.mock("../NavPlaceholder", () => ({
     const titles: Record<string, string> = {
       "student:/records": "戦績",
       "teacher:/records": "生徒一覧",
-      "school_admin:/records": "召喚獣戦争ログ",
+      "school_admin:/records": "試召戦争ログ",
     };
     return <h1>{titles[`${role}:${href}`] ?? href}</h1>;
   },
@@ -44,13 +44,13 @@ describe("RecordsScreen", () => {
     ).toBeInTheDocument();
   });
 
-  it("管理者には召喚獣戦争ログを表示する", () => {
+  it("管理者には試召戦争ログを表示する", () => {
     mockUseCurrentUser.mockReturnValue({
       user: { id: 3, name: "管理者", role: "school_admin" },
     });
     render(<RecordsScreen />);
     expect(
-      screen.getByRole("heading", { name: "召喚獣戦争ログ" }),
+      screen.getByRole("heading", { name: "試召戦争ログ" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "仕掛け側" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "受け側" })).toBeInTheDocument();

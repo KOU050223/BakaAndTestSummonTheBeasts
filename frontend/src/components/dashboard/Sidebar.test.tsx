@@ -65,11 +65,11 @@ describe("Sidebar", () => {
     );
   });
 
-  it("管理者には召喚獣戦争ログへのリンクを表示する", () => {
+  it("管理者には試召戦争ログへのリンクを表示する", () => {
     render(<Sidebar user={schoolAdminUser} />);
 
     expect(
-      screen.getByRole("link", { name: /召喚獣戦争ログ/ }),
+      screen.getByRole("link", { name: /試召戦争ログ/ }),
     ).toHaveAttribute("href", "/records");
   });
 });
