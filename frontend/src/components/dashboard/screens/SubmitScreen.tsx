@@ -457,7 +457,7 @@ function TeacherGradingView({ exam }: { exam: Exam }) {
     },
   });
 
-  const { data: summary } = useQuery({
+  const { data: summary, isLoading: summaryLoading, isError: summaryError } = useQuery({
     queryKey: ["exam_summary", exam.id],
     queryFn: () => getExamSummary(exam.id),
     enabled: showSummary,
@@ -541,7 +541,11 @@ function TeacherGradingView({ exam }: { exam: Exam }) {
       {showSummary ? (
         summary
           ? <SummaryPanel exam={exam} summary={summary} />
-          : <p className="text-center text-slate-400 py-10 text-sm animate-pulse">読み込み中...</p>
+          : summaryError
+            ? <p className="text-center text-red-400 py-10 text-sm">統計の取得に失敗しました</p>
+            : summaryLoading
+              ? <p className="text-center text-slate-400 py-10 text-sm animate-pulse">読み込み中...</p>
+              : null
       ) : selectedSheet ? (
         <GradingStep
           key={`${selectedSheet.id}-${gradingKey}`}
