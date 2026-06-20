@@ -36,20 +36,16 @@ jobs:
       - name: Set up Task
         uses: arduino/setup-task@v2
 
+      # go.mod の Go バージョン（1.26）に対応する golangci-lint を固定インストールする。
+      # golangci-lint-action の同梱バイナリは Go バージョンが古く、go.mod を読めない。
       - name: Install golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          working-directory: game
-          args: --timeout=5m
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
+            | sh -s -- -b "$(go env GOPATH)/bin" v2.12.2
+          echo "$(go env GOPATH)/bin" >>"$GITHUB_PATH"
 
-      - name: Check formatting
-        run: task format
-
-      - name: Run tests with race detector
-        run: task test:race
-
-      - name: Build
-        run: task build
+      - name: Run CI checks (format + lint + test:race + build)
+        run: task ci
 
   deploy_test:
     runs-on: ubuntu-latest
