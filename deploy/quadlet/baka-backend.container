@@ -1,0 +1,22 @@
+[Unit]
+Description=Baka and Test Rails API
+Wants=network-online.target
+After=network-online.target
+
+[Container]
+Image=localhost/baka-backend:current
+ContainerName=baka-backend
+PublishPort=127.0.0.1:8000:8000
+EnvironmentFile=%h/.config/baka/backend.env
+LogDriver=k8s-file
+LogOpt=max-size=10mb
+Pull=never
+NoNewPrivileges=true
+
+[Service]
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target
