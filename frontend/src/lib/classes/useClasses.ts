@@ -129,3 +129,28 @@ export function useApplyAssignments() {
     isError: mutation.isError,
   };
 }
+
+// クラスのリーダーを設定する（教師のみ）。
+// studentId を指定するとその生徒をリーダーに設定し、既存リーダーを解除する。
+// studentId を null にするとリーダーを解除（リーダーなし）にする。
+export function useSetClassLeader(classId: number | undefined) {
+  const queryClient = useQueryClient();
+
+  const mutation = $api.useMutation("patch", "/api/classes/{class_id}/leader", {
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["get", "/api/classes/{class_id}/students"],
+      });
+    },
+  });
+
+  const setLeader = (studentId: number | null) => {
+    if (classId == null) return;
+    mutation.mutate({
+      params: { path: { class_id: classId } },
+      body: { studentId },
+    });
+  };
+
+  return { setLeader, isPending: mutation.isPending, isError: mutation.isError };
+}

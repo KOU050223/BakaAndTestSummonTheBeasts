@@ -8,6 +8,7 @@ import {
   useChangeStudentClass,
   useGradeStudents,
   useApplyAssignments,
+  useSetClassLeader,
   type StudentWithClass,
 } from "@/lib/classes/useClasses";
 import type { ClassSummary, ClassStudent } from "@/lib/api/types";
@@ -55,6 +56,8 @@ export function ClassManagementScreen() {
       ? selectedClassId
       : (gradeClasses[0]?.id ?? null);
   const activeClass = gradeClasses.find((c) => c.id === activeClassId) ?? null;
+
+  const { setLeader, isPending: isSettingLeader } = useSetClassLeader(activeClassId ?? undefined);
 
   // 選択クラスの生徒（StudentTable 表示用）。
   const {
@@ -127,6 +130,8 @@ export function ClassManagementScreen() {
               gradeClasses={gradeClasses}
               currentClassId={activeClass.id}
               onChangeClass={changeClass}
+              onSetLeader={setLeader}
+              isSettingLeader={isSettingLeader}
             />
           )}
         </>
@@ -250,6 +255,8 @@ function StudentTable({
   gradeClasses,
   currentClassId,
   onChangeClass,
+  onSetLeader,
+  isSettingLeader,
 }: {
   className: string;
   students: ClassStudent[] | undefined;
@@ -258,6 +265,8 @@ function StudentTable({
   gradeClasses: ClassSummary[];
   currentClassId: number;
   onChangeClass: (studentId: number, classId: number) => void;
+  onSetLeader: (studentId: number | null) => void;
+  isSettingLeader: boolean;
 }) {
   return (
     <Panel className="p-6">
@@ -298,6 +307,8 @@ function StudentTable({
                   onChangeClass={(targetClassId) =>
                     onChangeClass(s.id, targetClassId)
                   }
+                  onSetLeader={onSetLeader}
+                  isSettingLeader={isSettingLeader}
                 />
               ))}
             </tbody>
@@ -314,18 +325,31 @@ function StudentRow({
   currentClassId,
   gradeClasses,
   onChangeClass,
+  onSetLeader,
+  isSettingLeader,
 }: {
   student: ClassStudent;
   currentClassName: string;
   currentClassId: number;
   gradeClasses: ClassSummary[];
   onChangeClass: (classId: number) => void;
+  onSetLeader: (studentId: number | null) => void;
+  isSettingLeader: boolean;
 }) {
   const [editing, setEditing] = useState(false);
 
   return (
     <tr className="border-b border-white/5 text-slate-200">
-      <td className="px-3 py-3 font-semibold">{student.name}</td>
+      <td className="px-3 py-3 font-semibold">
+        <span className="flex items-center gap-2">
+          {student.name}
+          {student.leader && (
+            <span className="rounded-sm bg-amber-400/20 px-1.5 py-0.5 text-xs font-bold text-amber-300 ring-1 ring-amber-400/40">
+              リーダー
+            </span>
+          )}
+        </span>
+      </td>
       <td className="px-3 py-3 font-mono font-bold text-sky-200">
         {student.totalScore.toLocaleString()}
       </td>
@@ -336,32 +360,53 @@ function StudentRow({
         <LabelTag>{currentClassName}</LabelTag>
       </td>
       <td className="px-3 py-3">
-        {editing ? (
-          <select
-            autoFocus
-            defaultValue={currentClassId}
-            onChange={(e) => {
-              if (e.target.value) onChangeClass(Number(e.target.value));
-              setEditing(false);
-            }}
-            onBlur={() => setEditing(false)}
-            className="rounded-sm border border-sky-400/40 bg-[rgba(8,22,46,0.95)] px-2 py-1 text-sm text-slate-100"
-          >
-            {gradeClasses.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            className="rounded-sm border border-sky-400/40 px-3 py-1 text-xs font-bold text-sky-200 transition-colors hover:bg-sky-400/15"
-          >
-            クラス変更
-          </button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {editing ? (
+            <select
+              autoFocus
+              defaultValue={currentClassId}
+              onChange={(e) => {
+                if (e.target.value) onChangeClass(Number(e.target.value));
+                setEditing(false);
+              }}
+              onBlur={() => setEditing(false)}
+              className="rounded-sm border border-sky-400/40 bg-[rgba(8,22,46,0.95)] px-2 py-1 text-sm text-slate-100"
+            >
+              {gradeClasses.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="rounded-sm border border-sky-400/40 px-3 py-1 text-xs font-bold text-sky-200 transition-colors hover:bg-sky-400/15"
+            >
+              クラス変更
+            </button>
+          )}
+          {student.leader ? (
+            <button
+              type="button"
+              disabled={isSettingLeader}
+              onClick={() => onSetLeader(null)}
+              className="rounded-sm border border-amber-400/40 px-3 py-1 text-xs font-bold text-amber-300 transition-colors hover:bg-amber-400/15 disabled:opacity-50"
+            >
+              解除
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={isSettingLeader}
+              onClick={() => onSetLeader(student.id)}
+              className="rounded-sm border border-amber-400/40 px-3 py-1 text-xs font-bold text-amber-300 transition-colors hover:bg-amber-400/15 disabled:opacity-50"
+            >
+              リーダーに設定
+            </button>
+          )}
+        </div>
       </td>
     </tr>
   );
