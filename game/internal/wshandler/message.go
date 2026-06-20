@@ -38,11 +38,13 @@ type FieldState struct {
 }
 
 type PlayerState struct {
-	X              float64                `json:"x"`
-	Z              float64                `json:"z"`
-	Angle          float64                `json:"angle"`
-	CurrentSubject *string                `json:"currentSubject"`
-	Summoned       bool                   `json:"summoned"`
+	X              float64 `json:"x"`
+	Z              float64 `json:"z"`
+	Angle          float64 `json:"angle"`
+	TeamID         string  `json:"teamId"` // 所属チーム（クラス）。陣営の色分け等に使う。
+	Leader         bool    `json:"leader"` // チームリーダーか。
+	CurrentSubject *string `json:"currentSubject"`
+	Summoned       bool    `json:"summoned"`
 	// Attacking はこの tick で攻撃を発動したか（クライアントの攻撃アニメ用）。
 	Attacking bool                   `json:"attacking"`
 	Summons   map[string]SummonState `json:"summons"`
@@ -52,9 +54,12 @@ type SummonState struct {
 	HP int `json:"hp"`
 }
 
-// FinishedMessage は決着通知。
+// FinishedMessage は決着通知。N:N では勝敗チームを示し、
+// winnerId/loserId は後方互換のため代表プレイヤーIDを入れる。
 type FinishedMessage struct {
-	Type     string `json:"type"` // "finished"
-	WinnerID string `json:"winnerId"`
-	LoserID  string `json:"loserId"`
+	Type       string `json:"type"` // "finished"
+	WinnerTeam string `json:"winnerTeam"`
+	LoserTeam  string `json:"loserTeam"`
+	WinnerID   string `json:"winnerId"`
+	LoserID    string `json:"loserId"`
 }
