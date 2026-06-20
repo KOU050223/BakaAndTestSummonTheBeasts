@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useRef } from "react";
+import { Suspense, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Grid } from "@react-three/drei";
 import * as THREE from "three";
@@ -74,6 +74,41 @@ function CameraFollower({ target }: CameraFollowerProps) {
 // 全召喚獣で使い回す VRM モデル（将来は科目別に差し替え可能にする）。
 const DEFAULT_VRM_URL = "/cat.vrm";
 
+// VRoid 公式 VRMA_MotionPack のモーション（public 配下に同梱）。
+// 待機はループ、攻撃はワンショットで再生する。
+const IDLE_VRMA_URL = "/VRMA_MotionPack/vrma/model_pose.vrma";
+const ATTACK_VRMA_URL = "/VRMA_MotionPack/vrma/ban.vrma";
+
+type BattleAvatarProps = {
+  position: [number, number, number];
+  rotationY: number;
+  // サーバー権威の「この tick で攻撃を発動したか」。
+  attacking: boolean;
+  // 現在の tick。攻撃モーションの再トリガーキーに使う。
+  tick: number;
+};
+
+// 召喚済みプレイヤーの VRM アバター。
+// attacking が true になった tick を覚えておき、それを actionKey として
+// VrmAvatar に渡すことで攻撃モーションを 1 回だけ再生させる。
+// （attacking は 1 tick で false に戻るため、ここで「最後に攻撃した tick」を保持する）
+function BattleAvatar({ position, rotationY, attacking, tick }: BattleAvatarProps) {
+  const [lastAttackTick, setLastAttackTick] = useState<number | null>(null);
+  if (attacking && tick !== lastAttackTick) {
+    setLastAttackTick(tick);
+  }
+  return (
+    <VrmAvatar
+      url={DEFAULT_VRM_URL}
+      position={position}
+      rotationY={rotationY}
+      idleAnimationUrl={IDLE_VRMA_URL}
+      actionAnimationUrl={lastAttackTick !== null ? ATTACK_VRMA_URL : undefined}
+      actionKey={lastAttackTick ?? undefined}
+    />
+  );
+}
+
 type BattleSceneProps = {
   // Go サーバー権威の最新 state。未受信（接続待ち）の間は null。
   state: StateMessage | null;
@@ -117,7 +152,13 @@ export function BattleScene({ state, currentUserId }: BattleSceneProps) {
             {players.map(([userId, p], index) => {
               const rotationY = goAngleToThreeRotationY(p.angle);
               return p.summoned ? (
-                <VrmAvatar key={userId} url={DEFAULT_VRM_URL} position={[p.x, 0, p.z]} rotationY={rotationY} />
+                <BattleAvatar
+                  key={userId}
+                  position={[p.x, 0, p.z]}
+                  rotationY={rotationY}
+                  attacking={p.attacking}
+                  tick={state.tick}
+                />
               ) : (
                 <PlayerMarker key={userId} position={[p.x, 0, p.z]} rotationY={rotationY} playerIndex={index} />
               );
@@ -126,8 +167,20 @@ export function BattleScene({ state, currentUserId }: BattleSceneProps) {
         ) : (
           <>
             {/* 接続待ちの仮表示：自分（手前左）と相手（奥右）を向かい合わせる */}
-            <VrmAvatar url={DEFAULT_VRM_URL} position={[-0.8, 0, 0.3]} rotationY={Math.PI / 2} />
-            <VrmAvatar url={DEFAULT_VRM_URL} position={[0.8, 0, -0.3]} rotationY={-Math.PI / 2} />
+            {/* デモとして片方に攻撃モーション、もう片方に待機モーションを再生する */}
+            <VrmAvatar
+              url={DEFAULT_VRM_URL}
+              position={[-0.8, 0, 0.3]}
+              rotationY={Math.PI / 2}
+              idleAnimationUrl={IDLE_VRMA_URL}
+              actionAnimationUrl={ATTACK_VRMA_URL}
+            />
+            <VrmAvatar
+              url={DEFAULT_VRM_URL}
+              position={[0.8, 0, -0.3]}
+              rotationY={-Math.PI / 2}
+              idleAnimationUrl={IDLE_VRMA_URL}
+            />
           </>
         )}
       </Suspense>
