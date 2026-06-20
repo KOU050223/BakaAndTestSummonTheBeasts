@@ -2,8 +2,8 @@ require "rails_helper"
 
 RSpec.describe Classroom::ClassScoreSummary do
   let(:school_class) { create(:school_class, grade: 2, name: "Aクラス") }
-  let(:student_a) { create(:user, :student, name: "生徒A") }
-  let(:student_b) { create(:user, :student, name: "生徒B") }
+  let(:student_a) { create(:user, name: "生徒A") }
+  let(:student_b) { create(:user, name: "生徒B") }
 
   before do
     create(:class_membership, user: student_a, school_class: school_class)

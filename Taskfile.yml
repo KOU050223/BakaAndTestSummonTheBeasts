@@ -63,6 +63,12 @@ tasks:
       - task: backend:ci
       - task: frontend:ci
 
+  openapi:generate:
+    desc: OpenAPI 仕様（docs/openapi.yaml）を再生成し、フロントの型定義を更新する
+    cmds:
+      - task: backend:openapi:generate
+      - task: frontend:generate
+
   setup:
     desc: 🚀 新規参加者向けセットアップ（install → .env → DB起動 → DB初期化 まで一括実行）
     cmds:
@@ -170,30 +176,22 @@ tasks:
           exit 1
         fi
 
-        # DB_PORT が使用済みか確認
-        DB_PORT="${DB_PORT:-5432}"
-        if lsof -iTCP:"$DB_PORT" -sTCP:LISTEN &>/dev/null 2>&1; then
-          # 自分の docker compose の db コンテナが使っているか確認
-          CONTAINER=$(docker compose ps -q db 2>/dev/null)
-          if [ -z "$CONTAINER" ]; then
+        if docker compose up -d --wait db; then
+          echo "✅ PostgreSQL が起動しました"
+        else
+          echo ""
+          echo "⚠️  Docker コンテナの起動に失敗しました。既存の PostgreSQL への接続を確認しています..."
+          if ! (cd backend && bundle exec rails runner 'ActiveRecord::Base.connection.active?'); then
             echo ""
-            echo "❌ ポート $DB_PORT がすでに使用されています。"
-            echo "💡 別の PostgreSQL が起動していないか確認してください:"
-            echo "   lsof -iTCP:$DB_PORT -sTCP:LISTEN"
+            echo "❌ PostgreSQL に接続できません。"
+            echo "💡 以下を確認してください:"
+            echo "   - ポート ${DB_PORT:-5432} を別の PostgreSQL が使用していないか"
+            echo "   - .env と backend/.env の DB_USERNAME / DB_PASSWORD が正しいか"
+            echo "   - docker compose logs db でエラー内容を確認する"
             exit 1
           fi
+          echo "✅ 既存の PostgreSQL に接続できました（Docker 起動をスキップ）"
         fi
-
-        docker compose up -d --wait db
-        if [ $? -ne 0 ]; then
-          echo ""
-          echo "❌ PostgreSQL コンテナの起動に失敗しました。"
-          echo "💡 以下を確認してください:"
-          echo "   - .env の DB_USERNAME / DB_PASSWORD が正しいか"
-          echo "   - docker compose logs db  でエラー内容を確認する"
-          exit 1
-        fi
-        echo "✅ PostgreSQL が起動しました"
 
       - |
         echo ""
@@ -228,7 +226,12 @@ tasks:
   db:start:
     desc: PostgreSQLをdocker-composeで起動し、healthyになるまで待つ
     dotenv: [".env"]
-    cmd: docker compose up -d --wait db
+    cmds:
+      - |
+        if docker compose up -d --wait db; then
+          exit 0
+        fi
+        cd backend && bundle exec rails runner 'ActiveRecord::Base.connection.active?'
 
   db:stop:
     desc: PostgreSQLを停止する
