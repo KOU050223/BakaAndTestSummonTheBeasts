@@ -113,6 +113,8 @@ class GradeAnswerSheetJob < ApplicationJob
     text = parts.reject { |p| p["thought"] }.last&.dig("text").to_s
     Rails.logger.info "GradeAnswerSheetJob: Gemini response (truncated): #{text.truncate(300)}"
 
+    raise "Gemini returned no parseable text (all parts were thought blocks?)" if text.blank?
+
     parsed = JSON.parse(text)
     raise "Gemini returned empty results" if parsed.empty?
 
