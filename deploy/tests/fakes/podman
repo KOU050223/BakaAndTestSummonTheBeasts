@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -u
+printf 'podman %s\n' "$*" >>"$FAKE_COMMAND_LOG"
+
+if [[ "${1:-} ${2:-}" == "image exists" ]]; then
+  exit "${FAKE_CURRENT_IMAGE_EXISTS:-1}"
+fi
+
+if [[ "${1:-}" == "run" ]]; then
+  exit "${FAKE_MIGRATION_STATUS:-0}"
+fi

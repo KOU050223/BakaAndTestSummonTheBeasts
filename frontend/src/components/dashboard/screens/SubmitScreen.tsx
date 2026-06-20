@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { $api } from "@/lib/api/client";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
+import { navLabel } from "@/lib/dashboard/navigation";
 import {
   uploadMyAnswerSheet,
   listAnswerSheets,
@@ -709,7 +710,7 @@ export function SubmitScreen() {
   if (!user) return null;
 
   const isTeacher = user.role === "teacher" || user.role === "school_admin";
-  const title = isTeacher ? "OCR 採点" : "答案を提出";
+  const title = navLabel(user.role, "/submit");
 
   const currentStep = () => {
     if (!selectedExam) return "exam";

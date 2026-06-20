@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Panel, LabelTag } from "@/components/ui";
 import { getMyScores } from "@/lib/api/grading";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
+import { NavPlaceholder } from "../NavPlaceholder";
 
 type MyScore = { exam_id: number | string; exam_title: string; subject_label: string; scored_at: string; score: number; max_score: number };
 type RankingRow = { user_id: number | string; rank: number; name: string; school_class?: { id?: number | string; name?: string }; total_score: number };
@@ -24,7 +25,6 @@ export function ScoresScreen() {
           <LabelTag variant="info">成績</LabelTag>
           <h2 className="text-lg font-bold text-white">全体ランキング</h2>
         </div>
-
         <div className="p-4">
           {isLoading && (
             <p className="text-sky-300 animate-pulse text-center py-10">読み込み中...</p>
