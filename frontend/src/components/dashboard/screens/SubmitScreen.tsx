@@ -353,6 +353,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function TeacherGradingView({ exam }: { exam: Exam }) {
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [gradingKey, setGradingKey] = useState(0);
 
   const { data: sheets, isLoading, refetch } = useQuery({
     queryKey: ["answer_sheets", exam.id],
@@ -416,10 +417,10 @@ function TeacherGradingView({ exam }: { exam: Exam }) {
       {/* 採点パネル */}
       {selectedSheet ? (
         <GradingStep
-          key={selectedSheet.id}
+          key={`${selectedSheet.id}-${gradingKey}`}
           exam={exam}
           sheetSummary={selectedSheet}
-          onDone={() => refetch()}
+          onDone={() => { void refetch(); setGradingKey((k) => k + 1); }}
         />
       ) : (
         <p className="text-center text-slate-400 py-10 text-sm">生徒を選択してください</p>
