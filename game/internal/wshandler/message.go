@@ -41,8 +41,9 @@ type PlayerState struct {
 	X              float64 `json:"x"`
 	Z              float64 `json:"z"`
 	Angle          float64 `json:"angle"`
-	TeamID         string  `json:"teamId"` // 所属チーム（クラス）。陣営の色分け等に使う。
-	Leader         bool    `json:"leader"` // チームリーダーか。
+	TeamID         string  `json:"teamId"`   // 所属チーム（クラス）。陣営の色分け等に使う。
+	Leader         bool    `json:"leader"`   // チームリーダーか。
+	Defeated       bool    `json:"defeated"` // 戦闘不能（HP0で場から除外）か。
 	CurrentSubject *string `json:"currentSubject"`
 	Summoned       bool    `json:"summoned"`
 	// Attacking はこの tick で攻撃を発動したか（クライアントの攻撃アニメ用）。

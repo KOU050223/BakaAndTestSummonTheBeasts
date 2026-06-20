@@ -98,6 +98,7 @@ func snapshot(r *battle.Room) StateMessage {
 			Angle:          p.Angle,
 			TeamID:         p.TeamID,
 			Leader:         p.Leader,
+			Defeated:       p.Defeated(),
 			CurrentSubject: current,
 			Summoned:       p.Summoned,
 			Attacking:      p.Attacking,

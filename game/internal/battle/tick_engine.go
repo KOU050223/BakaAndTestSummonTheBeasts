@@ -27,15 +27,26 @@ func (r *Room) Step(inputs map[string]Input) []AttackEvent {
 		}
 	}
 
+	// 脱落（戦闘不能）したプレイヤーは行動しない（移動・召喚・攻撃いずれも不可）。
 	for id, p := range r.Players {
+		if p.Defeated() {
+			p.Summoned = false // 場から退場した扱い。
+			continue
+		}
 		r.applyMove(p, inputs[id])
 	}
 	for id, p := range r.Players {
+		if p.Defeated() {
+			continue
+		}
 		r.applySummon(p, inputs[id])
 	}
 
 	events := make([]AttackEvent, 0)
 	for id, p := range r.Players {
+		if p.Defeated() {
+			continue
+		}
 		if ev, ok := r.applyAttack(id, p, inputs[id]); ok {
 			events = append(events, ev)
 		}
@@ -128,6 +139,9 @@ func (r *Room) nearestTarget(actorID string, actor *Player) (string, *Player, *S
 		if id == actorID {
 			continue
 		}
+		if candidate.Defeated() {
+			continue // 脱落者は攻撃対象にならない
+		}
 		summon := candidate.ActiveSummon(r.Fields)
 		if summon == nil {
 			continue // 相手が中立地帯なら戦闘不可
@@ -153,24 +167,24 @@ func (r *Room) cooldown(s *Summon) int {
 }
 
 // checkVictory はチーム単位で決着を判定する。
-// あるチームの全員が脱落（または LeaderRule 下でリーダーが脱落）し、
-// かつ生存している他チームが1つだけ残った時点で決着を確定する。
+// 脱落（HP0）したプレイヤーは戦闘不能として場から除外され、
+// 「生存プレイヤーのいるチーム」が1つ以下になった時点で決着する。
+// LeaderRule が真ならリーダー脱落でそのチームを敗北扱いにする。
 func (r *Room) checkVictory() {
 	if len(r.Players) == 0 {
 		return
 	}
 
-	// チームごとに「生存者がいるか」「リーダーが生存しているか」を集計する。
-	alive := make(map[string]bool)
+	// 全チームと、生存者のいるチームを集計する。
+	allTeams := make(map[string]bool)
+	survivingTeams := make(map[string]bool)
 	leaderAlive := make(map[string]bool)
 	hasLeader := make(map[string]bool)
 	for _, p := range r.Players {
 		team := r.teamKey(p)
-		if _, ok := alive[team]; !ok {
-			alive[team] = false
-		}
+		allTeams[team] = true
 		if !p.Defeated() {
-			alive[team] = true
+			survivingTeams[team] = true
 		}
 		if p.Leader {
 			hasLeader[team] = true
@@ -180,34 +194,37 @@ func (r *Room) checkVictory() {
 		}
 	}
 
-	// 各チームの敗北状態を判定する。
-	var survivors []string
-	var defeatedTeams []string
-	for team := range alive {
-		lost := !alive[team]
-		if r.LeaderRule && hasLeader[team] && !leaderAlive[team] {
-			lost = true // リーダー撃破で全滅前でも敗北。
-		}
-		if lost {
-			defeatedTeams = append(defeatedTeams, team)
-		} else {
-			survivors = append(survivors, team)
+	// LeaderRule 下ではリーダーを失ったチームを生存チームから外す。
+	if r.LeaderRule {
+		for team := range allTeams {
+			if hasLeader[team] && !leaderAlive[team] {
+				delete(survivingTeams, team)
+			}
 		}
 	}
 
-	// 1チームも脱落していなければ続行。
-	if len(defeatedTeams) == 0 {
-		return
+	// 開始直後など、まだ誰も脱落していない（生存チーム == 全チーム）なら続行。
+	// ただし全チームが1つしかない単独戦は、全滅した時のみ決着させる。
+	if len(survivingTeams) >= 2 {
+		return // 2陣営以上が生存中：続行。
 	}
-	// 全チームが同時脱落した場合（引き分け相当）も決着扱いにする。
-	if len(survivors) > 1 {
-		return // 勝者が確定していないので続行。
+	if len(survivingTeams) == 1 && len(allTeams) == 1 {
+		return // 単独チームに生存者あり：まだ全滅していないので続行。
 	}
 
+	// ここに来たら決着：生存チームは0（全滅）か1（勝者確定）。
 	r.Finished = true
-	r.LoserTeam = defeatedTeams[0]
-	if len(survivors) == 1 {
-		r.WinnerTeam = survivors[0]
+	if len(survivingTeams) == 1 {
+		for team := range survivingTeams {
+			r.WinnerTeam = team
+		}
+	}
+	// 敗者チーム：生存していないチームの代表を1つ選ぶ。
+	for team := range allTeams {
+		if !survivingTeams[team] {
+			r.LoserTeam = team
+			break
+		}
 	}
 	r.assignRepresentativeIDs()
 }
