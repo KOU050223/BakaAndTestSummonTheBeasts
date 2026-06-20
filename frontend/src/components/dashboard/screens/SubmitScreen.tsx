@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { $api } from "@/lib/api/client";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
@@ -424,6 +425,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function TeacherGradingView({ exam }: { exam: Exam }) {
+  const router = useRouter();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [gradingKey, setGradingKey] = useState(0);
   const [showSummary, setShowSummary] = useState(false);
@@ -447,6 +449,7 @@ function TeacherGradingView({ exam }: { exam: Exam }) {
 
   // selectedId が未設定なら最初の答案をデフォルト選択とする
   const selectedSheet = sheets?.find((s) => s.id === selectedId) ?? sheets?.[0] ?? null;
+  const allScored = (sheets?.length ?? 0) > 0 && sheets?.every((s) => s.status === "scored");
 
   if (isLoading) {
     return <p className="text-sky-300 animate-pulse text-center py-10">読み込み中...</p>;
@@ -503,6 +506,19 @@ function TeacherGradingView({ exam }: { exam: Exam }) {
           ↻
         </button>
       </div>
+
+      {/* 全員採点済みバナー */}
+      {allScored && (
+        <div className="flex items-center justify-between px-4 py-3 bg-green-500/10 border-b border-green-500/30">
+          <p className="text-green-300 text-sm font-semibold">全員の採点が完了しました</p>
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="px-4 py-1.5 text-sm bg-green-500/20 border border-green-400/40 rounded-sm text-green-200 hover:bg-green-500/30 transition-colors"
+          >
+            ダッシュボードへ戻る →
+          </button>
+        </div>
+      )}
 
       {/* 採点 or 統計パネル */}
       {showSummary ? (
