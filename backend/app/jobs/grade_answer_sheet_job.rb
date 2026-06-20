@@ -2,7 +2,7 @@ require "net/http"
 require "base64"
 
 class GradeAnswerSheetJob < ApplicationJob
-  queue_as :default
+  queue_as :grading
 
   def perform(answer_sheet_id)
     sheet = AnswerSheet.find(answer_sheet_id)
@@ -62,20 +62,20 @@ class GradeAnswerSheetJob < ApplicationJob
     )
 
     prompt = <<~TEXT
-      2つのPDFを採点してください。
+      2つのファイルを採点してください。ファイルはPDFまたは画像（手書き答案を含む）です。
 
-      【PDF 1枚目】模範解答（各問の正答が書かれた解答一覧）
-      【PDF 2枚目】生徒の解答用紙
+      【ファイル1】模範解答（各問の正答が書かれた解答一覧）
+      【ファイル2】生徒の解答用紙（印刷済みまたは手書き）
 
       手順:
-      1. PDF1から「問番号→正答の選択肢」の対応表を作る（例: 1→ア, 2→イ, ...）
-      2. PDF2から「問番号→生徒の解答」の対応表を作る
-      3. 同じ問番号同士で選択肢を比較する
+      1. ファイル1から「問番号→正答」の対応表を作る（例: 1→ア, 2→イ, ...）
+      2. ファイル2から「問番号→生徒の解答」の対応表を作る（手書きの場合は最も読み取れた文字で判定）
+      3. 同じ問番号同士で答えを比較する
 
       判定基準:
-      - 選択肢が一致すれば true、不一致なら false
-      - 2枚のPDFが同一内容であればすべて true になる
-      - 選択肢はア・イ・ウ・エ等。最もよく読み取れた文字で判定する
+      - 答えが一致すれば true、不一致なら false
+      - 2つのファイルが同一内容であればすべて true になる
+      - 選択肢はア・イ・ウ・エ等。手書きで崩れていても最善推定で判定する
 
       以下のJSON形式のみを返してください（他のテキスト不要）:
       {"1": true, "2": false, "3": true, ...}
