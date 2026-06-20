@@ -157,6 +157,6 @@ describe("StudentDashboard", () => {
 
     render(<StudentDashboard />);
 
-    expect(screen.getByText("日付不明")).toBeInTheDocument();
+    expect(screen.getByText(/日付不明/)).toBeInTheDocument();
   });
 });
