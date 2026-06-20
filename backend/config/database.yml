@@ -16,5 +16,6 @@ test:
   database: baka_test_summon_test
 
 production:
-  <<: *default
+  url: <%= ENV["DATABASE_URL"] %>
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   database: <%= ENV.fetch("DB_NAME", "baka_test_summon_production") %>
