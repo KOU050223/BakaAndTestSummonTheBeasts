@@ -18,7 +18,8 @@ module Subject
     { code: "japanese_history", label: "日本史" },
     { code: "world_history", label: "世界史" },
     { code: "civics", label: "公民" },
-    { code: "japanese", label: "国語" }
+    { code: "japanese", label: "国語" },
+    { code: "informatics", label: "情報" }
   ].freeze
 
   # 科目コードの配列（許可リスト）。Exam::SUBJECTS の実体。

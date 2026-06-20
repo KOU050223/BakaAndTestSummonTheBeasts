@@ -11,6 +11,6 @@ class Exam < ApplicationRecord
   has_many :answer_sheets, dependent: :destroy
 
   validates :title, presence: true
-  validates :subject, inclusion: { in: SUBJECTS }
+  validates :subject, presence: true
   validates :max_score, numericality: { greater_than: 0 }
 end
