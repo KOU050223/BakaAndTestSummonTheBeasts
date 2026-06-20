@@ -2,7 +2,7 @@ module Api
   # クラス一覧。クラス管理画面が学年フィルタ・平均スコア・在籍人数の表示に使う。
   # 平均スコアは「クラス所属生徒の総合スコア（全科目点数合計）の平均」とする。
   class ClassesController < BaseController
-    before_action -> { require_role!(:teacher, :school_admin) }, only: :index
+    before_action -> { require_role!(:teacher, :school_admin) }, only: %i[index create]
 
     def index
       classes = SchoolClass.order(:grade, :name)
@@ -13,6 +13,30 @@ module Api
       classes = classes.includes(students: :scores)
 
       render json: { classes: classes.map { |c| serialize(c) } }, status: :ok
+    end
+
+    def create
+      school_class = SchoolClass.new(
+        name: params.require(:name),
+        grade: params.require(:grade).to_i
+      )
+
+      if school_class.save
+        render json: {
+          id: school_class.id,
+          name: school_class.name,
+          grade: school_class.grade,
+          averageScore: 0,
+          studentCount: 0
+        }, status: :created
+      else
+        render_error(
+          code: "validation_error",
+          message: "入力内容を確認してください",
+          status: :unprocessable_entity,
+          details: school_class.errors.to_hash
+        )
+      end
     end
 
     private

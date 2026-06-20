@@ -17,7 +17,7 @@ Rails.application.routes.draw do
     get "me", to: "users#me"
 
     # クラス編成
-    resources :classes, only: [ :index ] do
+    resources :classes, only: [ :index, :create ] do
       resources :students, only: [ :index ], module: :classes
     end
     # クラス振り分けの一括反映（自動振り分けの保存）
