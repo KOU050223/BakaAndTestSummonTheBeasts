@@ -13,6 +13,7 @@ Rails.application.routes.draw do
 
     namespace :admin do
       resources :users, only: [ :index, :create, :update, :destroy ]
+      get "rankings", to: "rankings#index"
     end
     get "me", to: "users#me"
 
