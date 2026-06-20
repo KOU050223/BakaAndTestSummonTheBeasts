@@ -23,7 +23,7 @@ PRではPi runnerを使用しない。
 - `RAILS_MASTER_KEY`: Rails credentials復号鍵
 - `DATABASE_URL`: Supabase PostgreSQL接続URL
 - `JWT_SECRET_KEY`: JWT署名鍵
-- `FRONTEND_URL=https://baka.uomi.site`
+- `FRONTEND_URL=https://bakatest.uomi.site`
 
 Supabaseの`SUPABASE_URL`、publishable key、secret key、JWKS URLはPostgreSQL接続情報ではない。Issue #24の構成ではSupabase Data API/Authを使わないため、RailsのDB接続にはDashboardのConnect画面にあるPostgreSQL URLを使う。
 

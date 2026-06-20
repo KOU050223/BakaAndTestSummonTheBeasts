@@ -96,7 +96,7 @@ Piへこのリポジトリ専用のGitHub Actions runnerを追加し、既存の
 - `RAILS_MASTER_KEY`
 - `DATABASE_URL`またはDB接続用の個別変数
 - `JWT_SECRET_KEY`
-- `FRONTEND_URL=https://baka.uomi.site`
+- `FRONTEND_URL=https://bakatest.uomi.site`
 - `RAILS_LOG_LEVEL=info`
 
 実際の秘密値はGit、workflowログ、設計書へ記録しない。Supabase未準備の間は、試験用PostgreSQL接続情報を明示的に用意する必要がある。SQLiteやPi上の一時DBへ暗黙にフォールバックさせない。
