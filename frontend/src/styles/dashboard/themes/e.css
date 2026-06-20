@@ -1,0 +1,118 @@
+[data-theme="e"] {
+  --dashboard-bg: linear-gradient(160deg, #6f624a, #48483e 52%, #343730);
+  --dashboard-surface: rgb(190 169 112 / 92%);
+  --dashboard-sidebar: #554a38;
+  --dashboard-surface-soft: rgb(207 186 127 / 84%);
+  --dashboard-text: #292920;
+  --dashboard-muted: #585747;
+  --dashboard-accent: #69492e;
+  --dashboard-accent-soft: rgb(105 73 46 / 17%);
+  --dashboard-border: #514636;
+  --dashboard-font: "Comic Sans MS", "Yu Gothic", sans-serif;
+  --dashboard-radius: 0.08rem;
+  --dashboard-shadow: 5px 7px 0 rgb(34 32 26 / 34%), inset 0 0 24px rgb(88 62 35 / 18%);
+  --dashboard-blur: 0px;
+  --dashboard-panel-transform: rotate(-0.15deg);
+}
+
+/* Eクラス: 傷んだ木材、ひび、わら半紙、不揃いな配置。 */
+[data-theme="e"] .theme-panel {
+  background:
+    repeating-linear-gradient(2deg, transparent 0 25px, rgb(99 71 40 / 4%) 26px),
+    var(--dashboard-surface);
+  border-style: solid;
+}
+
+[data-theme="e"] .theme-panel::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(127deg, transparent 0 14%, rgb(69 52 36 / 24%) 14.2% 14.5%, transparent 14.7%),
+    linear-gradient(38deg, transparent 0 83%, rgb(72 52 34 / 22%) 83.2% 83.5%, transparent 83.7%),
+    repeating-linear-gradient(87deg, transparent 0 74px, rgb(83 58 34 / 5%) 75px 76px);
+  border: 2px solid rgb(58 48 35 / 34%);
+  clip-path: polygon(0.3% 1%, 99.4% 0, 100% 98.8%, 0 100%);
+}
+
+[data-theme="e"] .theme-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme="e"] .theme-card {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 22px, rgb(103 76 39 / 5%) 23px),
+    #cdbb82;
+  border-color: #6c5b42;
+  box-shadow: 3px 4px 0 rgb(50 39 27 / 20%);
+  transform: rotate(0.25deg);
+}
+
+[data-theme="e"] .theme-card:nth-child(even) {
+  transform: rotate(-0.35deg);
+}
+
+[data-theme="e"] .dashboard-sidebar {
+  --dashboard-text: #eee1ba;
+  --dashboard-muted: #cfbd91;
+  --dashboard-accent: #f1dfaf;
+  --dashboard-accent-soft: rgb(239 220 169 / 13%);
+  --dashboard-border: rgb(46 36 25 / 72%);
+  position: relative;
+  background:
+    repeating-linear-gradient(92deg, transparent 0 54px, rgb(38 27 18 / 18%) 55px 58px),
+    linear-gradient(100deg, #4b3e2e, #68563d 52%, #40362a);
+  box-shadow: inset -3px 0 rgb(31 25 18 / 32%), 5px 0 14px rgb(26 23 18 / 28%);
+}
+
+[data-theme="e"] .dashboard-sidebar-brand {
+  margin: 0.8rem 0.55rem 0.3rem;
+  color: #322a1f;
+  background: #c8b77f;
+  border: 1px solid #514431;
+  box-shadow: 3px 4px 0 rgb(34 27 19 / 36%);
+  transform: rotate(-0.8deg);
+}
+
+[data-theme="e"] .dashboard-sidebar-brand-title,
+[data-theme="e"] .dashboard-sidebar-brand-subtitle {
+  color: #332a1f;
+}
+
+[data-theme="e"] .dashboard-sidebar-nav a {
+  margin-inline: 0.1rem;
+  color: #30271d;
+  background: #bfad78;
+  border: 1px solid #594a35;
+  box-shadow: 2px 3px 0 rgb(35 27 19 / 30%);
+}
+
+[data-theme="e"] .dashboard-sidebar-nav li:nth-child(even) a {
+  transform: rotate(0.5deg);
+}
+
+[data-theme="e"] .dashboard-sidebar-nav a:hover,
+[data-theme="e"] .dashboard-sidebar-nav a[aria-current="page"] {
+  color: #f3e5bd;
+  background: #514232;
+  border-color: #c6b685;
+}
+
+[data-theme="e"] .dashboard-user-status {
+  margin: 0.65rem;
+  color: #31281d;
+  background: #b7a36f;
+  border: 1px solid #4d402f;
+  box-shadow: 3px 4px 0 rgb(31 24 17 / 34%);
+  transform: rotate(0.4deg);
+}
+
+[data-theme="e"] .dashboard-user-avatar {
+  color: #eee0b7;
+  background: #514334;
+  box-shadow: none;
+}
+

@@ -97,7 +97,7 @@ export function ClassManagementScreen() {
 
       {/* クラスカード */}
       {isLoading ? (
-        <p className="animate-pulse text-sm font-bold tracking-widest text-sky-300">
+        <p className="animate-pulse text-sm font-bold tracking-widest text-[#f1ddb0]">
           クラスを読み込み中...
         </p>
       ) : isError ? (
@@ -151,10 +151,10 @@ function Header({
   return (
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="text-2xl font-black tracking-wide text-white [text-shadow:0_0_12px_rgba(56,189,248,0.6)]">
+        <h1 className="text-2xl font-black tracking-wide text-white">
           {title}
         </h1>
-        <p className="mt-1 text-sm text-slate-300">
+        <p className="mt-1 text-sm text-[#f1ddb0]">
           {grade}年生のクラスをスコアに応じて振り分けできます
         </p>
       </div>
@@ -184,8 +184,8 @@ function GradeTabs({
             aria-current={isActive ? "true" : undefined}
             className={`rounded-sm px-4 py-2 text-sm font-bold tracking-wide transition-all duration-150 ${
               isActive
-                ? "border border-sky-400/60 bg-sky-400/15 text-sky-200 shadow-[0_0_12px_rgba(56,189,248,0.3)]"
-                : "border border-sky-400/20 text-slate-300 hover:bg-white/5 hover:text-sky-200"
+                ? "border border-[#e2c27e] bg-[#6d211b] text-white shadow-md"
+                : "border border-[#9a7044] bg-[#f3e3ba] text-[#352315] hover:bg-white"
             }`}
           >
             {g}年生
@@ -212,29 +212,29 @@ function ClassCard({
       type="button"
       onClick={onSelect}
       aria-pressed={isActive}
-      className={`flex flex-col gap-3 rounded-sm border-2 p-5 text-left backdrop-blur-md transition-all duration-150 ${
+      className={`theme-card flex flex-col gap-3 rounded-sm border-2 p-5 text-left transition-all duration-150 ${
         isActive
-          ? "border-sky-400 bg-sky-400/10 shadow-[0_0_20px_rgba(56,189,248,0.4)]"
-          : "border-sky-400/25 bg-[rgba(10,30,60,0.6)] hover:border-sky-400/60 hover:bg-[rgba(10,30,60,0.85)]"
+          ? "border-[#7a1f18] bg-white/90 shadow-[0_7px_16px_rgba(45,24,12,0.25)]"
+          : "border-[#8f704c] bg-white/70 hover:border-[#7a1f18] hover:bg-white/90"
       }`}
     >
       <div className="flex items-start justify-between">
-        <span className="text-xl font-black tracking-wide text-white">
+        <span className="text-xl font-black tracking-wide text-[var(--dashboard-text)]">
           {schoolClass.name}
         </span>
-        <span className="text-xs font-semibold text-slate-300">
+        <span className="text-xs font-semibold text-[var(--dashboard-muted)]">
           {schoolClass.studentCount}名
         </span>
       </div>
-      <div className="text-sm text-slate-300">
+      <div className="text-sm text-[var(--dashboard-muted)]">
         平均スコア{" "}
-        <span className="font-mono text-lg font-bold text-sky-200">
+        <span className="font-mono text-lg font-bold text-[#5f2119]">
           {schoolClass.averageScore.toLocaleString()}
         </span>
       </div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-black/10">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-sky-500 to-indigo-400"
+          className="h-full rounded-full bg-gradient-to-r from-[#7a1f18] to-[#c49a4b]"
           style={{ width: `${ratio * 100}%` }}
         />
       </div>
@@ -261,25 +261,25 @@ function StudentTable({
 }) {
   return (
     <Panel className="p-6">
-      <h2 className="mb-4 text-lg font-black tracking-wide text-sky-200">
+      <h2 className="mb-4 text-lg font-black tracking-wide text-[var(--dashboard-text)]">
         {className} ― 生徒一覧
       </h2>
 
       {isLoading ? (
-        <p className="animate-pulse text-sm font-bold tracking-widest text-sky-300">
+        <p className="animate-pulse text-sm font-bold tracking-widest text-[var(--dashboard-accent)]">
           生徒を読み込み中...
         </p>
       ) : isError ? (
-        <p className="text-sm text-red-300">
+        <p className="text-sm text-red-800">
           生徒一覧の取得に失敗しました。時間をおいて再度お試しください。
         </p>
       ) : !students || students.length === 0 ? (
-        <p className="text-sm text-slate-400">このクラスに生徒はいません。</p>
+        <p className="text-sm text-[var(--dashboard-muted)]">このクラスに生徒はいません。</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="border-b border-sky-400/20 text-left text-xs font-bold tracking-wide text-slate-400">
+              <tr className="border-b border-[#2d1a0f] bg-[#3a281d] text-left text-xs font-bold tracking-wide text-[#f4e4bd]">
                 <th className="px-3 py-2">氏名</th>
                 <th className="px-3 py-2">総合スコア</th>
                 <th className="px-3 py-2">最高科目</th>
@@ -324,9 +324,9 @@ function StudentRow({
   const [editing, setEditing] = useState(false);
 
   return (
-    <tr className="border-b border-white/5 text-slate-200">
+    <tr className="border-b border-[var(--dashboard-border)]/20 text-[var(--dashboard-text)] transition-colors hover:bg-white/45">
       <td className="px-3 py-3 font-semibold">{student.name}</td>
-      <td className="px-3 py-3 font-mono font-bold text-sky-200">
+      <td className="px-3 py-3 font-mono font-bold text-[#5f2119]">
         {student.totalScore.toLocaleString()}
       </td>
       <td className="px-3 py-3">
@@ -345,7 +345,7 @@ function StudentRow({
               setEditing(false);
             }}
             onBlur={() => setEditing(false)}
-            className="rounded-sm border border-sky-400/40 bg-[rgba(8,22,46,0.95)] px-2 py-1 text-sm text-slate-100"
+            className="rounded-sm border border-[var(--dashboard-border)] bg-white px-2 py-1 text-sm text-[var(--dashboard-text)]"
           >
             {gradeClasses.map((c) => (
               <option key={c.id} value={c.id}>
@@ -357,7 +357,7 @@ function StudentRow({
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="rounded-sm border border-sky-400/40 px-3 py-1 text-xs font-bold text-sky-200 transition-colors hover:bg-sky-400/15"
+            className="rounded-sm border border-[var(--dashboard-border)] bg-white/65 px-3 py-1 text-xs font-bold text-[var(--dashboard-text)] transition-colors hover:bg-white"
           >
             クラス変更
           </button>

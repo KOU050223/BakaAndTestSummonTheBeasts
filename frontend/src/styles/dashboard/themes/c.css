@@ -1,0 +1,106 @@
+[data-theme="c"] {
+  --dashboard-bg: linear-gradient(145deg, #e8e9e3, #d5d9d2 58%, #c8cec7);
+  --dashboard-surface: #f5f5ef;
+  --dashboard-sidebar: #ad8156;
+  --dashboard-surface-soft: #fbfbf7;
+  --dashboard-text: #27332f;
+  --dashboard-muted: #66716c;
+  --dashboard-accent: #356b57;
+  --dashboard-accent-soft: rgb(53 107 87 / 10%);
+  --dashboard-border: #a8afaa;
+  --dashboard-radius: 0.45rem;
+  --dashboard-shadow: 0 5px 14px rgb(48 58 53 / 16%), inset 0 1px #ffffff;
+  --dashboard-blur: 0px;
+}
+
+/* Cクラスは量産型の成形プラスチックと平滑な木製備品。 */
+[data-theme="c"] .theme-panel {
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 72%), transparent 18%),
+    var(--dashboard-surface);
+  border-width: 1px;
+  box-shadow: var(--dashboard-shadow);
+}
+
+[data-theme="c"] .theme-panel::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  border: 1px solid rgb(255 255 255 / 62%);
+  border-radius: inherit;
+}
+
+[data-theme="c"] .theme-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme="c"] .theme-card {
+  background: #fbfbf7;
+  border-color: #c6cbc7;
+  box-shadow: 0 2px 5px rgb(55 65 60 / 10%);
+}
+
+[data-theme="c"] .dashboard-sidebar {
+  --dashboard-text: #2f251d;
+  --dashboard-muted: #5f4b3a;
+  --dashboard-accent: #234f3f;
+  --dashboard-accent-soft: rgb(255 255 255 / 25%);
+  --dashboard-border: rgb(78 57 39 / 34%);
+  position: relative;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 72px, rgb(84 54 31 / 5%) 73px 74px),
+    linear-gradient(100deg, #9a7049, #c59a6d 48%, #a77a50);
+  box-shadow: inset -1px 0 rgb(255 255 255 / 24%), 5px 0 16px rgb(51 38 27 / 16%);
+}
+
+[data-theme="c"] .dashboard-sidebar::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background: repeating-linear-gradient(88deg, transparent 0 88px, rgb(75 50 30 / 6%) 89px 91px);
+}
+
+[data-theme="c"] .dashboard-sidebar > * {
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme="c"] .dashboard-sidebar-brand {
+  margin: 0.65rem;
+  background: #eeeee8;
+  border: 1px solid #8c918d;
+  border-radius: 0.4rem;
+  box-shadow: inset 0 1px #fff, 0 2px 5px rgb(58 44 32 / 18%);
+}
+
+[data-theme="c"] .dashboard-sidebar-nav a {
+  border-radius: 0.35rem;
+}
+
+[data-theme="c"] .dashboard-sidebar-nav a:hover,
+[data-theme="c"] .dashboard-sidebar-nav a[aria-current="page"] {
+  color: #fff;
+  background: #356b57;
+  border-color: #244b3d;
+  box-shadow: 0 2px 5px rgb(43 60 52 / 18%);
+}
+
+[data-theme="c"] .dashboard-user-status {
+  margin: 0.6rem;
+  background: #efefe9;
+  border: 1px solid #949a96;
+  border-radius: 0.4rem;
+  box-shadow: inset 0 1px #fff, 0 2px 5px rgb(58 44 32 / 16%);
+}
+
+[data-theme="c"] .dashboard-user-avatar {
+  color: #fff;
+  background: #356b57;
+  box-shadow: none;
+}
+

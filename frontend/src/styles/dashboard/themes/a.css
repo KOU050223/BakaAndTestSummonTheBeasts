@@ -1,0 +1,121 @@
+[data-theme="a"] {
+  --dashboard-bg: linear-gradient(#f8fafc, #eef2ff);
+  --dashboard-texture: url("/Aclass.png");
+  --dashboard-texture-size: cover;
+  --dashboard-background-blend: normal;
+  --dashboard-surface: rgb(255 255 255 / 72%);
+  --dashboard-sidebar: rgb(248 250 252 / 82%);
+  --dashboard-surface-soft: rgb(255 255 255 / 48%);
+  --dashboard-text: #17213d;
+  --dashboard-muted: #536078;
+  --dashboard-accent: #036987;
+  --dashboard-accent-soft: rgb(14 116 144 / 10%);
+  --dashboard-border: rgb(100 116 139 / 42%);
+  --dashboard-radius: 1.25rem;
+  --dashboard-shadow: 0 24px 70px rgb(71 85 105 / 18%), inset 0 1px rgb(255 255 255 / 85%);
+  --dashboard-blur: 24px;
+}
+
+/* Aクラスは白大理石の上にピアノブラックの光沢パネルを重ねる。 */
+[data-theme="a"] .theme-panel,
+[data-theme="a"] .theme-card {
+  --dashboard-surface: rgb(5 8 15 / 88%);
+  --dashboard-surface-soft: rgb(8 12 22 / 82%);
+  --dashboard-text: #f8fafc;
+  --dashboard-muted: #b8c4d8;
+  --dashboard-accent: #67e8f9;
+  --dashboard-accent-soft: rgb(103 232 249 / 11%);
+  --dashboard-border: rgb(203 213 225 / 52%);
+}
+
+[data-theme="a"] .theme-panel {
+  --dashboard-shadow: 0 24px 70px rgb(5 8 15 / 34%), inset 0 1px 0 rgb(255 255 255 / 34%), inset 0 -18px 42px rgb(0 0 0 / 34%);
+}
+
+[data-theme="a"] .theme-panel::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(115deg, rgb(255 255 255 / 16%), transparent 22% 62%, rgb(103 232 249 / 7%)),
+    linear-gradient(180deg, rgb(255 255 255 / 8%), transparent 34%);
+  border-radius: inherit;
+}
+
+[data-theme="a"] .theme-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme="a"] .theme-card {
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 10%), transparent 32%),
+    var(--dashboard-surface-soft);
+  box-shadow: inset 0 1px rgb(255 255 255 / 16%), 0 10px 28px rgb(0 0 0 / 20%);
+}
+
+/* Aクラスのサイドバーは磨かれたシャンパンゴールド。 */
+[data-theme="a"] .dashboard-sidebar {
+  --dashboard-text: #33230b;
+  --dashboard-muted: #6e511d;
+  --dashboard-accent: #513406;
+  --dashboard-accent-soft: rgb(255 248 205 / 38%);
+  --dashboard-border: rgb(112 76 17 / 58%);
+  position: relative;
+  background:
+    linear-gradient(105deg, transparent 8%, rgb(255 255 255 / 54%) 22%, transparent 38% 68%, rgb(255 247 190 / 32%) 82%, transparent 94%),
+    linear-gradient(180deg, #fff2a8, #d5a83f 46%, #f4d879 72%, #ad7820);
+  box-shadow: inset -1px 0 rgb(255 251 218 / 80%), 8px 0 30px rgb(136 91 16 / 24%);
+}
+
+[data-theme="a"] .dashboard-sidebar::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background: repeating-linear-gradient(90deg, transparent 0 42px, rgb(92 60 10 / 4%) 43px 44px);
+  mix-blend-mode: multiply;
+}
+
+[data-theme="a"] .dashboard-sidebar > * {
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme="a"] .dashboard-sidebar-brand {
+  background: linear-gradient(110deg, rgb(255 255 255 / 34%), transparent 48%);
+  box-shadow: inset 0 -1px rgb(105 68 11 / 20%);
+}
+
+[data-theme="a"] .dashboard-sidebar-brand-title {
+  text-shadow: 0 1px rgb(255 250 210 / 75%);
+}
+
+[data-theme="a"] .dashboard-sidebar-nav a {
+  text-shadow: 0 1px rgb(255 248 197 / 58%);
+}
+
+[data-theme="a"] .dashboard-sidebar-nav a:hover,
+[data-theme="a"] .dashboard-sidebar-nav a[aria-current="page"] {
+  color: #fff8d5;
+  background: linear-gradient(110deg, #7a5212, #b98725 54%, #70460b);
+  border-color: #fff0a3;
+  box-shadow: inset 0 1px rgb(255 246 185 / 44%), 0 5px 14px rgb(82 51 7 / 24%);
+  text-shadow: 0 1px 2px rgb(46 27 3 / 70%);
+}
+
+[data-theme="a"] .dashboard-user-status {
+  background: rgb(255 248 205 / 28%);
+  border-color: rgb(113 76 15 / 42%);
+  box-shadow: inset 0 1px rgb(255 255 255 / 48%);
+}
+
+[data-theme="a"] .dashboard-user-avatar {
+  color: #fff8d5;
+  background: linear-gradient(145deg, #3c290a, #936719);
+  box-shadow: 0 0 0 2px #f9dc7a, 0 4px 12px rgb(72 44 5 / 28%);
+}
+

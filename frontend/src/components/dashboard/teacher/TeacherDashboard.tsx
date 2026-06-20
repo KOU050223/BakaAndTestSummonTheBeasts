@@ -54,8 +54,8 @@ function subjectLabel(code: string): string {
 function StatCard({ title, value, href }: { title: string; value: string; href?: string }) {
   const body = (
     <div className="flex flex-col gap-2">
-      <p className="text-sm text-slate-300">{title}</p>
-      <p className="text-2xl font-bold text-white">{value}</p>
+      <p className="text-sm text-[var(--dashboard-muted)]">{title}</p>
+      <p className="text-2xl font-bold text-[var(--dashboard-text)]">{value}</p>
     </div>
   );
 
@@ -63,7 +63,7 @@ function StatCard({ title, value, href }: { title: string; value: string; href?:
     <Panel className="p-4">
       <div className="flex items-center justify-between">
         {href ? <Link href={href}>{body}</Link> : body}
-        <div className="text-slate-400">📈</div>
+        <div className="text-[var(--dashboard-muted)]">📈</div>
       </div>
     </Panel>
   );
@@ -160,19 +160,19 @@ export function TeacherDashboard() {
         <div className="flex flex-wrap gap-2">
           <Link
             href="/exams"
-            className="rounded-sm border border-violet-400/40 bg-violet-400/10 px-3 py-1.5 text-xs font-bold text-violet-200 hover:bg-violet-400/20"
+            className="rounded-sm border border-[#e2c27e] bg-[#6d211b] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#812820]"
           >
             試験を作成
           </Link>
           <Link
             href="/submit"
-            className="rounded-sm border border-sky-400/40 bg-sky-400/10 px-3 py-1.5 text-xs font-bold text-sky-200 hover:bg-sky-400/20"
+            className="rounded-sm border border-[#9a7044] bg-[#f3e3ba] px-3 py-1.5 text-xs font-bold text-[#352315] hover:bg-white"
           >
             AI自動採点
           </Link>
           <Link
             href="/classes"
-            className="rounded-sm border border-sky-400/40 px-3 py-1.5 text-xs font-bold text-sky-200 hover:bg-sky-400/10"
+            className="rounded-sm border border-[#9a7044] bg-[#f3e3ba] px-3 py-1.5 text-xs font-bold text-[#352315] hover:bg-white"
           >
             クラス管理
           </Link>
@@ -195,18 +195,18 @@ export function TeacherDashboard() {
       </div>
 
       <Panel className="mt-8 p-4">
-        <h3 className="text-lg font-bold text-white">試験一覧</h3>
+        <h3 className="text-lg font-bold text-[var(--dashboard-text)]">試験一覧</h3>
         {examsLoading ? (
-          <p className="mt-3 text-sky-300">試験一覧を読み込み中…</p>
+          <p className="mt-3 text-[var(--dashboard-accent)]">試験一覧を読み込み中…</p>
         ) : examsError ? (
-          <p className="mt-3 text-red-300">試験一覧の取得に失敗しました。</p>
+          <p className="mt-3 text-red-800">試験一覧の取得に失敗しました。</p>
         ) : exams.length === 0 ? (
-          <p className="mt-3 text-slate-400">まだ試験がありません。「試験を作成」から登録できます。</p>
+          <p className="mt-3 text-[var(--dashboard-muted)]">まだ試験がありません。「試験を作成」から登録できます。</p>
         ) : (
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-sky-400/30 text-xs uppercase tracking-wider text-slate-400">
+                <tr className="border-b border-[#2d1a0f] bg-[#3a281d] text-xs uppercase tracking-wider text-[#f4e4bd]">
                   <th className="px-3 py-3 font-semibold">試験名</th>
                   <th className="px-3 py-3 font-semibold">科目</th>
                   <th className="px-3 py-3 font-semibold">模範解答</th>
@@ -219,19 +219,19 @@ export function TeacherDashboard() {
                   const stats = sheetStats.byExam[String(exam.id)];
                   const keyStatus = exam.answer_key_status ?? "none";
                   return (
-                    <tr key={exam.id} className="border-b border-sky-400/10 hover:bg-sky-400/5">
-                      <td className="px-3 py-3 font-bold text-white">{exam.title}</td>
-                      <td className="px-3 py-3 text-slate-300">
+                    <tr key={exam.id} className="border-b border-[var(--dashboard-border)]/20 text-[var(--dashboard-text)] hover:bg-white/45">
+                      <td className="px-3 py-3 font-bold text-[var(--dashboard-text)]">{exam.title}</td>
+                      <td className="px-3 py-3 text-[var(--dashboard-muted)]">
                         {subjectLabel(exam.subject ?? exam.subjectId ?? "")}
                       </td>
-                      <td className="px-3 py-3 text-slate-300">
+                      <td className="px-3 py-3 text-[var(--dashboard-muted)]">
                         {ANSWER_KEY_LABELS[keyStatus] ?? keyStatus}
                       </td>
-                      <td className="px-3 py-3 text-slate-300">{formatProgress(stats)}</td>
+                      <td className="px-3 py-3 text-[var(--dashboard-text)]">{formatProgress(stats)}</td>
                       <td className="px-3 py-3">
                         <Link
                           href="/submit"
-                          className="rounded-sm border border-sky-400/40 px-3 py-1 text-xs font-bold text-sky-200 hover:bg-sky-400/10"
+                          className="rounded-sm border border-[var(--dashboard-border)] bg-white/65 px-3 py-1 text-xs font-bold text-[var(--dashboard-text)] hover:bg-white"
                         >
                           AI採点へ
                         </Link>

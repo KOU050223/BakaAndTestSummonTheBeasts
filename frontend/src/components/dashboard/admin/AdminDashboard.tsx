@@ -17,28 +17,53 @@ type User = { id: number | string; name: string };
 // NOTE: このコンポーネントはクライアントコンポーネントで、$api.useQuery を用いて
 // サーバーのエンドポイントから統計を取得します。httpOnly Cookie を使った認証を前提。
 
-function StatCard({ title, value, href, onClick }: { title: string; value: string; href?: string; onClick?: () => void }) {
+function StatCard({
+  title,
+  value,
+  icon,
+  note,
+  href,
+  onClick,
+}: {
+  title: string;
+  value: string;
+  icon: string;
+  note: string;
+  href?: string;
+  onClick?: () => void;
+}) {
   const body = (
-    <div className="flex flex-col gap-2">
-      <p className="text-sm text-slate-300">{title}</p>
-      <p className="text-2xl font-bold text-white">{value}</p>
+    <div className="flex items-center gap-4">
+      <span aria-hidden="true" className="admin-stat-icon">
+        {icon}
+      </span>
+      <div className="min-w-0">
+        <p className="text-xs font-bold tracking-wider text-[var(--dashboard-muted)]">
+          {title}
+        </p>
+        <p className="mt-1 text-3xl font-black text-[var(--dashboard-text)]">
+          {value}
+        </p>
+        <p className="mt-1 text-[0.68rem] text-[var(--dashboard-muted)]">
+          {note}
+        </p>
+      </div>
     </div>
   );
 
   return (
-    <Panel className="p-4">
-      <div className="flex items-center justify-between">
-        {onClick ? (
-          <button onClick={onClick} className="text-left w-full">
-            {body}
-          </button>
-        ) : href ? (
-          <Link href={href}>{body}</Link>
-        ) : (
-          body
-        )}
-        <div className="text-slate-400">📈</div>
-      </div>
+    <Panel className="admin-stat-card p-5">
+      {onClick ? (
+        <button onClick={onClick} className="w-full text-left">
+          {body}
+        </button>
+      ) : href ? (
+        <Link className="block" href={href}>
+          {body}
+        </Link>
+      ) : (
+        body
+      )}
     </Panel>
   );
 }
@@ -144,46 +169,94 @@ export function AdminDashboard() {
   }, [battlesData, usersData]);
 
   return (
-    <div className="mx-auto max-w-6xl">
-      <div className="mt-8 flex items-center gap-3">
-        <StatCard title="公開済み試験数
-        " value={stats.exams} href="/admin/exams" />
-        <h1 className="text-2xl font-black tracking-wide text-white">管理者ダッシュボード</h1>
-      </div>
+    <div className="admin-dashboard mx-auto max-w-6xl pb-12">
+      <Panel className="admin-command-header mt-8 p-6 sm:p-8">
+        <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
+          <div className="flex items-start gap-4">
+            <span aria-hidden="true" className="admin-stat-icon mt-1">🗝️</span>
+            <div>
+              <p className="text-xs font-bold tracking-[0.28em] text-[var(--dashboard-accent)]">
+                FUMIZUKI ACADEMY / EYES ONLY
+              </p>
+              <h1 className="mt-2 text-2xl font-black tracking-wide text-[var(--dashboard-text)] sm:text-3xl">
+                管理者ダッシュボード
+              </h1>
+              <p className="mt-2 text-sm text-[var(--dashboard-muted)]">
+                試召戦争の管理・監視・統計を行うための管理者画面
+              </p>
+            </div>
+          </div>
+          <div className="admin-command-seal shrink-0" aria-label="文月学園">
+            文月学園
+            <br />
+            印
+          </div>
+        </div>
+        <div className="admin-document-rule mt-6" />
+      </Panel>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <StatCard title="ユーザー数" value={stats.users} href="/admin/users" />
-        <StatCard title="公開済み試験数" value={stats.exams} href="/admin/exams" />
-        <StatCard title="採点待ち" value={pendingCount === null ? "—" : String(pendingCount)} href="/admin/exams" />
-        <StatCard title="進行中のバトル" value={stats.wars} href="/records" />
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          title="ユーザー数"
+          value={stats.users}
+          icon="♟️"
+          note="登録されている全アカウント"
+          href="/admin/users"
+        />
+        <StatCard
+          title="公開済み試験数"
+          value={stats.exams}
+          icon="🔏"
+          note="現在公開されている試験"
+          href="/admin/exams"
+        />
+        <StatCard
+          title="採点待ち"
+          value={pendingCount === null ? "—" : String(pendingCount)}
+          icon="🖋️"
+          note="採点処理を待つ答案"
+          href="/admin/exams"
+        />
+        <StatCard
+          title="進行中のバトル"
+          value={stats.wars}
+          icon="⚔️"
+          note="現在進行中の試召戦争"
+          href="/records"
+        />
       </div>
 
       {(usersLoading || usersError) && (
         <div className="mt-4">
           {usersLoading ? (
-            <p className="text-sky-300">ユーザー統計を読み込み中…</p>
+            <p className="text-[var(--dashboard-accent)]">ユーザー統計を読み込み中…</p>
           ) : (
-            <p className="text-red-300">ユーザー統計の取得に失敗しました。</p>
+            <p className="text-red-800">ユーザー統計の取得に失敗しました。</p>
           )}
         </div>
       )}
 
       <div className="mt-8">
-        <ClassAverageScoreChart />
+        <ClassAverageScoreChart
+          title="クラス別平均スコア"
+          maximumLabel="最高点は"
+        />
 
         <div className="mt-4">
           <Panel className="p-4">
-            <h3 className="text-lg font-bold text-white">最近のアクティビティ</h3>
-            <div className="mt-3 max-h-64 overflow-y-auto bg-[rgba(0,0,0,0.03)] p-3">
+            <h3 className="text-lg font-bold text-[var(--dashboard-text)]">
+              最近のアクティビティ
+            </h3>
+            <div className="admin-activity-log mt-3 max-h-64 overflow-y-auto p-3">
               {battleLogs === null ? (
-                <p className="text-slate-400">読み込み中…</p>
+                <p className="text-[var(--dashboard-muted)]">読み込み中…</p>
               ) : battleLogs.length === 0 ? (
-                <p className="text-slate-400">最近のアクティビティはありません。</p>
+                <p className="text-[var(--dashboard-muted)]">最近のアクティビティはありません。</p>
               ) : (
-                <ul className="flex flex-col gap-2 text-sm font-mono text-slate-200">
+                <ul className="flex flex-col gap-2 font-mono text-sm text-[var(--dashboard-text)]">
                   {battleLogs.map((l, idx) => (
-                    <li key={`${l.battleId}-${idx}`} className="px-2 py-1 rounded-sm bg-[rgba(255,255,255,0.02)]">
-                      <span className="text-sky-300">[{l.battleId}]</span> {l.text}
+                    <li key={`${l.battleId}-${idx}`} className="border-b border-[var(--dashboard-border)]/20 px-2 py-1">
+                      <span className="font-bold text-[var(--dashboard-accent)]">[{l.battleId}]</span> {l.text}
                     </li>
                   ))}
                 </ul>
@@ -196,8 +269,10 @@ export function AdminDashboard() {
 
         <div className="mt-8">
           <Panel className="p-6">
-            <h2 className="text-lg font-bold text-white">運用メモ</h2>
-            <p className="mt-2 text-sm text-slate-300">
+            <h2 className="text-lg font-bold text-[var(--dashboard-text)]">
+              運用メモ
+            </h2>
+            <p className="mt-2 text-sm text-[var(--dashboard-muted)]">
               管理者向けの詳しい操作はここに後で追加します。現状はシードデータを用いた確認用ダッシュボードです。
             </p>
           </Panel>

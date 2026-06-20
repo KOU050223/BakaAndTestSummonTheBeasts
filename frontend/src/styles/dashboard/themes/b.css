@@ -1,0 +1,126 @@
+[data-theme="b"] {
+  --dashboard-bg: linear-gradient(145deg, #f8fafc, #dbeafe);
+  --dashboard-texture: url("/Bclass.png");
+  --dashboard-texture-size: cover;
+  --dashboard-background-blend: normal;
+  --dashboard-surface: rgb(255 255 255 / 94%);
+  --dashboard-text: #172554;
+  --dashboard-muted: #64748b;
+  --dashboard-accent: #2563eb;
+  --dashboard-accent-soft: rgb(37 99 235 / 10%);
+  --dashboard-border: #93c5fd;
+  --dashboard-radius: 0.75rem;
+  --dashboard-shadow: 0 12px 28px rgb(30 64 175 / 12%);
+  --dashboard-blur: 4px;
+}
+
+/* Bクラスは黒いスマートボードと銀色の機材フレーム。 */
+[data-theme="b"] .theme-panel,
+[data-theme="b"] .theme-card {
+  --dashboard-surface: rgb(8 9 10 / 91%);
+  --dashboard-surface-soft: rgb(12 13 14 / 88%);
+  --dashboard-text: #f4f4f2;
+  --dashboard-muted: #aaaead;
+  --dashboard-accent: #e2e5e4;
+  --dashboard-accent-soft: rgb(226 229 228 / 9%);
+  --dashboard-border: #aeb4b4;
+  --dashboard-radius: 0.35rem;
+}
+
+[data-theme="b"] .theme-panel {
+  --dashboard-shadow: 0 0 0 1px rgb(35 38 38 / 90%), 0 8px 18px rgb(0 0 0 / 42%), inset 0 1px rgb(255 255 255 / 14%), inset 0 0 28px rgb(0 0 0 / 44%);
+}
+
+[data-theme="b"] .theme-panel::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(118deg, transparent 0 42%, rgb(255 255 255 / 13%) 42.2% 58%, transparent 58.2%),
+    linear-gradient(180deg, rgb(255 255 255 / 5%), transparent 30%);
+  border-radius: inherit;
+}
+
+[data-theme="b"] .theme-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme="b"] .theme-card {
+  background:
+    linear-gradient(118deg, rgb(255 255 255 / 7%), transparent 34%),
+    var(--dashboard-surface-soft);
+  border-width: 1px;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%), 0 5px 12px rgb(0 0 0 / 28%);
+}
+
+[data-theme="b"] #quick-actions-heading {
+  color: #f4f4f2;
+  text-shadow: 0 2px 3px rgb(0 0 0 / 70%);
+}
+
+/* Bクラスのサイドバーはヘアライン入りのブラッシュドシルバー。 */
+[data-theme="b"] .dashboard-sidebar {
+  --dashboard-text: #202527;
+  --dashboard-muted: #555d61;
+  --dashboard-accent: #171a1c;
+  --dashboard-accent-soft: rgb(255 255 255 / 30%);
+  --dashboard-border: rgb(59 65 68 / 55%);
+  position: relative;
+  background:
+    linear-gradient(105deg, #92999c, #f2f4f3 19%, #aeb4b6 43%, #eef0ef 67%, #858d90),
+    #b8bec0;
+  box-shadow: inset -1px 0 rgb(255 255 255 / 75%), 7px 0 24px rgb(0 0 0 / 25%);
+}
+
+[data-theme="b"] .dashboard-sidebar::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background: repeating-linear-gradient(0deg, rgb(255 255 255 / 5%) 0 1px, rgb(38 43 45 / 5%) 1px 2px, transparent 2px 4px);
+  mix-blend-mode: multiply;
+}
+
+[data-theme="b"] .dashboard-sidebar > * {
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme="b"] .dashboard-sidebar-brand {
+  background: linear-gradient(110deg, rgb(255 255 255 / 38%), transparent 54%);
+  box-shadow: inset 0 -1px rgb(46 51 53 / 32%);
+}
+
+[data-theme="b"] .dashboard-sidebar-brand-title {
+  text-shadow: 0 1px rgb(255 255 255 / 78%);
+}
+
+[data-theme="b"] .dashboard-sidebar-nav a {
+  text-shadow: 0 1px rgb(255 255 255 / 62%);
+}
+
+[data-theme="b"] .dashboard-sidebar-nav a:hover,
+[data-theme="b"] .dashboard-sidebar-nav a[aria-current="page"] {
+  color: #f7f8f8;
+  background: linear-gradient(110deg, #171a1b, #3f4548 52%, #121415);
+  border-color: #d9dddd;
+  box-shadow: inset 0 1px rgb(255 255 255 / 18%), 0 5px 13px rgb(0 0 0 / 28%);
+  text-shadow: 0 1px 2px #000;
+}
+
+[data-theme="b"] .dashboard-user-status {
+  background: rgb(255 255 255 / 24%);
+  border-color: rgb(53 59 61 / 42%);
+  box-shadow: inset 0 1px rgb(255 255 255 / 58%);
+}
+
+[data-theme="b"] .dashboard-user-avatar {
+  color: #f5f6f6;
+  background: linear-gradient(145deg, #151819, #555c5f);
+  box-shadow: 0 0 0 2px #dce0df, 0 4px 11px rgb(0 0 0 / 30%);
+}
+

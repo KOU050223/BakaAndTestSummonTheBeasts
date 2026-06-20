@@ -18,9 +18,15 @@ type Grade = (typeof GRADES)[number];
 
 type ClassAverageScoreChartProps = {
   defaultGrade?: Grade;
+  title?: string;
+  maximumLabel?: string;
 };
 
-export function ClassAverageScoreChart({ defaultGrade = 2 }: ClassAverageScoreChartProps) {
+export function ClassAverageScoreChart({
+  defaultGrade = 2,
+  title = "クラス別平均スコア",
+  maximumLabel = "最高点は",
+}: ClassAverageScoreChartProps) {
   const [grade, setGrade] = useState<Grade>(defaultGrade);
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
 
@@ -44,9 +50,9 @@ export function ClassAverageScoreChart({ defaultGrade = 2 }: ClassAverageScoreCh
     <Panel className="p-4">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h3 className="text-lg font-bold text-white">クラス別平均スコア</h3>
-          <p className="mt-1 text-xs text-slate-400">
-            最高点は{formatClassAverageScore(gradeMaxTotalScore)}点
+          <h3 className="text-lg font-bold text-[var(--dashboard-text)]">{title}</h3>
+          <p className="mt-1 text-xs text-[var(--dashboard-muted)]">
+            {maximumLabel}{formatClassAverageScore(gradeMaxTotalScore)}点
           </p>
         </div>
         <div className="flex gap-2">
@@ -63,8 +69,8 @@ export function ClassAverageScoreChart({ defaultGrade = 2 }: ClassAverageScoreCh
                 aria-current={isActive ? "true" : undefined}
                 className={`rounded-sm px-3 py-1.5 text-xs font-bold tracking-wide transition-all duration-150 ${
                   isActive
-                    ? "border border-sky-400/60 bg-sky-400/15 text-sky-200"
-                    : "border border-sky-400/20 text-slate-400 hover:bg-white/5 hover:text-sky-200"
+                    ? "border border-[var(--dashboard-accent)] bg-[var(--dashboard-accent)] text-white"
+                    : "border border-[var(--dashboard-border)] text-[var(--dashboard-muted)] hover:bg-[var(--dashboard-accent-soft)] hover:text-[var(--dashboard-text)]"
                 }`}
               >
                 {g}年生
@@ -75,15 +81,15 @@ export function ClassAverageScoreChart({ defaultGrade = 2 }: ClassAverageScoreCh
       </div>
 
       {isLoading ? (
-        <p className="mt-4 text-sky-300">クラス情報を読み込み中…</p>
+        <p className="mt-4 text-[var(--dashboard-accent)]">クラス情報を読み込み中…</p>
       ) : isError ? (
         <p className="mt-4 text-red-300">クラス情報の取得に失敗しました。</p>
       ) : sortedClasses.length === 0 ? (
-        <p className="mt-4 text-slate-400">{grade}年生のクラス情報がありません。</p>
+        <p className="mt-4 text-[var(--dashboard-muted)]">{grade}年生のクラス情報がありません。</p>
       ) : (
         <>
           <div className="mt-4 flex flex-col gap-3">
-            <p className="text-xs font-semibold tracking-wide text-slate-400">全教科合計</p>
+            <p className="text-xs font-semibold tracking-wide text-[var(--dashboard-muted)]">全教科合計</p>
             {sortedClasses.map((c) => (
               <ScoreBar
                 key={c.id}
@@ -94,8 +100,8 @@ export function ClassAverageScoreChart({ defaultGrade = 2 }: ClassAverageScoreCh
             ))}
           </div>
 
-          <div className="mt-6 border-t border-sky-400/20 pt-4">
-            <p className="text-xs font-semibold tracking-wide text-slate-400">教科別平均</p>
+          <div className="mt-6 border-t border-[var(--dashboard-border)]/25 pt-4">
+            <p className="text-xs font-semibold tracking-wide text-[var(--dashboard-muted)]">教科別平均</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {sortedClasses.map((c) => {
                 const isActive = selectedClass?.id === c.id;
@@ -107,8 +113,8 @@ export function ClassAverageScoreChart({ defaultGrade = 2 }: ClassAverageScoreCh
                     aria-pressed={isActive}
                     className={`rounded-sm px-3 py-1.5 text-xs font-bold transition-all duration-150 ${
                       isActive
-                        ? "border border-violet-400/60 bg-violet-400/15 text-violet-200"
-                        : "border border-sky-400/20 text-slate-400 hover:bg-white/5 hover:text-sky-200"
+                        ? "border border-[var(--dashboard-accent)] bg-[var(--dashboard-accent)] text-white"
+                        : "border border-[var(--dashboard-border)] text-[var(--dashboard-muted)] hover:bg-[var(--dashboard-accent-soft)] hover:text-[var(--dashboard-text)]"
                     }`}
                   >
                     {c.name}
@@ -120,7 +126,7 @@ export function ClassAverageScoreChart({ defaultGrade = 2 }: ClassAverageScoreCh
             {selectedClass && (
               <div className="mt-4 flex flex-col gap-3">
                 {(selectedClass.subjectAverages ?? []).length === 0 ? (
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-[var(--dashboard-muted)]">
                     {selectedClass.name}にはまだ採点データがありません。
                   </p>
                 ) : (
@@ -155,16 +161,16 @@ function ScoreBar({
 
   return (
     <div className="flex items-center gap-4">
-      <div className="w-40 shrink-0 text-sm text-slate-300">{label}</div>
+      <div className="w-40 shrink-0 text-sm text-[var(--dashboard-muted)]">{label}</div>
       <div className="flex-1">
-        <div className="h-4 overflow-hidden rounded-sm bg-white/5">
+        <div className="h-4 overflow-hidden rounded-sm bg-black/10">
           <div
             className={`h-4 transition-all duration-300 ${barClass}`}
             style={{ width: `${ratio * 100}%` }}
           />
         </div>
       </div>
-      <div className="w-16 shrink-0 text-right text-sm font-bold tabular-nums text-white">
+      <div className="w-16 shrink-0 text-right text-sm font-bold tabular-nums text-[var(--dashboard-text)]">
         {formatClassAverageScore(value)}
       </div>
     </div>
@@ -183,16 +189,16 @@ function SubjectAverageBar({
 
   return (
     <div className="flex items-center gap-4">
-      <div className="w-40 shrink-0 text-sm text-slate-300">{subjectAverage.subjectLabel}</div>
+      <div className="w-40 shrink-0 text-sm text-[var(--dashboard-muted)]">{subjectAverage.subjectLabel}</div>
       <div className="flex-1">
-        <div className="h-3 overflow-hidden rounded-sm bg-white/5">
+        <div className="h-3 overflow-hidden rounded-sm bg-black/10">
           <div
             className={`h-3 transition-all duration-300 ${barClass}`}
             style={{ width: `${ratio * 100}%` }}
           />
         </div>
       </div>
-      <div className="w-16 shrink-0 text-right text-sm font-bold tabular-nums text-white">
+      <div className="w-16 shrink-0 text-right text-sm font-bold tabular-nums text-[var(--dashboard-text)]">
         {formatClassAverageScore(subjectAverage.averageScore)}
       </div>
     </div>

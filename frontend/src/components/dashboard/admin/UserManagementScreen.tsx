@@ -11,9 +11,9 @@ import { UserFormModal, type UserFormValues } from "./UserFormModal";
 
 // ロールバッジの配色。
 const roleBadgeClass: Record<Role, string> = {
-  student: "bg-sky-400/15 border border-sky-400 text-sky-300",
-  teacher: "bg-violet-400/15 border border-violet-400 text-violet-300",
-  school_admin: "bg-yellow-400/15 border border-yellow-400 text-yellow-300",
+  student: "bg-sky-100 border border-sky-700/40 text-sky-900",
+  teacher: "bg-violet-100 border border-violet-700/40 text-violet-900",
+  school_admin: "bg-amber-100 border border-amber-700/40 text-amber-900",
 };
 
 // 絞り込みフィルタ（"all" は全件）。
@@ -29,9 +29,9 @@ function StatCard({ label, value, sub, accent }: { label: string; value: number;
   return (
     <Panel className="flex-1">
       <div className="px-5 py-4">
-        <p className="text-xs font-bold tracking-wide text-slate-300">{label}</p>
-        <p className={`my-1 text-4xl font-black ${accent} [text-shadow:0_0_12px_currentColor]`}>{value}</p>
-        <p className="text-xs text-slate-400/70">{sub}</p>
+        <p className="text-xs font-bold tracking-wide text-[var(--dashboard-muted)]">{label}</p>
+        <p className={`my-1 text-4xl font-black ${accent}`}>{value}</p>
+        <p className="text-xs text-[var(--dashboard-muted)]">{sub}</p>
       </div>
     </Panel>
   );
@@ -127,14 +127,14 @@ export function UserManagementScreen({
   const activeMutation = editingUser ? updateMutation : createMutation;
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6">
+    <div className="user-management-screen mx-auto flex max-w-6xl flex-col gap-6">
       {/* ヘッダー */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-wide [text-shadow:0_0_10px_rgba(56,189,248,0.6)]">
+          <h1 className="text-3xl font-black tracking-wide text-white">
             ユーザー管理
           </h1>
-          <p className="mt-1 text-sm text-slate-300">生徒・教師アカウントの登録・編集・削除</p>
+          <p className="mt-1 text-sm text-[var(--dashboard-muted)]">生徒・教師アカウントの登録・編集・削除</p>
         </div>
         <Button onClick={openCreate}>＋追加</Button>
       </div>
@@ -142,10 +142,10 @@ export function UserManagementScreen({
       {/* 統計カード */}
       {stats && (
         <div className="flex flex-wrap gap-4">
-          <StatCard label="生徒アカウント" value={stats.student_count} sub="A〜Fクラス合計" accent="text-sky-300" />
-          <StatCard label="教師アカウント" value={stats.teacher_count} sub="各クラス担任" accent="text-violet-300" />
-          <StatCard label="管理者アカウント" value={stats.admin_count} sub="システム管理者" accent="text-yellow-300" />
-          <StatCard label="総ユーザー数" value={stats.total_count} sub="全アカウント" accent="text-emerald-300" />
+          <StatCard label="生徒アカウント" value={stats.student_count} sub="A〜Fクラス合計" accent="text-sky-800" />
+          <StatCard label="教師アカウント" value={stats.teacher_count} sub="各クラス担任" accent="text-violet-800" />
+          <StatCard label="管理者アカウント" value={stats.admin_count} sub="システム管理者" accent="text-amber-800" />
+          <StatCard label="総ユーザー数" value={stats.total_count} sub="全アカウント" accent="text-emerald-800" />
         </div>
       )}
 
@@ -156,7 +156,7 @@ export function UserManagementScreen({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="🔍 名前・メールで検索…"
-          className="w-full max-w-md flex-1 px-4 py-2.5 bg-white/5 border border-sky-400/40 rounded-sm text-sky-100 text-sm outline-none transition-all placeholder:text-slate-400/50 focus:border-sky-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.2)]"
+          className="w-full max-w-md flex-1 rounded-sm border border-[var(--dashboard-border)] bg-white/75 px-4 py-2.5 text-sm text-[var(--dashboard-text)] outline-none transition-all placeholder:text-[var(--dashboard-muted)] focus:border-[var(--dashboard-accent)] focus:ring-2 focus:ring-[var(--dashboard-accent-soft)]"
         />
         <div className="flex gap-2">
           {FILTER_OPTIONS.map((opt) => (
@@ -165,8 +165,8 @@ export function UserManagementScreen({
               onClick={() => setFilter(opt.value)}
               className={`px-4 py-2 rounded-sm text-sm font-bold tracking-wide transition-colors ${
                 filter === opt.value
-                  ? "bg-sky-500/30 border border-sky-400 text-sky-200"
-                  : "border border-sky-400/30 text-slate-300 hover:bg-sky-400/10"
+                  ? "border border-[var(--dashboard-accent)] bg-[var(--dashboard-accent)] text-white"
+                  : "border border-[var(--dashboard-border)] bg-white/55 text-[var(--dashboard-text)] hover:bg-white/80"
               }`}
             >
               {opt.label}
@@ -178,16 +178,16 @@ export function UserManagementScreen({
       {/* 一覧テーブル */}
       <Panel>
         {isLoading ? (
-          <p className="px-5 py-10 text-center text-sky-300 animate-pulse">読み込み中...</p>
+          <p className="animate-pulse px-5 py-10 text-center text-[var(--dashboard-accent)]">読み込み中...</p>
         ) : isError ? (
-          <p className="px-5 py-10 text-center text-red-300">ユーザー一覧の取得に失敗しました。</p>
+          <p className="px-5 py-10 text-center text-red-800">ユーザー一覧の取得に失敗しました。</p>
         ) : filteredUsers.length === 0 ? (
-          <p className="px-5 py-10 text-center text-slate-400">該当するユーザーがいません。</p>
+          <p className="px-5 py-10 text-center text-[var(--dashboard-muted)]">該当するユーザーがいません。</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-sky-400/30 text-xs uppercase tracking-wider text-slate-400">
+                <tr className="border-b border-[#2d1a0f] bg-[#3a281d] text-xs uppercase tracking-wider text-[#f4e4bd]">
                   <th className="px-5 py-3 font-semibold">氏名</th>
                   <th className="px-5 py-3 font-semibold">メールアドレス</th>
                   <th className="px-5 py-3 font-semibold">ロール</th>
@@ -199,36 +199,36 @@ export function UserManagementScreen({
                 {filteredUsers.map((user) => (
                   <tr
                     key={user.id}
-                    className={`border-b border-sky-400/10 transition-colors ${selectable ? "hover:bg-sky-400/8 cursor-pointer" : "hover:bg-sky-400/5"}`}
+                    className={`border-b border-[var(--dashboard-border)]/20 transition-colors ${selectable ? "cursor-pointer hover:bg-white/55" : "hover:bg-white/40"}`}
                     onClick={selectable ? () => onSelect?.(user) : undefined}
                   >
-                    <td className="px-5 py-3 font-bold text-white">{user.name}</td>
-                    <td className="px-5 py-3 font-mono text-slate-300">{user.email}</td>
+                    <td className="px-5 py-3 font-bold text-[var(--dashboard-text)]">{user.name}</td>
+                    <td className="px-5 py-3 font-mono text-[var(--dashboard-muted)]">{user.email}</td>
                     <td className="px-5 py-3">
                       <span className={`inline-block rounded-sm px-2.5 py-0.5 text-[0.7rem] font-bold tracking-wide ${roleBadgeClass[user.role]}`}>
                         {ROLE_LABEL[user.role]}
                       </span>
                     </td>
-                    <td className="px-5 py-3 text-slate-300">{user.school_class?.name ?? "—"}</td>
+                    <td className="px-5 py-3 text-[var(--dashboard-text)]">{user.school_class?.name ?? "—"}</td>
                     <td className="px-5 py-3">
                       {!selectable ? (
                         <div className="flex justify-end gap-2">
                           <button
                             onClick={() => openEdit(user)}
-                            className="rounded-sm border border-sky-400/40 px-3 py-1 text-xs font-bold text-sky-200 transition-colors hover:bg-sky-400/10"
+                            className="rounded-sm border border-[var(--dashboard-border)] bg-white/60 px-3 py-1 text-xs font-bold text-[var(--dashboard-text)] transition-colors hover:bg-white"
                           >
                             編集
                           </button>
                           <button
                             onClick={() => handleDelete(user)}
                             disabled={deleteMutation.isPending}
-                            className="rounded-sm border border-red-500/50 px-3 py-1 text-xs font-bold text-red-300 transition-colors hover:bg-red-500/15 disabled:opacity-50"
+                            className="rounded-sm border border-red-700/50 bg-red-50 px-3 py-1 text-xs font-bold text-red-800 transition-colors hover:bg-red-100 disabled:opacity-50"
                           >
                             削除
                           </button>
                         </div>
                       ) : (
-                        <div className="text-sm text-slate-400 text-right">選択</div>
+                        <div className="text-right text-sm text-[var(--dashboard-muted)]">選択</div>
                       )}
                     </td>
                   </tr>
@@ -242,7 +242,7 @@ export function UserManagementScreen({
       {deleteMutation.isError && (
         <div className="flex items-center gap-2 rounded-sm border border-red-500/60 bg-red-500/15 px-4 py-3">
           <LabelTag variant="error">削除失敗</LabelTag>
-          <p className="text-sm text-red-300">
+          <p className="text-sm text-red-800">
             {extractApiError(deleteMutation.error)?.message ?? "削除に失敗しました。"}
           </p>
         </div>
