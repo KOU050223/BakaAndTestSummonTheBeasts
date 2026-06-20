@@ -51,6 +51,7 @@ ws://<game-server>/ws/battle?token=<JWT>&battleId=<id>
       "x": -1.2, "z": 0.3, "angle": 1.57,
       "currentSubject": "math",      // いるフィールドの科目（中立は null）
       "summoned": true,               // 召喚獣が場に出ているか
+      "attacking": false,             // この tick で攻撃を発動したか（攻撃アニメ用）
       "summons": {                    // 科目ごとの残 HP
         "math": { "hp": 142 },
         "english": { "hp": 100 }

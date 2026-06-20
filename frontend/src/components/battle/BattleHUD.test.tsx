@@ -10,6 +10,7 @@ const self: PlayerState = {
   angle: 0,
   currentSubject: "math",
   summoned: false,
+  attacking: false,
   summons: { math: { hp: 142 }, english: { hp: 100 } },
 };
 

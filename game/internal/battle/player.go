@@ -21,6 +21,10 @@ type Player struct {
 	Angle    float64 // Y軸回りの向き（ラジアン）。0 は +X 方向。
 	Summoned bool    // 召喚獣が場に出ているか
 
+	// Attacking はこの tick で攻撃モーションを発動したか（命中の有無とは独立）。
+	// クライアントの攻撃アニメーション再生トリガーに使う。毎 tick リセットされる。
+	Attacking bool
+
 	// 科目ごとの召喚獣。いずれか1つでも HP が 0 になると敗北。
 	Summons map[string]*Summon
 }

@@ -19,8 +19,9 @@ func (r *Room) Step(inputs map[string]Input) []AttackEvent {
 	}
 	r.Tick++
 
-	// クールダウンを減らす。
-	for id := range r.Players {
+	// クールダウンを減らす。攻撃モーションフラグは毎 tick リセットする。
+	for id, p := range r.Players {
+		p.Attacking = false
 		if r.cooldowns[id] > 0 {
 			r.cooldowns[id]--
 		}
@@ -94,6 +95,10 @@ func (r *Room) applyAttack(actorID string, actor *Player, in Input) (AttackEvent
 	if attackerSummon == nil || !actor.Summoned {
 		return AttackEvent{}, false // フィールド外・未召喚は攻撃不可
 	}
+
+	// ここまで来た時点で「攻撃を振った」とみなし、命中の有無に関わらず
+	// クライアントで攻撃モーションを再生させる。
+	actor.Attacking = true
 
 	for targetID, target := range r.Players {
 		if targetID == actorID {

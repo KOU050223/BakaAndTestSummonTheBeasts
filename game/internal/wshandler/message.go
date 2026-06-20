@@ -43,7 +43,9 @@ type PlayerState struct {
 	Angle          float64                `json:"angle"`
 	CurrentSubject *string                `json:"currentSubject"`
 	Summoned       bool                   `json:"summoned"`
-	Summons        map[string]SummonState `json:"summons"`
+	// Attacking はこの tick で攻撃を発動したか（クライアントの攻撃アニメ用）。
+	Attacking bool                   `json:"attacking"`
+	Summons   map[string]SummonState `json:"summons"`
 }
 
 type SummonState struct {

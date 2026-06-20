@@ -64,6 +64,7 @@ func snapshot(r *battle.Room) StateMessage {
 			Angle:          p.Angle,
 			CurrentSubject: current,
 			Summoned:       p.Summoned,
+			Attacking:      p.Attacking,
 			Summons:        summons,
 		}
 	}

@@ -203,18 +203,6 @@ function SummonStage({
         })}
       </div>
 
-      {/* 召喚ステージ専用アニメーション（星の瞬き・召喚獣の浮遊） */}
-      <style jsx>{`
-        @keyframes summon-float {
-          0%,
-          100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
-        }
-      `}</style>
     </div>
   );
 }
@@ -278,19 +266,6 @@ function StarField() {
           ★
         </span>
       ))}
-      <style jsx>{`
-        @keyframes star-twinkle {
-          0%,
-          100% {
-            opacity: 0.3;
-            transform: scale(0.8);
-          }
-          50% {
-            opacity: 1;
-            transform: scale(1.2);
-          }
-        }
-      `}</style>
     </div>
   );
 }

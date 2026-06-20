@@ -13,6 +13,7 @@ const sampleState: StateMessage = {
       angle: 0,
       currentSubject: "math",
       summoned: true,
+      attacking: false,
       summons: { math: { hp: 100 } },
     },
   },
