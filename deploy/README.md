@@ -82,3 +82,56 @@ GHCRへログイン済みのPi上でcommit SHAを指定する。
 ```
 
 スクリプトはDB schemaを自動で巻き戻さない。migrationは旧・新両バージョンと互換性を保つexpand/contract方式で作成する。
+
+# Game WebSocket server deployment
+
+GoのゲームWebSocketサーバーもRails APIと同じ仕組みでデプロイする。GitHub Actionsで`linux/arm64`イメージを作成し、GHCR経由でPiのrootless Podman Quadletへ配る。
+
+## 自動デプロイ
+
+Game CIは次の順序で実行される。
+
+1. GitHub-hosted runnerでformat、lint、race付きテスト、build、デプロイ構成テストを実行する。
+2. `main`へのpush時だけ、commit SHAタグ付きarm64イメージをGHCRへpushする。
+3. Pi上の専用runnerがイメージをpullする（DB migrationは無い）。
+4. Quadletを再起動し、`http://127.0.0.1:8080/healthz`を確認する。
+5. health check失敗時は直前イメージへ戻す。
+
+ゲームサーバーは`Network=host`で動かし、同じPi上のbackend（`127.0.0.1:8000`）とRedis（`127.0.0.1:6379`）へループバック経由で到達する。外部には直接公開せず、`HOST=127.0.0.1`でbindしてリバースプロキシ経由で公開する。
+
+## Piの秘密情報
+
+`~/.config/baka/game.env`をmode 600で作成する。雛形は[`config/game.env.example`](config/game.env.example)にある。
+
+必須項目:
+
+- `JWT_SECRET_KEY`: backendと共有するJWT署名鍵（`backend.env`と同じ値）
+- `INTERNAL_API_SECRET`: backendと共有するInternal APIシークレット（`backend.env`と同じ値）
+
+`RAILS_INTERNAL_URL`は既定で`http://127.0.0.1:8000`を指す。
+
+初期配置:
+
+```bash
+./deploy/scripts/install-game.sh
+vi ~/.config/baka/game.env
+chmod 600 ~/.config/baka/game.env
+./deploy/scripts/install-game.sh
+```
+
+## 手動確認
+
+```bash
+systemctl --user status baka-game.service
+curl --fail http://127.0.0.1:8080/healthz
+cat ~/.local/state/baka/game-current-sha
+podman logs --tail 200 baka-game
+```
+
+## 手動デプロイ
+
+GHCRへログイン済みのPi上でcommit SHAを指定する。
+
+```bash
+./deploy/scripts/deploy-game.sh <40-character-commit-sha>
+```
