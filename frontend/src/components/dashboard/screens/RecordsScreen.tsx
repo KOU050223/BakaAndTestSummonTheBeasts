@@ -158,8 +158,8 @@ function AdminBattleLog() {
           <div className="flex items-center gap-3">
             <LabelTag variant="info">管理者</LabelTag>
             <h1 className="text-2xl font-black tracking-wide text-white">
-              召喚獣戦争ログ
-            </h1>
+              試召戦争ログ
+            </h1> 
           </div>
           <p className="mt-2 text-sm text-slate-300">
             全クラス間の試召戦争について、対戦者・科目・スコア・結果を確認できます。
@@ -225,12 +225,13 @@ function AdminBattleLog() {
             <div className="py-16 text-center">
               <p className="text-4xl">⚔️</p>
               <p className="mt-3 text-sm text-slate-400">
-                条件に一致する召喚獣戦争ログはありません。
+                条件に一致する試召戦争ログはありません。
               </p>
             </div>
           ) : (
             <table
-              aria-label="召喚獣戦争ログ一覧"
+              aria-label="試召戦争ログ
+              "
               className="min-w-[980px] w-full text-sm"
             >
               <thead className="border-b border-sky-400/20 bg-slate-900/70 text-left text-xs uppercase tracking-wider text-slate-400">

@@ -61,7 +61,7 @@ describe("RecordsScreen", () => {
     expect(screen.getByText("吉井明久 の勝利")).toBeInTheDocument();
     expect(
       within(
-        screen.getByRole("table", { name: "召喚獣戦争ログ一覧" }),
+        screen.getByRole("table", { name: "試召戦争ログ" }),
       ).getAllByText("完了").length,
     ).toBeGreaterThan(0);
   });
