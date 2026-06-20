@@ -1,7 +1,6 @@
-import { Placeholder } from "@/components/ui";
+import { NavPlaceholder } from "../NavPlaceholder";
 
+// 生徒の「/」タブ（サイドバー: ダッシュボード）。本実装前は Placeholder。
 export function StudentDashboard() {
-  return (
-    <Placeholder title="学生ダッシュボード" />
-  );
+  return <NavPlaceholder role="student" href="/" />;
 }

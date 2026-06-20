@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Panel, LabelTag } from "@/components/ui";
 import { getMyScores } from "@/lib/api/grading";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
+import { NavPlaceholder } from "../NavPlaceholder";
 
 export function ScoresScreen() {
   const { user } = useCurrentUser();
@@ -13,17 +14,10 @@ export function ScoresScreen() {
     enabled: user?.role === "student",
   });
 
-  if (user?.role !== "student") {
-    return (
-      <Panel className="mx-auto mt-6 max-w-2xl">
-        <div className="px-5 py-4 border-b border-sky-400/40 bg-gradient-to-r from-sky-400/20 to-sky-400/5">
-          <h1 className="text-xl font-black text-white">成績・召喚獣ステータス</h1>
-        </div>
-        <div className="px-5 py-10 text-center text-slate-400 text-sm">
-          この画面は生徒のみ利用できます
-        </div>
-      </Panel>
-    );
+  if (!user) return null;
+
+  if (user.role !== "student") {
+    return <NavPlaceholder role={user.role} href="/scores" />;
   }
 
   return (

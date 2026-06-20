@@ -11,6 +11,8 @@ import {
   type StudentWithClass,
 } from "@/lib/classes/useClasses";
 import type { ClassSummary, ClassStudent } from "@/lib/api/types";
+import { useCurrentUser } from "@/lib/auth/useCurrentUser";
+import { navLabel } from "@/lib/dashboard/navigation";
 
 // 学年切り替えタブで扱う学年。
 const GRADES = [1, 2, 3] as const;
@@ -37,6 +39,8 @@ function computeAssignmentsByScore(
 // 学年でクラスを絞り込み、クラスカードを選ぶと下に生徒一覧を表示する。
 // クラス変更・自動振り分けはいずれも API 経由で DB に即時反映する。
 export function ClassManagementScreen() {
+  const { user } = useCurrentUser();
+  const pageTitle = user ? navLabel(user.role, "/classes") : "クラス管理";
   const [grade, setGrade] = useState<(typeof GRADES)[number]>(2);
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
 
@@ -81,6 +85,7 @@ export function ClassManagementScreen() {
   return (
     <div className="flex flex-col gap-6 p-6">
       <Header
+        title={pageTitle}
         grade={grade}
         onAssignByScore={handleAssignByScore}
         isAssigning={isAssigning}
@@ -131,11 +136,13 @@ export function ClassManagementScreen() {
 }
 
 function Header({
+  title,
   grade,
   onAssignByScore,
   isAssigning,
   disabled,
 }: {
+  title: string;
   grade: number;
   onAssignByScore: () => void;
   isAssigning: boolean;
@@ -145,7 +152,7 @@ function Header({
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div>
         <h1 className="text-2xl font-black tracking-wide text-white [text-shadow:0_0_12px_rgba(56,189,248,0.6)]">
-          クラス管理
+          {title}
         </h1>
         <p className="mt-1 text-sm text-slate-300">
           {grade}年生のクラスをスコアに応じて振り分けできます
