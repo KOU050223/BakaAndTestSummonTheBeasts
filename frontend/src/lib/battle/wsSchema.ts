@@ -40,6 +40,10 @@ export const playerStateSchema = z.object({
   x: z.number(),
   z: z.number(),
   angle: z.number(),
+  // 所属チーム（クラス）。N:N の陣営表示に使う。1:1では空文字。
+  teamId: z.string().optional().default(""),
+  // チームリーダーか。
+  leader: z.boolean().optional().default(false),
   // 中立（どのフィールドにもいない）は null。
   currentSubject: z.string().nullable(),
   summoned: z.boolean(),
@@ -57,6 +61,10 @@ export const stateMessageSchema = z.object({
 
 export const finishedMessageSchema = z.object({
   type: z.literal("finished"),
+  // N:N の勝敗チーム（クラス）。1:1では空文字になりうる。
+  winnerTeam: z.string().optional().default(""),
+  loserTeam: z.string().optional().default(""),
+  // 後方互換：代表プレイヤーID（1:1表示用）。
   winnerId: z.string(),
   loserId: z.string(),
 });
