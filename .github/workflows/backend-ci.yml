@@ -1,6 +1,7 @@
 name: Backend CI
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - 'backend/**'
@@ -119,7 +120,7 @@ jobs:
         working-directory: .
 
   build_backend_image:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     needs: [scan_ruby, lint, test, deploy_test]
     runs-on: ubuntu-latest
     permissions:
@@ -156,7 +157,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=backend-arm64
 
   deploy_backend:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     needs: build_backend_image
     runs-on: [self-hosted, Linux, ARM64, raspi-home, production]
     timeout-minutes: 15
