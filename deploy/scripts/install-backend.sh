@@ -13,6 +13,7 @@ install -d -m 700 "$config_dir"
 
 if [[ ! -e "$env_file" ]]; then
   install -m 600 "$root_dir/deploy/config/backend.env.example" "$env_file"
+  chmod 600 "$env_file"
   printf 'fill in backend.env before deployment: %s\n' "$env_file" >&2
   exit 2
 fi

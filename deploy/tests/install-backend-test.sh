@@ -22,7 +22,7 @@ if [[ ! -f "$temp_dir/home/.config/baka/backend.env" ]]; then
   exit 1
 fi
 
-if [[ "$(stat -f '%Lp' "$temp_dir/home/.config/baka/backend.env" 2>/dev/null || stat -c '%a' "$temp_dir/home/.config/baka/backend.env")" != 600 ]]; then
+if [[ "$(stat -c '%a' "$temp_dir/home/.config/baka/backend.env" 2>/dev/null || stat -f '%Lp' "$temp_dir/home/.config/baka/backend.env")" != 600 ]]; then
   printf 'backend.env does not have mode 600\n' >&2
   exit 1
 fi
