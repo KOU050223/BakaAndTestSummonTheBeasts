@@ -15,6 +15,7 @@ import {
   registerQuestions,
   regradeAnswerSheet,
   getExamSummary,
+  downloadGradesCsv,
   type AnswerSheet,
   type AnswerSheetSummary,
   type ExamQuestion,
@@ -347,13 +348,23 @@ function QuestionSetupStep({
 
 // ─── 教師：採点結果サマリー ────────────────────────────────────────────────────
 
-function SummaryPanel({ summary }: { summary: ExamSummary }) {
+function SummaryPanel({ exam, summary }: { exam: Exam; summary: ExamSummary }) {
   const pct = summary.max_score > 0 && summary.average_score != null
     ? Math.round((summary.average_score / summary.max_score) * 100)
     : null;
 
   return (
     <div className="px-5 py-6 flex flex-col gap-6">
+      {/* CSVエクスポート */}
+      <div className="flex justify-end">
+        <button
+          onClick={() => void downloadGradesCsv(exam.id, exam.title)}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white/5 border border-sky-400/30 rounded-sm text-sky-300 hover:bg-sky-400/10 hover:border-sky-400/60 transition-colors"
+        >
+          ⬇ CSV ダウンロード
+        </button>
+      </div>
+
       {/* 概要カード */}
       <div className="grid grid-cols-3 gap-3">
         {[
@@ -496,7 +507,7 @@ function TeacherGradingView({ exam }: { exam: Exam }) {
       {/* 採点 or 統計パネル */}
       {showSummary ? (
         summary
-          ? <SummaryPanel summary={summary} />
+          ? <SummaryPanel exam={exam} summary={summary} />
           : <p className="text-center text-slate-400 py-10 text-sm animate-pulse">読み込み中...</p>
       ) : selectedSheet ? (
         <GradingStep

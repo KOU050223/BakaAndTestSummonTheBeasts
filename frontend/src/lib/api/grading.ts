@@ -237,6 +237,20 @@ export async function getExamSummary(examId: string | number): Promise<ExamSumma
   return res.json() as Promise<ExamSummary>;
 }
 
+export async function downloadGradesCsv(examId: number, examTitle: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/exams/${examId}/grades`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("CSVのダウンロードに失敗しました");
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${examTitle}_成績.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export async function registerQuestions(
   examId: string | number,
   questions: QuestionInput[],
