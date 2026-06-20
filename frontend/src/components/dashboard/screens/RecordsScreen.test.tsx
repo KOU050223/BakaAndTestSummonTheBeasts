@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { RecordsScreen } from "./RecordsScreen";
 
 const mockUseCurrentUser = vi.fn();
@@ -52,5 +52,17 @@ describe("RecordsScreen", () => {
     expect(
       screen.getByRole("heading", { name: "試召戦争ログ" }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "仕掛け側" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "受け側" })).toBeInTheDocument();
+    expect(screen.getAllByText("吉井明久").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("霧島翔子").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("数学").length).toBeGreaterThan(0);
+    expect(screen.getByText("50 vs 0")).toBeInTheDocument();
+    expect(screen.getByText("吉井明久 の勝利")).toBeInTheDocument();
+    expect(
+      within(
+        screen.getByRole("table", { name: "試召戦争ログ" }),
+      ).getAllByText("完了").length,
+    ).toBeGreaterThan(0);
   });
 });
