@@ -350,6 +350,21 @@ function QuestionSetupStep({
 // ─── 教師：採点結果サマリー ────────────────────────────────────────────────────
 
 function SummaryPanel({ exam, summary }: { exam: Exam; summary: ExamSummary }) {
+  const [csvLoading, setCsvLoading] = useState(false);
+  const [csvError, setCsvError] = useState<string | null>(null);
+
+  const handleCsvDownload = async () => {
+    setCsvLoading(true);
+    setCsvError(null);
+    try {
+      await downloadGradesCsv(exam.id, exam.title);
+    } catch {
+      setCsvError("CSVのダウンロードに失敗しました");
+    } finally {
+      setCsvLoading(false);
+    }
+  };
+
   const pct = summary.max_score > 0 && summary.average_score != null
     ? Math.round((summary.average_score / summary.max_score) * 100)
     : null;
@@ -357,13 +372,15 @@ function SummaryPanel({ exam, summary }: { exam: Exam; summary: ExamSummary }) {
   return (
     <div className="px-5 py-6 flex flex-col gap-6">
       {/* CSVエクスポート */}
-      <div className="flex justify-end">
+      <div className="flex flex-col items-end gap-1">
         <button
-          onClick={() => void downloadGradesCsv(exam.id, exam.title)}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white/5 border border-sky-400/30 rounded-sm text-sky-300 hover:bg-sky-400/10 hover:border-sky-400/60 transition-colors"
+          onClick={handleCsvDownload}
+          disabled={csvLoading}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white/5 border border-sky-400/30 rounded-sm text-sky-300 hover:bg-sky-400/10 hover:border-sky-400/60 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          ⬇ CSV ダウンロード
+          {csvLoading ? "ダウンロード中..." : "⬇ CSV ダウンロード"}
         </button>
+        {csvError && <p className="text-red-400 text-xs">{csvError}</p>}
       </div>
 
       {/* 概要カード */}
