@@ -16,6 +16,8 @@ type Summon struct {
 type Player struct {
 	UserID   string
 	Name     string
+	TeamID   string  // 所属チーム（クラス）。同チームは同じ ID を持つ。空は無所属。
+	Leader   bool    // チームリーダーか（将来「リーダー撃破で敗北」ルール用）。
 	X        float64
 	Z        float64
 	Angle    float64 // Y軸回りの向き（ラジアン）。0 は +X 方向。

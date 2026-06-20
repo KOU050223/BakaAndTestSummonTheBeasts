@@ -8,6 +8,26 @@ import (
 // 初期配置：プレイヤーをフィールド中心円の内側に向かい合わせで置く暫定値。
 const initialSpawnRadius = 2.0
 
+// spawnRowGap は同チーム内で隊列を作る際の Z 方向の間隔。
+const spawnRowGap = 1.5
+
+// teamSpawnIndex は出現順にチームへ通し番号を振る（陣営の左右割り当てに使う）。
+func teamSpawnIndex(players []railsclient.PlayerData) map[string]int {
+	index := make(map[string]int)
+	next := 0
+	for _, pd := range players {
+		team := pd.TeamID
+		if team == "" {
+			team = pd.UserID
+		}
+		if _, ok := index[team]; !ok {
+			index[team] = next
+			next++
+		}
+	}
+	return index
+}
+
 // buildRoom は Rails の start-data からドメインの Room を構築する。
 func buildRoom(data *railsclient.StartData, cfg battle.Config) *battle.Room {
 	fields := make([]battle.Field, len(data.Fields))
@@ -16,7 +36,10 @@ func buildRoom(data *railsclient.StartData, cfg battle.Config) *battle.Room {
 	}
 
 	players := make(map[string]*battle.Player, len(data.Players))
-	for i, pd := range data.Players {
+	// チームごとに並び順を割り当て、同チームを同じ側へ縦に並べて配置する。
+	teamIndex := teamSpawnIndex(data.Players)
+	teamSlot := make(map[string]int)
+	for _, pd := range data.Players {
 		summons := make(map[string]*battle.Summon, len(pd.Summons))
 		for _, s := range pd.Summons {
 			summons[s.Subject] = &battle.Summon{
@@ -28,12 +51,23 @@ func buildRoom(data *railsclient.StartData, cfg battle.Config) *battle.Room {
 				Speed:   s.Speed,
 			}
 		}
-		// 2人を左右に振り分けて配置する（暫定）。
-		x := -initialSpawnRadius
-		if i == 1 {
-			x = initialSpawnRadius
+
+		team := pd.TeamID
+		if team == "" {
+			team = pd.UserID // 無所属は1人チーム扱い。
 		}
-		players[pd.UserID] = battle.NewPlayer(pd.UserID, pd.Name, x, 0, summons)
+		// チームごとに X 方向（陣営）を分け、Z 方向に隊列を作る。
+		side := -initialSpawnRadius
+		if teamIndex[team]%2 == 1 {
+			side = initialSpawnRadius
+		}
+		z := float64(teamSlot[team]) * spawnRowGap
+		teamSlot[team]++
+
+		p := battle.NewPlayer(pd.UserID, pd.Name, side, z, summons)
+		p.TeamID = pd.TeamID
+		p.Leader = pd.Leader
+		players[pd.UserID] = p
 	}
 
 	return battle.NewRoom(data.BattleID, fields, players, cfg)
@@ -62,6 +96,9 @@ func snapshot(r *battle.Room) StateMessage {
 			X:              p.X,
 			Z:              p.Z,
 			Angle:          p.Angle,
+			TeamID:         p.TeamID,
+			Leader:         p.Leader,
+			Defeated:       p.Defeated(),
 			CurrentSubject: current,
 			Summoned:       p.Summoned,
 			Attacking:      p.Attacking,

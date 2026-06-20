@@ -45,6 +45,8 @@ type FieldData struct {
 type PlayerData struct {
 	UserID  string       `json:"userId"`
 	Name    string       `json:"name"`
+	TeamID  string       `json:"teamId"` // 所属チーム（クラス）ID。N:N の陣営分けに使う。
+	Leader  bool         `json:"leader"` // チームリーダーか。
 	Summons []SummonData `json:"summons"`
 }
 

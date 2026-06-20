@@ -30,17 +30,35 @@ vi.mock("@/lib/summon/useSummon", () => ({
   }),
 }));
 
-const mutate = vi.fn();
-let mutationState = { mutate, isPending: false, error: null as unknown };
+vi.mock("@/lib/battle/useOpponentClasses", () => ({
+  useOpponentClasses: () => ({
+    classes: [
+      { id: 10, name: "A組", grade: 2 },
+      { id: 20, name: "B組", grade: 2 },
+    ],
+    isLoading: false,
+  }),
+}));
+
+const soloMutate = vi.fn();
+const classMutate = vi.fn();
+let soloState = { mutate: soloMutate, isPending: false, error: null as unknown };
+let classState = { mutate: classMutate, isPending: false, error: null as unknown };
 vi.mock("@/lib/api/client", () => ({
-  $api: { useMutation: () => mutationState },
+  $api: {
+    // path で個人戦/クラス戦のモックを出し分ける。
+    useMutation: (_method: string, path: string) =>
+      path === "/api/battles/declare_war" ? classState : soloState,
+  },
 }));
 
 describe("DeclareWarScreen", () => {
   beforeEach(() => {
     push.mockReset();
-    mutate.mockReset();
-    mutationState = { mutate, isPending: false, error: null };
+    soloMutate.mockReset();
+    classMutate.mockReset();
+    soloState = { mutate: soloMutate, isPending: false, error: null };
+    classState = { mutate: classMutate, isPending: false, error: null };
   });
 
   it("相手候補と科目を表示する", () => {
@@ -69,14 +87,14 @@ describe("DeclareWarScreen", () => {
 
     await userEvent.click(submit);
 
-    expect(mutate).toHaveBeenCalledWith(
+    expect(soloMutate).toHaveBeenCalledWith(
       { body: { opponentId: "2", subjects: ["math"] } },
       expect.anything(),
     );
   });
 
   it("作成成功でバトル画面へ遷移する", async () => {
-    mutate.mockImplementation((_body, opts) => opts.onSuccess({ battleId: "55" }));
+    soloMutate.mockImplementation((_body, opts) => opts.onSuccess({ battleId: "55" }));
     render(<DeclareWarScreen />);
 
     await userEvent.click(screen.getByRole("button", { name: /明久/ }));
@@ -84,5 +102,31 @@ describe("DeclareWarScreen", () => {
     await userEvent.click(screen.getByRole("button", { name: /宣戦布告/ }));
 
     expect(push).toHaveBeenCalledWith("/wars/55/battle");
+  });
+
+  it("クラス戦モードで相手クラスを選ぶと declare_war に defenderClassId/subjects を送る", async () => {
+    classMutate.mockImplementation((_body, opts) => opts.onSuccess({ battleId: "77" }));
+    render(<DeclareWarScreen />);
+
+    // クラス戦モードへ切り替える（自クラス id=10 は候補から除外される）。
+    await userEvent.click(screen.getByRole("button", { name: /クラス戦/ }));
+    await userEvent.click(screen.getByRole("button", { name: /B組/ }));
+    await userEvent.click(screen.getByRole("button", { name: "数学" }));
+    await userEvent.click(screen.getByRole("button", { name: /宣戦布告/ }));
+
+    expect(classMutate).toHaveBeenCalledWith(
+      { body: { defenderClassId: "20", subjects: ["math"] } },
+      expect.anything(),
+    );
+    expect(push).toHaveBeenCalledWith("/wars/77/battle");
+  });
+
+  it("クラス戦では自分の所属クラスは相手候補に出ない", async () => {
+    render(<DeclareWarScreen />);
+    await userEvent.click(screen.getByRole("button", { name: /クラス戦/ }));
+
+    // 自クラス(id=10, A組)は除外、B組のみ表示。
+    expect(screen.queryByRole("button", { name: /A組/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /B組/ })).toBeInTheDocument();
   });
 });

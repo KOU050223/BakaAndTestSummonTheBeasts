@@ -461,6 +461,69 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/battles/opponent_classes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * クラス戦の相手クラス候補一覧取得
+         * @description クラス戦の宣戦布告で相手クラスを選ぶための軽量一覧。生徒が在籍するクラスのみ返す（平均点・人数は含めない）。生徒・教師が利用できる。
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description 相手クラス候補一覧 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            classes: {
+                                id: number;
+                                name: string;
+                                grade: number;
+                            }[];
+                        };
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description 権限なし（school_admin は禁止） */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/battles": {
         parameters: {
             query?: never;
@@ -576,6 +639,108 @@ export interface paths {
                     };
                 };
                 /** @description 対戦科目が空（バリデーションエラー） */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/battles/declare_war": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * クラス単位の宣戦布告（N:N対戦作成）
+         * @description 宣戦布告したクラスと相手クラスの生徒全員を陣営に分けて N:N バトルを作成する。attackerClassId 省略時は布告者の所属クラスを使う。
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description 宣戦布告する側のクラスID（省略時は布告者の所属クラス）
+                         * @example 1
+                         */
+                        attackerClassId?: string | null;
+                        /**
+                         * @description 宣戦布告される側のクラスID
+                         * @example 2
+                         */
+                        defenderClassId: string;
+                        /**
+                         * @description 対戦科目（召喚フィールド）
+                         * @example [
+                         *       "math",
+                         *       "english"
+                         *     ]
+                         */
+                        subjects: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description 宣戦布告成功（N:Nバトル作成） */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            battleId: string;
+                            subjects: string[];
+                            status: string;
+                        };
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description 権限なし（school_admin は禁止） */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description クラスが存在しない */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["error"];
+                    };
+                };
+                /** @description 生徒が所属しないクラスを attacker に指定（IDOR防止） */
                 422: {
                     headers: {
                         [name: string]: unknown;
@@ -995,11 +1160,11 @@ export interface paths {
                         /** @example 数学 小テスト1 */
                         title: string;
                         /** @example math */
-                        subjectId: string;
-                        /** @example class_a */
-                        classId: string;
+                        subject: string;
+                        /** @example 1 */
+                        class_id: number;
                         /** @example 100 */
-                        maxScore: number;
+                        max_score: number;
                     };
                 };
             };
@@ -1011,11 +1176,11 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            id: string;
+                            id: number;
                             title: string;
-                            subjectId: string;
-                            classId: string;
-                            maxScore: number;
+                            subject: string;
+                            class_id: number;
+                            max_score: number;
                         };
                     };
                 };

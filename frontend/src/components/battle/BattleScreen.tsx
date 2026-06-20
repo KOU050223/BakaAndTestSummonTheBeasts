@@ -67,23 +67,30 @@ export function BattleScreen({ battleId, token, currentUserId, onExit }: BattleS
     summonRef.current = true;
   }, []);
 
-  // 決着後は結果画面。
+  const self = state?.players[currentUserId];
+
+  // 決着後は結果画面。N:N ではチーム単位で勝敗を判定する
+  // （自分の teamId が winnerTeam なら勝ち）。teamId が無い 1:1 では
+  // 後方互換の winnerId（代表ID）で判定する。
   if (finished) {
-    const outcome = finished.winnerId === currentUserId ? "win" : "lose";
+    const myTeam = self?.teamId ?? "";
+    const winnerTeam = finished.winnerTeam ?? "";
+    const wonByTeam = myTeam !== "" && winnerTeam !== "" && winnerTeam === myTeam;
+    const wonById = finished.winnerId === currentUserId;
+    const outcome = wonByTeam || (winnerTeam === "" && wonById) ? "win" : "lose";
     return (
       <BattleResultScreen outcome={outcome} finalTick={state?.tick} onBack={onExit} />
     );
   }
 
-  const self = state?.players[currentUserId];
-
   return (
     <div className="relative h-full w-full overflow-hidden">
       <BattleScene state={state} currentUserId={currentUserId} />
       <WaitingOverlay show={state === null} />
-      {self && (
+      {self && state && (
         <BattleHUD
           self={self}
+          players={state.players}
           onMoveChange={handleMoveChange}
           onAttack={handleAttack}
           onSummon={handleSummon}

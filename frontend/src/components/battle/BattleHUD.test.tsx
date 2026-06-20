@@ -8,6 +8,9 @@ const self: PlayerState = {
   x: 0,
   z: 0,
   angle: 0,
+  teamId: "",
+  leader: false,
+  defeated: false,
   currentSubject: "math",
   summoned: false,
   attacking: false,
@@ -17,6 +20,7 @@ const self: PlayerState = {
 function setup(overrides: Partial<React.ComponentProps<typeof BattleHUD>> = {}) {
   const props = {
     self,
+    players: { me: self },
     onMoveChange: vi.fn(),
     onAttack: vi.fn(),
     onSummon: vi.fn(),
@@ -68,5 +72,21 @@ describe("BattleHUD", () => {
     setup({ self: { ...self, currentSubject: null } });
 
     expect(screen.getByText(/フィールド外/)).toBeInTheDocument();
+  });
+
+  it("N:N（チーム戦）では味方・相手の残存数を表示する", () => {
+    const teamSelf: PlayerState = { ...self, teamId: "classA" };
+    const ally: PlayerState = { ...self, teamId: "classA", summons: { math: { hp: 50 } } };
+    const enemy1: PlayerState = { ...self, teamId: "classB", summons: { math: { hp: 30 } } };
+    const enemy2Dead: PlayerState = { ...self, teamId: "classB", defeated: true, summons: { math: { hp: 0 } } };
+
+    setup({
+      self: teamSelf,
+      players: { me: teamSelf, a2: ally, b1: enemy1, b2: enemy2Dead },
+    });
+
+    // 味方2人生存、相手は1人生存（1人は HP0 で脱落）。
+    expect(screen.getByText(/味方 残り2/)).toBeInTheDocument();
+    expect(screen.getByText(/相手 残り1/)).toBeInTheDocument();
   });
 });

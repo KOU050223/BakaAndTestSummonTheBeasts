@@ -42,11 +42,28 @@ type Room struct {
 	Config   Config
 	Tick     int
 	Finished bool
+
+	// 勝敗（チーム単位）。N:N では決着したチームを表す。
+	WinnerTeam string
+	LoserTeam  string
+	// 後方互換：1:1 のとき代表プレイヤーIDを入れる（finished 通知用）。
 	WinnerID string
 	LoserID  string
 
+	// LeaderRule が真のとき、チームリーダーが撃破された時点でそのチームの敗北とする。
+	LeaderRule bool
+
 	// プレイヤーごとの攻撃クールダウン残 tick。
 	cooldowns map[string]int
+}
+
+// teamKey はプレイヤーの所属チームキーを返す。
+// TeamID が空（無所属＝1:1の各プレイヤー）の場合は UserID を独立チームとして扱う。
+func (r *Room) teamKey(p *Player) string {
+	if p.TeamID == "" {
+		return p.UserID
+	}
+	return p.TeamID
 }
 
 // NewRoom はフィールドとプレイヤーから Room を作る。

@@ -11,6 +11,9 @@ const sampleState: StateMessage = {
       x: 1,
       z: 2,
       angle: 0,
+      teamId: "",
+      leader: false,
+      defeated: false,
       currentSubject: "math",
       summoned: true,
       attacking: false,
@@ -48,7 +51,7 @@ describe("battleStore", () => {
   });
 
   it("applyFinished で決着を保持する", () => {
-    const fin: FinishedMessage = { type: "finished", winnerId: "38", loserId: "39" };
+    const fin: FinishedMessage = { type: "finished", winnerTeam: "", loserTeam: "", winnerId: "38", loserId: "39" };
 
     useBattleStore.getState().applyFinished(fin);
 

@@ -9,19 +9,28 @@ import { FieldZones } from "./FieldZones";
 import type { StateMessage, PlayerState } from "@/lib/battle/wsSchema";
 import { goAngleToThreeRotationY } from "@/lib/battle/coords";
 
-// 自分(index=0)と相手(index=1)で色を分ける。
-const MARKER_COLORS = ["#60a5fa", "#f87171"] as const;
+// 陣営で色を分ける。自チーム（自分含む）は青、相手チームは赤。
+const ALLY_COLOR = "#60a5fa";
+const ENEMY_COLOR = "#f87171";
+
+// 自分と同じ陣営かを判定する。teamId が空（1:1・無所属）の場合は
+// 自分自身だけを味方扱いにする。
+function isAllyOf(player: PlayerState, self: PlayerState | undefined): boolean {
+  if (!self) return false;
+  if (self.teamId === "" || player.teamId === "") return player === self;
+  return player.teamId === self.teamId;
+}
 
 type PlayerMarkerProps = {
   position: [number, number, number];
   rotationY: number;
-  playerIndex: number;
+  ally: boolean;
 };
 
 // 未召喚プレイヤーの位置・向きを床マーカーで示す。
 // 薄い円盤（足元の存在感）＋小さな三角形（向き）で構成する。
-function PlayerMarker({ position, rotationY, playerIndex }: PlayerMarkerProps) {
-  const color = MARKER_COLORS[playerIndex % 2];
+function PlayerMarker({ position, rotationY, ally }: PlayerMarkerProps) {
+  const color = ally ? ALLY_COLOR : ENEMY_COLOR;
   return (
     <group position={position} rotation={[0, rotationY, 0]}>
       {/* 足元の円盤 */}
@@ -149,18 +158,27 @@ export function BattleScene({ state, currentUserId }: BattleSceneProps) {
             <FieldZones fields={state.fields} />
             {/* プレイヤーをサーバー権威の位置・向きで配置。召喚済みは VRM、未召喚は床マーカー */}
             {/* goAngleToThreeRotationY で Go 座標系 → Three.js 座標系に変換する */}
-            {players.map(([userId, p], index) => {
+            {players.map(([userId, p]) => {
+              // 戦闘不能のプレイヤーは場から除外されるので描画しない。
+              if (p.defeated) return null;
               const rotationY = goAngleToThreeRotationY(p.angle);
+              const ally = isAllyOf(p, selfState);
               return p.summoned ? (
-                <BattleAvatar
-                  key={userId}
-                  position={[p.x, 0, p.z]}
-                  rotationY={rotationY}
-                  attacking={p.attacking}
-                  tick={state.tick}
-                />
+                <group key={userId}>
+                  {/* 陣営を示す足元リング（自=青 / 敵=赤） */}
+                  <mesh position={[p.x, 0.015, p.z]} rotation={[-Math.PI / 2, 0, 0]}>
+                    <ringGeometry args={[0.32, 0.42, 32]} />
+                    <meshBasicMaterial color={ally ? ALLY_COLOR : ENEMY_COLOR} transparent opacity={0.7} />
+                  </mesh>
+                  <BattleAvatar
+                    position={[p.x, 0, p.z]}
+                    rotationY={rotationY}
+                    attacking={p.attacking}
+                    tick={state.tick}
+                  />
+                </group>
               ) : (
-                <PlayerMarker key={userId} position={[p.x, 0, p.z]} rotationY={rotationY} playerIndex={index} />
+                <PlayerMarker key={userId} position={[p.x, 0, p.z]} rotationY={rotationY} ally={ally} />
               );
             })}
           </>

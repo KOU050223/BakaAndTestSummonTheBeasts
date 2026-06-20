@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_19_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_21_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -86,9 +86,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_19_000001) do
   create_table "battle_players", force: :cascade do |t|
     t.bigint "battle_id", null: false
     t.datetime "created_at", null: false
+    t.boolean "leader", default: false, null: false
     t.bigint "student_id", null: false
+    t.string "team_id"
     t.datetime "updated_at", null: false
     t.index ["battle_id", "student_id"], name: "index_battle_players_on_battle_id_and_student_id", unique: true
+    t.index ["battle_id", "team_id"], name: "index_battle_players_on_battle_id_and_team_id"
     t.index ["battle_id"], name: "index_battle_players_on_battle_id"
     t.index ["student_id"], name: "index_battle_players_on_student_id"
   end

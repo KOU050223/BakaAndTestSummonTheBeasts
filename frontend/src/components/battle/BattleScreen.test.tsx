@@ -21,8 +21,8 @@ const stateWithPlayers = (overrides?: Partial<StateMessage>): StateMessage => ({
   tick: 10,
   fields: [],
   players: {
-    "1": { x: 0, z: 0, angle: 0, currentSubject: "math", summoned: true, attacking: false, summons: { math: { hp: 100 } } },
-    "2": { x: 1, z: 1, angle: 0, currentSubject: "math", summoned: true, attacking: false, summons: { math: { hp: 80 } } },
+    "1": { x: 0, z: 0, angle: 0, teamId: "", leader: false, defeated: false, currentSubject: "math", summoned: true, attacking: false, summons: { math: { hp: 100 } } },
+    "2": { x: 1, z: 1, angle: 0, teamId: "", leader: false, defeated: false, currentSubject: "math", summoned: true, attacking: false, summons: { math: { hp: 80 } } },
   },
   ...overrides,
 });
@@ -55,7 +55,7 @@ describe("BattleScreen", () => {
 
   it("自分が勝者の finished で結果画面（WIN）を表示する", () => {
     useBattleStore.getState().applyState(stateWithPlayers());
-    useBattleStore.getState().applyFinished({ type: "finished", winnerId: "1", loserId: "2" });
+    useBattleStore.getState().applyFinished({ type: "finished", winnerTeam: "", loserTeam: "", winnerId: "1", loserId: "2" });
 
     render(<BattleScreen {...baseProps} />);
 
@@ -64,7 +64,7 @@ describe("BattleScreen", () => {
 
   it("自分が敗者の finished で結果画面（LOSE）を表示する", () => {
     useBattleStore.getState().applyState(stateWithPlayers());
-    useBattleStore.getState().applyFinished({ type: "finished", winnerId: "2", loserId: "1" });
+    useBattleStore.getState().applyFinished({ type: "finished", winnerTeam: "", loserTeam: "", winnerId: "2", loserId: "1" });
 
     render(<BattleScreen {...baseProps} />);
 

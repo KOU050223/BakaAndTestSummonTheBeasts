@@ -93,13 +93,20 @@ func (rt *roomRuntime) step() bool {
 	maps.Copy(conns, rt.conns)
 	finished := rt.room.Finished
 	winner, loser := rt.room.WinnerID, rt.room.LoserID
+	winnerTeam, loserTeam := rt.room.WinnerTeam, rt.room.LoserTeam
 	rt.mu.Unlock()
 
 	for _, c := range conns {
 		_ = c.WriteJSON(state)
 	}
 	if finished {
-		fin := FinishedMessage{Type: "finished", WinnerID: winner, LoserID: loser}
+		fin := FinishedMessage{
+			Type:       "finished",
+			WinnerTeam: winnerTeam,
+			LoserTeam:  loserTeam,
+			WinnerID:   winner,
+			LoserID:    loser,
+		}
 		for _, c := range conns {
 			_ = c.WriteJSON(fin)
 		}
