@@ -10,6 +10,7 @@ const self: PlayerState = {
   angle: 0,
   teamId: "",
   leader: false,
+  defeated: false,
   currentSubject: "math",
   summoned: false,
   attacking: false,
@@ -77,7 +78,7 @@ describe("BattleHUD", () => {
     const teamSelf: PlayerState = { ...self, teamId: "classA" };
     const ally: PlayerState = { ...self, teamId: "classA", summons: { math: { hp: 50 } } };
     const enemy1: PlayerState = { ...self, teamId: "classB", summons: { math: { hp: 30 } } };
-    const enemy2Dead: PlayerState = { ...self, teamId: "classB", summons: { math: { hp: 0 } } };
+    const enemy2Dead: PlayerState = { ...self, teamId: "classB", defeated: true, summons: { math: { hp: 0 } } };
 
     setup({
       self: teamSelf,

@@ -18,9 +18,9 @@ type BattleHUDProps = {
   onSummon: () => void;
 };
 
-// プレイヤーが戦闘可能（いずれの召喚獣も HP>0）かを返す。
+// プレイヤーが戦闘可能（脱落していない）かを返す。
 function isPlayerAlive(p: PlayerState): boolean {
-  return Object.values(p.summons).every((s) => s.hp > 0);
+  return !p.defeated;
 }
 
 // 陣営（自/敵）ごとの生存者数を集計する。teamId が空（1:1）の場合は

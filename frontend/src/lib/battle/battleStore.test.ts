@@ -13,6 +13,7 @@ const sampleState: StateMessage = {
       angle: 0,
       teamId: "",
       leader: false,
+      defeated: false,
       currentSubject: "math",
       summoned: true,
       attacking: false,

@@ -159,6 +159,8 @@ export function BattleScene({ state, currentUserId }: BattleSceneProps) {
             {/* プレイヤーをサーバー権威の位置・向きで配置。召喚済みは VRM、未召喚は床マーカー */}
             {/* goAngleToThreeRotationY で Go 座標系 → Three.js 座標系に変換する */}
             {players.map(([userId, p]) => {
+              // 戦闘不能のプレイヤーは場から除外されるので描画しない。
+              if (p.defeated) return null;
               const rotationY = goAngleToThreeRotationY(p.angle);
               const ally = isAllyOf(p, selfState);
               return p.summoned ? (

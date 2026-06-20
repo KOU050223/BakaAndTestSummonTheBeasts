@@ -44,6 +44,8 @@ export const playerStateSchema = z.object({
   teamId: z.string().optional().default(""),
   // チームリーダーか。
   leader: z.boolean().optional().default(false),
+  // 戦闘不能（HP0 で場から除外）か。true のプレイヤーは描画しない。
+  defeated: z.boolean().optional().default(false),
   // 中立（どのフィールドにもいない）は null。
   currentSubject: z.string().nullable(),
   summoned: z.boolean(),
