@@ -9,6 +9,7 @@
   --dashboard-accent: #2563eb;
   --dashboard-accent-soft: rgb(37 99 235 / 10%);
   --dashboard-border: #93c5fd;
+  --dashboard-font: "samantha-upright", "Yu Mincho", "Hiragino Mincho ProN", serif;
   --dashboard-radius: 0.75rem;
   --dashboard-shadow: 0 12px 28px rgb(30 64 175 / 12%);
   --dashboard-blur: 4px;
@@ -77,7 +78,6 @@
   --dashboard-accent-soft: rgb(255 255 255 / 30%);
   --dashboard-border: rgb(59 65 68 / 55%);
 
-  position: relative;
   background:
     linear-gradient(105deg, #92999c, #f2f4f3 19%, #aeb4b6 43%, #eef0ef 67%, #858d90),
     #b8bec0;
