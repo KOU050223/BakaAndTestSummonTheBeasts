@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   CHAINED_OVERLAY_POLICY,
   OverlayTransitionController,
+  QUEUE_CHAIN_OVERLAY_POLICY,
   STRICT_OVERLAY_POLICY,
   isRecoverComplete,
   resolvePendingOverlayKey,
@@ -48,7 +49,7 @@ describe("OverlayTransitionController", () => {
   });
 
   it("overlay 終了時に保留があれば recover をスキップして連鎖する", () => {
-    const ctrl = new OverlayTransitionController(STRICT_OVERLAY_POLICY);
+    const ctrl = new OverlayTransitionController(QUEUE_CHAIN_OVERLAY_POLICY);
     ctrl.markOverlayStarted(1);
     ctrl.request(2);
     expect(ctrl.onOverlayEnded()).toEqual({
@@ -85,19 +86,19 @@ describe("OverlayTransitionController", () => {
     expect(ctrl.onRecoverComplete()).toEqual({ kind: "play_from_base", key: 2 });
   });
 
-  it("STRICT ポリシーでは recovering 中はキューのみ", () => {
-    const ctrl = new OverlayTransitionController(STRICT_OVERLAY_POLICY);
-    ctrl.markOverlayStarted(1);
-    ctrl.onOverlayEnded();
-    expect(ctrl.request(4)).toEqual({ kind: "queue", key: 4 });
-  });
-
-  it("hasPendingChain は STRICT で保留キーがあるとき true", () => {
-    const ctrl = new OverlayTransitionController(STRICT_OVERLAY_POLICY);
+  it("hasPendingChain は chainOnOverlayEnd 有効時に保留キーがあると true", () => {
+    const ctrl = new OverlayTransitionController(QUEUE_CHAIN_OVERLAY_POLICY);
     ctrl.markOverlayStarted(1);
     ctrl.request(2);
     expect(ctrl.hasPendingChain()).toBe(true);
     ctrl.onOverlayEnded();
     expect(ctrl.hasPendingChain()).toBe(false);
+  });
+
+  it("STRICT ポリシーでは recovering 中はキューのみ", () => {
+    const ctrl = new OverlayTransitionController(STRICT_OVERLAY_POLICY);
+    ctrl.markOverlayStarted(1);
+    ctrl.onOverlayEnded();
+    expect(ctrl.request(4)).toEqual({ kind: "queue", key: 4 });
   });
 });

@@ -122,9 +122,9 @@ export class OverlayTransitionController {
     const chainKey = this.policy.chainOnOverlayEnd
       ? resolvePendingOverlayKey(this.pendingKey, this.lastPlayedKey)
       : undefined;
-    this.pendingKey = undefined;
 
     if (chainKey !== undefined) {
+      this.pendingKey = undefined;
       return { kind: "play_chain", key: chainKey, holdOutgoingEnd: true };
     }
 
@@ -184,4 +184,10 @@ export const STRICT_OVERLAY_POLICY: OverlayTransitionPolicy = {
   interruptRecovering: false,
   overlayWeightThreshold: 0.01,
   baseWeightThreshold: 0.9,
+};
+
+/** キュー後に overlay 終了で連鎖する（展示向け等）。 */
+export const QUEUE_CHAIN_OVERLAY_POLICY: OverlayTransitionPolicy = {
+  ...STRICT_OVERLAY_POLICY,
+  chainOnOverlayEnd: true,
 };
