@@ -16,6 +16,9 @@ gem "jwt", "~> 3.2"
 # CORS
 gem "rack-cors"
 
+# Web Push通知（VAPID認証）
+gem "web-push", "~> 3.0"
+
 # OCR・画像処理
 gem "rtesseract"
 gem "mini_magick"
