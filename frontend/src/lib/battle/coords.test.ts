@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { goAngleToThreeRotationY, goForwardVector } from "./coords";
+import { goAngleToThreeRotationY, goForwardVector, lerpAngleY } from "./coords";
 
 // 浮動小数点の誤差許容値。
 const EPS = 1e-9;
@@ -86,6 +86,24 @@ describe("goForwardVector", () => {
     const deltaZ = v.z * speed;
     expect(deltaX).toBeCloseTo(Math.cos(angle) * speed, 9);
     expect(deltaZ).toBeCloseTo(Math.sin(angle) * speed, 9);
+  });
+});
+
+describe("lerpAngleY", () => {
+  it("同じ角度のとき変化しない", () => {
+    expect(lerpAngleY(1, 1, 0.5)).toBeCloseTo(1, 9);
+  });
+
+  it("通常の補間", () => {
+    expect(lerpAngleY(0, Math.PI / 2, 0.5)).toBeCloseTo(Math.PI / 4, 9);
+  });
+
+  it("±π 跨ぎは最短経路を選ぶ", () => {
+    const from = -Math.PI + 0.1;
+    const to = Math.PI - 0.1;
+    const result = lerpAngleY(from, to, 0.5);
+    // 最短経路（0.2 rad）は π 境界を通る。中点は -π。
+    expect(result).toBeCloseTo(-Math.PI, 9);
   });
 });
 

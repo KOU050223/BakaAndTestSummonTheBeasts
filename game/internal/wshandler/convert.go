@@ -1,15 +1,17 @@
 package wshandler
 
 import (
+	"math"
+
 	"github.com/KOU050223/BakaAndTestSummonTheBeasts/game/internal/battle"
 	"github.com/KOU050223/BakaAndTestSummonTheBeasts/game/internal/railsclient"
 )
 
-// 初期配置：プレイヤーをフィールド中心円の内側に向かい合わせで置く暫定値。
-const initialSpawnRadius = 2.0
-
-// spawnRowGap は同チーム内で隊列を作る際の Z 方向の間隔。
+// spawnRowGap は同チーム内で隊列を作る際の、向きに垂直な方向の間隔。
 const spawnRowGap = 1.5
+
+// spawnInwardRatio はフィールド半径に対する、中心からチーム配置点までの距離の比率。
+const spawnInwardRatio = 0.55
 
 // teamSpawnIndex は出現順にチームへ通し番号を振る（陣営の左右割り当てに使う）。
 func teamSpawnIndex(players []railsclient.PlayerData) map[string]int {
@@ -28,6 +30,55 @@ func teamSpawnIndex(players []railsclient.PlayerData) map[string]int {
 	return index
 }
 
+// pickSpawnField は初期スポーンに使うフィールドを選ぶ（Rails の先頭科目フィールド）。
+func pickSpawnField(fields []battle.Field) battle.Field {
+	if len(fields) == 0 {
+		return battle.Field{CenterX: 0, CenterZ: 0, Radius: 3}
+	}
+	return fields[0]
+}
+
+// fieldSpawnAxis はフィールド中心からバトルアリーナ中心（原点）への方位角。
+// チームはこの軸上で向かい合わせに配置する。
+func fieldSpawnAxis(field battle.Field) float64 {
+	if field.CenterX == 0 && field.CenterZ == 0 {
+		return 0
+	}
+	return math.Atan2(field.CenterZ, field.CenterX)
+}
+
+func spawnOffsetDistance(field battle.Field) float64 {
+	offset := field.Radius * spawnInwardRatio
+	if offset < 0.8 {
+		return 0.8
+	}
+	if offset > 2.0 {
+		return 2.0
+	}
+	return offset
+}
+
+// spawnPositionAndAngle はフィールド内の向かい合わせ位置と Go Angle を返す。
+func spawnPositionAndAngle(field battle.Field, teamSide int, row int) (x, z, angle float64) {
+	axis := fieldSpawnAxis(field)
+	offset := spawnOffsetDistance(field)
+	perp := axis + math.Pi/2
+
+	var sideAngle float64
+	if teamSide%2 == 0 {
+		sideAngle = axis + math.Pi
+		angle = axis
+	} else {
+		sideAngle = axis
+		angle = axis + math.Pi
+	}
+
+	rowOffset := float64(row) * spawnRowGap
+	x = field.CenterX + math.Cos(sideAngle)*offset + math.Cos(perp)*rowOffset
+	z = field.CenterZ + math.Sin(sideAngle)*offset + math.Sin(perp)*rowOffset
+	return x, z, angle
+}
+
 // buildRoom は Rails の start-data からドメインの Room を構築する。
 func buildRoom(data *railsclient.StartData, cfg battle.Config) *battle.Room {
 	fields := make([]battle.Field, len(data.Fields))
@@ -35,8 +86,10 @@ func buildRoom(data *railsclient.StartData, cfg battle.Config) *battle.Room {
 		fields[i] = battle.Field{Subject: f.Subject, CenterX: f.CenterX, CenterZ: f.CenterZ, Radius: f.Radius}
 	}
 
+	spawnField := pickSpawnField(fields)
+
 	players := make(map[string]*battle.Player, len(data.Players))
-	// チームごとに並び順を割り当て、同チームを同じ側へ縦に並べて配置する。
+	// チームごとに並び順を割り当て、先頭フィールド内で向かい合わせに配置する。
 	teamIndex := teamSpawnIndex(data.Players)
 	teamSlot := make(map[string]int)
 	for _, pd := range data.Players {
@@ -56,15 +109,13 @@ func buildRoom(data *railsclient.StartData, cfg battle.Config) *battle.Room {
 		if team == "" {
 			team = pd.UserID // 無所属は1人チーム扱い。
 		}
-		// チームごとに X 方向（陣営）を分け、Z 方向に隊列を作る。
-		side := -initialSpawnRadius
-		if teamIndex[team]%2 == 1 {
-			side = initialSpawnRadius
-		}
-		z := float64(teamSlot[team]) * spawnRowGap
+		side := teamIndex[team]
+		row := teamSlot[team]
 		teamSlot[team]++
 
-		p := battle.NewPlayer(pd.UserID, pd.Name, side, z, summons)
+		x, z, angle := spawnPositionAndAngle(spawnField, side, row)
+		p := battle.NewPlayer(pd.UserID, pd.Name, x, z, summons)
+		p.Angle = angle
 		p.TeamID = pd.TeamID
 		p.Leader = pd.Leader
 		players[pd.UserID] = p

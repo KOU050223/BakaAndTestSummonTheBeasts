@@ -39,3 +39,14 @@ export function goAngleToThreeRotationY(angle: number): number {
 export function goForwardVector(angle: number): { x: number; z: number } {
   return { x: Math.cos(angle), z: Math.sin(angle) };
 }
+
+/**
+ * Y 軸回り角度を最短経路で線形補間する（表示専用）。
+ * ±π を跨ぐ回転でも不連続にならない。
+ */
+export function lerpAngleY(from: number, to: number, t: number): number {
+  let delta = to - from;
+  while (delta > Math.PI) delta -= 2 * Math.PI;
+  while (delta < -Math.PI) delta += 2 * Math.PI;
+  return from + delta * t;
+}

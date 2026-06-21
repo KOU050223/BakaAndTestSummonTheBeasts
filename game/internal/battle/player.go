@@ -23,7 +23,7 @@ type Player struct {
 	Angle    float64 // Y軸回りの向き（ラジアン）。0 は +X 方向。
 	Summoned bool    // 召喚獣が場に出ているか
 
-	// Attacking はこの tick で攻撃モーションを発動したか（命中の有無とは独立）。
+	// Attacking はクールダウンを通過した攻撃入力があった tick で true（命中の有無とは独立）。
 	// クライアントの攻撃アニメーション再生トリガーに使う。毎 tick リセットされる。
 	Attacking bool
 
