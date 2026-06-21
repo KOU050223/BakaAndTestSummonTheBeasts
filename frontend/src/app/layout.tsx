@@ -97,7 +97,7 @@ export default function RootLayout({
     if (f || (a && a !== "complete" && a !== "loaded")) return;
     f = true;
     clearTimeout(t);
-    try { Typekit.load(config); } catch (e) {}
+    try { window.Typekit?.load(config); } catch (e) {}
   };
   s.parentNode.insertBefore(tk, s);
 })(document);`}
