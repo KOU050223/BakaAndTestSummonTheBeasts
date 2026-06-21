@@ -1,3 +1,15 @@
+---
+タイトル: 試験召喚システム
+GitHub: https://github.com/KOU050223/BakaAndTestSummonTheBeasts
+公開URL: https://bakatest.uomi.site
+サムネイル: https://topaz.dev/_next/image?url=https%3A%2F%2Fptera-publish.topaz.dev%2Fproject%2F01KVHJ0VYDSMB7JZ5A75THYM9F.jpeg&w=3840&q=75
+使用技術: Next.js, Go, TypeScript, Ruby, PostgreSQL
+説明: 学校のテストの点数が召喚獣になるクラス対抗バトルアプリ
+推しアイデア: 学校のテストを「やらされるもの」から「点数を活かして遊びたい」というアイデア！
+作った背景: バカとテストと召喚獣の試験召喚システムを再現したいと思ったから！
+推し技術: 型安全な開発！
+---
+
 # 試験召喚システムとは
 
 ### 「ここ文月学園は、世界初の特殊なシステムを導入した進学校である。」
@@ -6,12 +18,27 @@
 概要は学力試験の点数をそのまま自身の能力値を持つ「召喚獣」として可視化し、クラス同士の対戦（試験召喚戦争）を可能にするシステムです。
 このプロダクトはこの試験召喚システムという作品内に出てくるものを現実で再現していくプロダクトです。
 
+## ハックツ終了までログインするメアドを公開します！ぜひデプロイリンクから遊んでみてください！
+
+[デプロイリンク](https://bakatest.uomi.site)
+生徒アカウント
+yoshii@example.com
+tsuchiya@example.com
+先生アカウント
+teacher@example.com
+管理者アカウント
+hogehoge@hogehoge.com
+
+geminiAPIがRPD20という制約上、デプロイ環境では Gemini API キーを環境変数に設定していないため、AI自動採点機能は本番環境では動作してないです。なのでお好きなテスト問題を手動で採点してください。
+
 ## リンク
 
 [デプロイ](https://bakatest.uomi.site)
 [Figma](https://www.figma.com/board/aqG9T3X7I4S3vXlWXaqarR/%E8%A9%A6%E9%A8%93%E5%8F%AC%E5%96%9A%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0?node-id=0-1&p=f&t=gK2kRYI10SmoeZQ5-0)
 [ドメイン(Wikipedia)](https://ja.wikipedia.org/wiki/%E3%83%90%E3%82%AB%E3%81%A8%E3%83%86%E3%82%B9%E3%83%88%E3%81%A8%E5%8F%AC%E5%96%9A%E7%8D%A3)
 [デモ動画①試験作成から採点送信までのフロー](https://www.youtube.com/watch?v=ohMjx1MKJZU)
+[デモ動画②試験召喚システム完成版](https://www.youtube.com/watch?v=4SK9BRVbrbU)
+[デモ動画③管理者画面](https://youtu.be/6WwLi42qJXA)
 
 # 使用技術(選定理由)
 
@@ -252,31 +279,21 @@ task: Available tasks for this project:
 
 ## 生徒画面
 
-![image](https://ptera-publish.topaz.dev/project/01KVJKGK8SSKBQ5E7V4EW2E6A4.png)
-ダッシュボードを作成し、クイックアクションで簡単にボタンを押せるようにしました。
+![image](https://ptera-publish.topaz.dev/project/01KVMATKCKQJN2Y86JGM3RZNVG.png)
+ダッシュボードを作成し、画像では見えていませんが、クイックアクションで簡単にボタンを押せるようにしました。
 
 ## 教師画面
 
-### 教師ダッシュボード
 
-![image](https://ptera-publish.topaz.dev/project/01KVK2CV3A283DKNT2QKWZ2N2D.png)  
+### 教師ダッシュボード
+![image](https://ptera-publish.topaz.dev/project/01KVMB1CXTY3AT4Z0FZVEP9CF6.png)  
 他にも、試験作成、試験設定、点数管理、AI自動採点、クラス管理、生徒一覧の閲覧画面があります。
 
 ## 管理者画面
 
-![image](https://ptera-publish.topaz.dev/project/01KVJJ8JTNHS7HNAF5YT30ZEPR.png)
+![image](https://ptera-publish.topaz.dev/project/01KVMB3S3KQN3Q9J4JARKWFD0W.png)
 管理者ダッシュボード、ユーザー管理（生徒、先生、管理者含めて）
-クラス設定
-
-### 全体成績
-
-![image](https://ptera-publish.topaz.dev/project/01KVJJX7QWH7575WMF11PZ2NGA.jpeg)
-
-### 試召戦争ログ
-
-![image](https://ptera-publish.topaz.dev/project/01KVJJTRERQDXAGC8CM8BRXHAC.png)
-となっています。
-
+クラス設定、全体成績、試召戦争ログ
 # 技術的な挑戦や工夫、難しかったこと
 
 ### 技術的な挑戦：OCRからGeminiAIへの移行
@@ -299,7 +316,7 @@ task: Available tasks for this project:
 
 そこで答案画像をそのまま Gemini APIに送信して採点させる方式に変更した。テキスト抽出を挟まないため、手書きの文字や図表も含めて採点できるようになった。
 
-geminiAPIがRPD20という制約上、デプロイ環境では Gemini API キーを環境変数に設定していないため、AI自動採点機能は本番環境では動作してないけどローカル環境では正常に動作するようになった。
+geminiAPIがRPD20という制約上、デプロイ環境では Gemini API キーを環境変数に設定していないため、AI自動採点機能は本番環境では動作してないけど、ローカル環境では正常に動作するようになった。
 
 ### 工夫：型安全な開発
 
@@ -319,23 +336,28 @@ https://bakatest-api.uomi.site/api-docs/index.html
 
 学校のテストって意欲的にやる人より、めんどくさいと感じている人が多いと感じているので「点数を活かして楽しく遊べるプロダクト」を作りたかった。学生が解いたテストの点数で遊ぶので生徒のやる気と学力向上にもつながると考える。
 
-バカとテストと召喚獣には振り分け試験があり、クラスごとに教室の設備が変わる。それを再現するために、AクラスからFクラスまでの生徒のUIをランクごとに変化させた。
-Aクラス
-![image](https://ptera-publish.topaz.dev/project/01KVKY1B0SM9ZJFPV04J4G0D29.png)
+バカとテストと召喚獣には振り分け試験があり、クラスごとに教室の設備が変わる。それを再現するために、AクラスからFクラスまでの生徒のUIをランクごとに変化させた。また、A,B/C,D/E,Fごとにフォントも変えた。
+また、モバイルUIも見やすいように整えた。
+![image](https://ptera-publish.topaz.dev/project/01KVMC2KSA7C2JR282081M312N.png)
 
-Bクラス![image](https://ptera-publish.topaz.dev/project/01KVKY45XF4A2Z9DYM5F8W0HW6.png)
+Aクラス
+![image](https://ptera-publish.topaz.dev/project/01KVMBBC5GJY9YYTW0FFNFBCF2.png)
+
+Bクラス
+![image](https://ptera-publish.topaz.dev/project/01KVMBVC3MSDRZESN4DC7EP3EB.png)
 
 Cクラス
-![image](https://ptera-publish.topaz.dev/project/01KVKY4V9ZHRZ4DJHWQ4RRWCFE.png)
-
+![image](https://ptera-publish.topaz.dev/project/01KVMBF5CYGYFDXNW9Q85NTE1X.png)
 Dクラス
-![image](https://ptera-publish.topaz.dev/project/01KVKY5BSZQZT63BPJZ50A4XFR.png)
-
-Eクラス![image](https://ptera-publish.topaz.dev/project/01KVKY5SPCHZR6Z6H0WX87042W.png)
+![image](https://ptera-publish.topaz.dev/project/01KVMBHA2QJ6XRZC14F6BHCBGM.png)
+Eクラス
+![image](https://ptera-publish.topaz.dev/project/01KVMBM6XNFP8R1MYS6MDQNY1B.png)
 
 Fクラス
-![image](https://ptera-publish.topaz.dev/project/01KVKY6CN3QZY8YB11S8S84M9S.png)
+![image](https://ptera-publish.topaz.dev/project/01KVMBPJNST9PN1SD9RH729FAY.png)
 
 本作の主人公・吉井明久は「観察処分者」という特別な身分を持ち、原作では召喚獣がダメージを受けると本人にもダメージがフィードバックされます。この設定を忠実に再現するため、召喚獣バトルで受けたダメージに応じて実際に電気ショックなどの物理的ダメージをプレイヤーに与える仕組みの実装を検討しています。
+
+スマホを通したMRで召喚獣バトルができるようにしたい
 
 「試験召喚獣召喚！サモン！Go！」と言って、Gopherくんを呼び出して言語の特性(Goは非常に軽量で高速に動作する言語であるため、バトルにおける素早さが異常に高く、相手の攻撃を回避しやすい)で言語同士を戦わせるアプリを作るアイデアも初期出てた。
