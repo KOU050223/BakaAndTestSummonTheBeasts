@@ -49,6 +49,10 @@ Rails.application.routes.draw do
     # クラス変更（教師がクラス管理画面から生徒の所属クラスを変更する）
     patch "students/:id/class", to: "students#update_class"
 
+    # Web Push購読
+    post "push_subscriptions", to: "push_subscriptions#create"
+    delete "push_subscriptions", to: "push_subscriptions#destroy"
+
     # バトル（Go Game Server連携部はモック）
     resources :battles, only: [ :index, :create ] do
       collection do
