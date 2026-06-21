@@ -2,17 +2,20 @@ module Api
   # バトル一覧・作成・結果取得（docs/apiSpec.md §3.7, §3.8）。
   # バトル進行は Go Game Server が担い、Rails は作成（スナップショット）と結果保存を担当する。
   class BattlesController < BaseController
-    before_action -> { require_role!(:student, :teacher) }, only: %i[index create result token opponents opponent_classes declare_war]
+    before_action -> { require_role!(:student, :teacher, :school_admin) }, only: %i[index result]
+    before_action -> { require_role!(:student, :teacher) }, only: %i[create token opponents opponent_classes declare_war]
 
-    # 自分が参加している（または作成した）バトル一覧。
+    # 生徒には参加したバトル、教師・学校管理者には全バトルを返す。
     def index
-      battles = Battle
-        .left_joins(:battle_players)
-        .where("battle_players.student_id = :id OR battles.created_by_id = :id", id: current_user.id)
+      battles = visible_battles
+        .includes(:winner, :winner_team, :loser_team, battle_fields: [], battle_players: :student)
         .distinct
         .order(created_at: :desc)
 
-      render json: { battles: battles.map { |b| index_json(b) } }, status: :ok
+      classes_by_id = SchoolClass.where(id: battles.flat_map { |b| b.battle_players.filter_map(&:team_id) }.uniq)
+        .index_by { |school_class| school_class.id.to_s }
+
+      render json: { battles: battles.map { |b| index_json(b, classes_by_id) } }, status: :ok
     end
 
     # 対戦相手の候補一覧（自分以外の生徒全員、クラスを問わない）。
@@ -107,14 +110,42 @@ module Api
       ids.uniq
     end
 
-    def index_json(battle)
+    def visible_battles
+      return Battle.all if current_user.role.in?(%w[teacher school_admin])
+
+      Battle
+        .left_joins(:battle_players)
+        .where("battle_players.student_id = :id OR battles.created_by_id = :id", id: current_user.id)
+    end
+
+    def index_json(battle, classes_by_id)
       players = battle.battle_players.to_a
       {
         battleId: battle.id.to_s,
         subjects: battle.subjects,
         status: battle.status,
-        opponentName: opponent_label(battle, players)
+        opponentName: opponent_label(battle, players),
+        participantsLabel: participants_label(players, classes_by_id),
+        winnerName: battle.winner&.name,
+        winnerTeamName: school_class_label(battle.winner_team),
+        turnCount: battle.turn_count || 0,
+        createdAt: battle.created_at.iso8601
       }
+    end
+
+    def participants_label(players, classes_by_id)
+      team_ids = players.filter_map(&:team_id).uniq
+      if team_ids.any?
+        return team_ids.filter_map { |id| school_class_label(classes_by_id[id]) }.join(" vs ")
+      end
+
+      players.map { |player| player.student.name }.join(" vs ")
+    end
+
+    def school_class_label(school_class)
+      return nil if school_class.nil?
+
+      "#{school_class.grade}年#{school_class.name}"
     end
 
     # 一覧に出す対戦相手の表示名。

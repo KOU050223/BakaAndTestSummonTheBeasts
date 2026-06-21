@@ -541,7 +541,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description バトル一覧 */
+                /** @description 教師は全バトルを取得できる */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -551,23 +551,21 @@ export interface paths {
                             battles: {
                                 battleId: string;
                                 subjects: string[];
-                                status: string;
+                                /** @enum {string} */
+                                status: "waiting" | "active" | "finished";
                                 opponentName?: string | null;
+                                participantsLabel: string;
+                                winnerName?: string | null;
+                                winnerTeamName?: string | null;
+                                turnCount: number;
+                                /** Format: date-time */
+                                createdAt: string;
                             }[];
                         };
                     };
                 };
                 /** @description 未認証 */
                 401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["error"];
-                    };
-                };
-                /** @description 権限なし（school_admin は禁止） */
-                403: {
                     headers: {
                         [name: string]: unknown;
                     };

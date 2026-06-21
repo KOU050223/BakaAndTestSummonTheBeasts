@@ -360,7 +360,7 @@ paths:
       - cookie_auth: []
       responses:
         '200':
-          description: バトル一覧
+          description: 教師は全バトルを取得できる
           content:
             application/json:
               schema:
@@ -379,23 +379,37 @@ paths:
                             type: string
                         status:
                           type: string
+                          enum:
+                          - waiting
+                          - active
+                          - finished
                         opponentName:
                           type: string
                           nullable: true
+                        participantsLabel:
+                          type: string
+                        winnerName:
+                          type: string
+                          nullable: true
+                        winnerTeamName:
+                          type: string
+                          nullable: true
+                        turnCount:
+                          type: integer
+                        createdAt:
+                          type: string
+                          format: date-time
                       required:
                       - battleId
                       - subjects
                       - status
+                      - participantsLabel
+                      - turnCount
+                      - createdAt
                 required:
                 - battles
         '401':
           description: 未認証
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/error"
-        '403':
-          description: 権限なし（school_admin は禁止）
           content:
             application/json:
               schema:

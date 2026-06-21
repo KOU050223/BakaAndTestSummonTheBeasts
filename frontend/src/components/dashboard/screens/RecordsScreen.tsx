@@ -1,99 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { LabelTag, Panel } from "@/components/ui";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
-import { NavPlaceholder } from "../NavPlaceholder";
+import { type BattleListItem, useBattles } from "@/lib/battle/useBattles";
+import { subjectLabel } from "@/lib/battle/subjectLabel";
 
 type BattleStatus = "waiting" | "active" | "finished";
-type BattleLogRow = {
-  battleId: number;
-  occurredAt: string;
-  challengerName: string;
-  defenderName: string;
-  subjectCode: string;
-  subjectLabel: string;
-  challengerScore: number | null;
-  defenderScore: number | null;
-  winnerName: string | null;
-  status: BattleStatus;
-};
+type BattleLogRow = BattleListItem;
 type StatusFilter = "all" | BattleStatus;
-
-const MOCK_BATTLE_LOGS: BattleLogRow[] = [
-  {
-    battleId: 1,
-    occurredAt: "2026-06-14T14:32:00+09:00",
-    challengerName: "吉井明久",
-    defenderName: "霧島翔子",
-    subjectCode: "math",
-    subjectLabel: "数学",
-    challengerScore: 50,
-    defenderScore: 0,
-    winnerName: "吉井明久",
-    status: "finished",
-  },
-  {
-    battleId: 2,
-    occurredAt: "2026-06-13T09:10:00+09:00",
-    challengerName: "木下秀吉",
-    defenderName: "山田太郎",
-    subjectCode: "japanese",
-    subjectLabel: "国語",
-    challengerScore: 58,
-    defenderScore: 61,
-    winnerName: "山田太郎",
-    status: "finished",
-  },
-  {
-    battleId: 3,
-    occurredAt: "2026-06-12T16:45:00+09:00",
-    challengerName: "島田美波",
-    defenderName: "佐藤花子",
-    subjectCode: "chemistry",
-    subjectLabel: "化学",
-    challengerScore: 67,
-    defenderScore: 52,
-    winnerName: "島田美波",
-    status: "finished",
-  },
-  {
-    battleId: 4,
-    occurredAt: "2026-06-12T11:20:00+09:00",
-    challengerName: "中村健太",
-    defenderName: "姫路瑞希",
-    subjectCode: "math",
-    subjectLabel: "数学",
-    challengerScore: 71,
-    defenderScore: 82,
-    winnerName: "姫路瑞希",
-    status: "finished",
-  },
-  {
-    battleId: 5,
-    occurredAt: "2026-06-11T13:05:00+09:00",
-    challengerName: "坂本雄二",
-    defenderName: "田村睦",
-    subjectCode: "english",
-    subjectLabel: "英語",
-    challengerScore: null,
-    defenderScore: null,
-    winnerName: null,
-    status: "active",
-  },
-  {
-    battleId: 6,
-    occurredAt: "2026-06-10T10:00:00+09:00",
-    challengerName: "吉井明久",
-    defenderName: "霧島翔子",
-    subjectCode: "math",
-    subjectLabel: "数学",
-    challengerScore: null,
-    defenderScore: null,
-    winnerName: null,
-    status: "waiting",
-  },
-];
 
 const STATUS_LABEL: Record<BattleLogRow["status"], string> = {
   waiting: "承認待ち",
@@ -109,45 +25,61 @@ const STATUS_CLASS: Record<BattleLogRow["status"], string> = {
 
 export function RecordsScreen() {
   const { user } = useCurrentUser();
+  const { battles, isLoading, isError } = useBattles();
 
   if (!user) return null;
-  if (user.role !== "school_admin") {
-    return <NavPlaceholder role={user.role} href="/records" />;
-  }
 
-  return <AdminBattleLog />;
+  return (
+    <BattleRecords
+      battles={battles}
+      isLoading={isLoading}
+      isError={isError}
+      role={user.role}
+    />
+  );
 }
 
-function AdminBattleLog() {
+function BattleRecords({
+  battles,
+  isLoading,
+  isError,
+  role,
+}: {
+  battles: BattleLogRow[];
+  isLoading: boolean;
+  isError: boolean;
+  role: "student" | "teacher" | "school_admin";
+}) {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const filteredBattles = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("ja-JP");
 
-    return MOCK_BATTLE_LOGS.filter((battle) => {
+    return battles.filter((battle) => {
       const matchesStatus =
         statusFilter === "all" || battle.status === statusFilter;
       const matchesQuery =
         normalizedQuery.length === 0 ||
         [
-          battle.challengerName,
-          battle.defenderName ?? "",
-          battle.subjectLabel,
+          battle.participantsLabel,
+          battle.winnerName ?? "",
+          battle.winnerTeamName ?? "",
+          ...battle.subjects.map(subjectLabel),
         ].some((value) =>
           value.toLocaleLowerCase("ja-JP").includes(normalizedQuery),
         );
 
       return matchesStatus && matchesQuery;
     });
-  }, [query, statusFilter]);
+  }, [battles, query, statusFilter]);
 
-  const activeCount = MOCK_BATTLE_LOGS.filter(
+  const activeCount = battles.filter(
     (battle) => battle.status === "active",
   ).length;
-  const waitingCount = MOCK_BATTLE_LOGS.filter(
+  const waitingCount = battles.filter(
     (battle) => battle.status === "waiting",
   ).length;
-  const finishedCount = MOCK_BATTLE_LOGS.filter(
+  const finishedCount = battles.filter(
     (battle) => battle.status === "finished",
   ).length;
 
@@ -156,20 +88,22 @@ function AdminBattleLog() {
       <Panel>
         <div className="border-b border-sky-400/20 bg-gradient-to-r from-sky-500/15 to-transparent px-6 py-5">
           <div className="flex items-center gap-3">
-            <LabelTag variant="info">管理者</LabelTag>
+            <LabelTag variant="info">
+              {role === "student" ? "生徒" : role === "teacher" ? "教師" : "管理者"}
+            </LabelTag>
             <h1 className="text-2xl font-black tracking-wide text-white">
-              試召戦争ログ
-            </h1> 
+              {role === "student" ? "戦績" : "試召戦争ログ"}
+            </h1>
           </div>
           <p className="mt-2 text-sm text-slate-300">
-            全クラス間の試召戦争について、対戦者・科目・スコア・結果を確認できます。
+            保存された対戦の参加者・科目・ターン数・結果を確認できます。
           </p>
         </div>
 
         <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4">
           <SummaryCard
             label="総試合数"
-            value={MOCK_BATTLE_LOGS.length}
+            value={battles.length}
             tone="sky"
           />
           <SummaryCard label="進行中" value={activeCount} tone="red" />
@@ -221,7 +155,11 @@ function AdminBattleLog() {
         </div>
 
         <div className="overflow-x-auto">
-          {filteredBattles.length === 0 ? (
+          {isLoading ? (
+            <p className="py-16 text-center text-sm text-sky-300">対戦履歴を読み込み中…</p>
+          ) : isError ? (
+            <p className="py-16 text-center text-sm text-red-300">対戦履歴の取得に失敗しました。</p>
+          ) : filteredBattles.length === 0 ? (
             <div className="py-16 text-center">
               <p className="text-4xl">⚔️</p>
               <p className="mt-3 text-sm text-slate-400">
@@ -235,13 +173,13 @@ function AdminBattleLog() {
             >
               <thead className="border-b border-sky-400/20 bg-slate-900/70 text-left text-xs uppercase tracking-wider text-slate-400">
                 <tr>
-                  <th className="px-5 py-4 font-bold">日時</th>
-                  <th className="px-5 py-4 font-bold">仕掛け側</th>
-                  <th className="px-5 py-4 font-bold">受け側</th>
+                  <th className="px-5 py-4 font-bold">作成日時</th>
+                  <th className="px-5 py-4 font-bold">対戦</th>
                   <th className="px-5 py-4 font-bold">科目</th>
-                  <th className="px-5 py-4 text-center font-bold">スコア</th>
+                  <th className="px-5 py-4 text-center font-bold">ターン数</th>
                   <th className="px-5 py-4 font-bold">結果</th>
                   <th className="px-5 py-4 font-bold">状態</th>
+                  <th className="px-5 py-4 font-bold">詳細</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-sky-400/10">
@@ -258,37 +196,35 @@ function AdminBattleLog() {
 }
 
 function BattleLogTableRow({ battle }: { battle: BattleLogRow }) {
-  const hasScore =
-    battle.challengerScore !== null && battle.defenderScore !== null;
+  const winner = battle.winnerTeamName ?? battle.winnerName;
   const result =
-    battle.status === "finished" && battle.winnerName
-      ? `${battle.winnerName} の勝利`
+    battle.status === "finished" && winner
+      ? `${winner} の勝利`
       : "—";
 
   return (
     <tr className="bg-slate-950/20 text-slate-200 transition hover:bg-sky-400/5">
       <td className="whitespace-nowrap px-5 py-4 text-slate-400">
-        {formatOccurredAt(battle.occurredAt)}
+        {formatOccurredAt(battle.createdAt)}
       </td>
       <td className="px-5 py-4 font-bold text-white">
-        {battle.challengerName}
-      </td>
-      <td className="px-5 py-4 font-bold text-white">
-        {battle.defenderName ?? "対戦相手未定"}
+        {battle.participantsLabel || "対戦相手未定"}
       </td>
       <td className="px-5 py-4">
-        <span className="inline-flex rounded-md border border-violet-400/25 bg-violet-400/10 px-2.5 py-1 font-bold text-violet-200">
-          {battle.subjectLabel}
-        </span>
+        <div className="flex flex-wrap gap-1.5">
+          {battle.subjects.map((subject) => (
+            <span key={subject} className="inline-flex rounded-md border border-violet-400/25 bg-violet-400/10 px-2.5 py-1 font-bold text-violet-200">
+              {subjectLabel(subject)}
+            </span>
+          ))}
+        </div>
       </td>
       <td className="whitespace-nowrap px-5 py-4 text-center font-black text-white">
-        {hasScore
-          ? `${battle.challengerScore} vs ${battle.defenderScore}`
-          : "—"}
+        {battle.status === "finished" ? `${battle.turnCount}ターン` : "—"}
       </td>
       <td
         className={`whitespace-nowrap px-5 py-4 font-bold ${
-          battle.winnerName ? "text-emerald-300" : "text-slate-500"
+          winner ? "text-emerald-300" : "text-slate-500"
         }`}
       >
         {result}
@@ -299,6 +235,15 @@ function BattleLogTableRow({ battle }: { battle: BattleLogRow }) {
         >
           {STATUS_LABEL[battle.status]}
         </span>
+      </td>
+      <td className="px-5 py-4">
+        {battle.status === "finished" ? (
+          <Link href={`/wars/${battle.battleId}/result`} className="font-bold text-sky-300 hover:text-sky-100">
+            詳細
+          </Link>
+        ) : (
+          <span className="text-slate-600">—</span>
+        )}
       </td>
     </tr>
   );

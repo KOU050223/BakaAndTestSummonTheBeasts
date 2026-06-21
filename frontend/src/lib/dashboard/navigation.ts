@@ -55,7 +55,7 @@ export const NAV_BY_ROLE: Record<Role, NavSection[]> = {
       heading: "クラス",
       items: [
         { label: "クラス管理", href: "/classes", icon: "🏫" },
-        { label: "生徒一覧", href: "/records", icon: "👤" },
+        { label: "試召戦争ログ", href: "/records", icon: "⚔️" },
       ],
     },
   ],
