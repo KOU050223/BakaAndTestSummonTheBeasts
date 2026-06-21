@@ -15,7 +15,7 @@ const variantClasses: Record<LabelTagVariant, string> = {
 
 export function LabelTag({ children, variant = "info" }: LabelTagProps) {
   return (
-    <span className={`inline-block px-2.5 py-0.5 rounded-sm text-[0.7rem] font-bold tracking-wide whitespace-nowrap ${variantClasses[variant]}`}>
+    <span data-variant={variant} className={`label-tag inline-block px-2.5 py-0.5 rounded-sm text-[0.7rem] font-bold tracking-wide whitespace-nowrap ${variantClasses[variant]}`}>
       {children}
     </span>
   );

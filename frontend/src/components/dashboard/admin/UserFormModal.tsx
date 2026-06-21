@@ -49,7 +49,7 @@ export function validate(values: UserFormValues, isEdit: boolean): FieldErrors {
 }
 
 const inputClass =
-  "w-full px-3.5 py-2.5 bg-white/5 border border-sky-400/40 rounded-sm text-sky-100 text-base outline-none transition-all duration-200 placeholder:text-slate-400/50 placeholder:text-sm focus:bg-sky-400/8 focus:border-sky-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.2),0_0_12px_rgba(56,189,248,0.2)]";
+  "w-full rounded-sm border border-[var(--dashboard-border)] bg-white/80 px-3.5 py-2.5 text-base text-[var(--dashboard-text)] outline-none transition-all duration-200 placeholder:text-sm placeholder:text-[var(--dashboard-muted)] focus:border-[var(--dashboard-accent)] focus:ring-2 focus:ring-[var(--dashboard-accent-soft)]";
 
 export function UserFormModal({
   user,
@@ -96,15 +96,15 @@ export function UserFormModal({
       role="presentation"
     >
       <div
-        className="w-full max-w-md bg-[rgba(10,30,60,0.95)] border-2 border-sky-400 rounded-sm backdrop-blur-md shadow-[0_0_30px_rgba(56,189,248,0.4)]"
+        className="admin-user-modal w-full max-w-md rounded-sm border-2 border-[var(--dashboard-border)] bg-[#ead8ac] shadow-[0_18px_50px_rgba(22,10,4,0.5)]"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label={isEdit ? "ユーザーを編集" : "ユーザーを追加"}
       >
-        <div className="flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-sky-400/20 to-sky-400/5 border-b border-sky-400/40">
+        <div className="flex items-center gap-3 border-b border-[var(--dashboard-border)] bg-[var(--dashboard-accent-soft)] px-5 py-4">
           <LabelTag variant="info">{isEdit ? "編集" : "新規"}</LabelTag>
-          <h2 className="text-xl font-black text-white tracking-wide [text-shadow:0_0_10px_rgba(56,189,248,0.8)]">
+          <h2 className="text-xl font-black tracking-wide text-[var(--dashboard-text)]">
             {isEdit ? "ユーザーを編集" : "ユーザーを追加"}
           </h2>
         </div>
@@ -114,7 +114,7 @@ export function UserFormModal({
           {errorMessage && (
             <div className="flex items-start gap-2.5 rounded-sm border border-red-500/60 bg-red-500/15 px-3.5 py-3">
               <LabelTag variant="error">保存失敗</LabelTag>
-              <p className="text-sm font-bold text-red-300">{errorMessage}</p>
+              <p className="text-sm font-bold text-red-800">{errorMessage}</p>
             </div>
           )}
 
@@ -122,7 +122,7 @@ export function UserFormModal({
           <div className="flex flex-col gap-1.5">
             <label htmlFor="user-name" className="flex items-center gap-2.5">
               <LabelTag variant="required">必須</LabelTag>
-              <span className="text-blue-300 text-sm font-semibold tracking-wide">氏名</span>
+              <span className="text-sm font-semibold tracking-wide text-[var(--dashboard-text)]">氏名</span>
             </label>
             <input
               id="user-name"
@@ -140,7 +140,7 @@ export function UserFormModal({
           <div className="flex flex-col gap-1.5">
             <label htmlFor="user-email" className="flex items-center gap-2.5">
               <LabelTag variant="required">必須</LabelTag>
-              <span className="text-blue-300 text-sm font-semibold tracking-wide">メールアドレス</span>
+              <span className="text-sm font-semibold tracking-wide text-[var(--dashboard-text)]">メールアドレス</span>
             </label>
             <input
               id="user-email"
@@ -161,7 +161,7 @@ export function UserFormModal({
           <div className="flex flex-col gap-1.5">
             <label htmlFor="user-password" className="flex items-center gap-2.5">
               <LabelTag variant={isEdit ? "info" : "required"}>{isEdit ? "任意" : "必須"}</LabelTag>
-              <span className="text-blue-300 text-sm font-semibold tracking-wide">パスワード</span>
+              <span className="text-sm font-semibold tracking-wide text-[var(--dashboard-text)]">パスワード</span>
             </label>
             <input
               id="user-password"
@@ -181,7 +181,7 @@ export function UserFormModal({
           <div className="flex flex-col gap-1.5">
             <label htmlFor="user-role" className="flex items-center gap-2.5">
               <LabelTag variant="required">必須</LabelTag>
-              <span className="text-blue-300 text-sm font-semibold tracking-wide">ロール</span>
+              <span className="text-sm font-semibold tracking-wide text-[var(--dashboard-text)]">ロール</span>
             </label>
             <select
               id="user-role"
@@ -190,7 +190,7 @@ export function UserFormModal({
               className={inputClass}
             >
               {ROLE_OPTIONS.map((role) => (
-                <option key={role} value={role} className="bg-[#0a1628]">
+                <option key={role} value={role} className="bg-[#f7ebca] text-[#2c1b0e]">
                   {ROLE_LABEL[role]}
                 </option>
               ))}
@@ -202,7 +202,7 @@ export function UserFormModal({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 px-5 py-3 rounded-sm border border-sky-400/40 text-sky-200 text-sm font-bold tracking-widest transition-colors hover:bg-sky-400/10 disabled:opacity-60"
+              className="flex-1 rounded-sm border border-[var(--dashboard-border)] bg-white/55 px-5 py-3 text-sm font-bold tracking-widest text-[var(--dashboard-text)] transition-colors hover:bg-white disabled:opacity-60"
             >
               キャンセル
             </button>

@@ -206,7 +206,7 @@ export function LoginForm() {
           </div>
 
           <Button type="submit" disabled={isPending} fullWidth>
-            {isPending ? "召喚中..." : "召喚獣を呼び出す！"}
+            {isPending ? "ログイン中..." : "ログイン"}
           </Button>
         </form>
 

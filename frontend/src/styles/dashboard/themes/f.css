@@ -1,0 +1,153 @@
+[data-theme="f"] {
+  --dashboard-bg: repeating-linear-gradient(0deg, transparent 0 28px, rgb(0 0 0 / 5%) 29px), linear-gradient(135deg, #8c673d, #5d4228);
+  --dashboard-texture: url("/Fclass.png");
+  --dashboard-texture-size: cover;
+  --dashboard-surface: #9a7042;
+  --dashboard-surface-soft: rgb(58 39 23 / 18%);
+  --dashboard-text: #fff8df;
+  --dashboard-muted: #e3c99d;
+  --dashboard-accent: #f5e6b8;
+  --dashboard-accent-soft: rgb(245 230 184 / 13%);
+  --dashboard-border: #3f2a18;
+  --dashboard-font: "Comic Sans MS", "Yu Gothic", cursive;
+  --dashboard-radius: 0.1rem;
+  --dashboard-shadow: 5px 6px 0 rgb(41 27 15 / 50%), inset 0 0 45px rgb(67 42 20 / 30%);
+  --dashboard-blur: 0px;
+  --dashboard-panel-transform: rotate(-0.1deg);
+  --dashboard-bar-bg: rgb(255 248 223 / 20%);
+  --dashboard-score-good: #bbf7d0;
+  --dashboard-score-warn: #fde68a;
+  --dashboard-score-warn-soft: rgb(253 230 138 / 13%);
+  --dashboard-score-warn-border: rgb(253 230 138 / 38%);
+  --dashboard-score-bad: #fecaca;
+  --dashboard-score-bad-soft: rgb(254 202 202 / 12%);
+  --dashboard-score-bad-border: rgb(254 202 202 / 38%);
+}
+
+[data-theme="f"] .theme-panel::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background: repeating-linear-gradient(92deg, transparent 0 80px, rgb(48 29 13 / 8%) 81px 83px);
+  mix-blend-mode: multiply;
+}
+
+[data-theme="f"] .theme-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme="f"] .theme-tape {
+  display: block;
+  position: absolute;
+  z-index: 2;
+  width: 5.5rem;
+  height: 1.35rem;
+  background: rgb(218 184 116 / 78%);
+  box-shadow: inset 0 0 8px rgb(91 64 31 / 20%);
+  transform: rotate(-4deg);
+}
+
+/* Fクラスのサイドバーは不透明な木板で背景画像の左端を覆う。 */
+[data-theme="f"] .dashboard-sidebar {
+  --dashboard-text: #f3e3bd;
+  --dashboard-muted: #d2b98b;
+
+  background:
+    repeating-linear-gradient(90deg, transparent 0 62px, rgb(42 26 14 / 12%) 63px 65px),
+    linear-gradient(90deg, #49331f, #322317);
+  box-shadow: 5px 0 16px rgb(29 18 9 / 38%);
+}
+
+[data-theme="f"] .dashboard-sidebar-brand {
+  position: relative;
+  min-height: 7rem;
+  margin: 0.75rem 0.65rem 0;
+  padding: 1rem 0.8rem;
+  overflow: hidden;
+  color: #211d18;
+  background: linear-gradient(155deg, #b9b4a6, #77756d 68%, #aaa69a);
+  border: 2px solid #393834;
+  border-radius: 0.2rem;
+  box-shadow: inset 0 0 14px rgb(34 32 28 / 35%), 3px 4px 0 rgb(35 22 12 / 55%);
+  transform: rotate(-1.2deg);
+}
+
+[data-theme="f"] .dashboard-sidebar-brand::before,
+[data-theme="f"] .dashboard-sidebar-brand::after {
+  position: absolute;
+  top: 0.35rem;
+  width: 0.45rem;
+  height: 0.45rem;
+  content: "";
+  background: #46443e;
+  border-radius: 9999px;
+  box-shadow: inset 1px 1px 1px #aaa69b;
+}
+
+[data-theme="f"] .dashboard-sidebar-brand::before {
+  left: 0.4rem;
+}
+
+[data-theme="f"] .dashboard-sidebar-brand::after {
+  right: 0.4rem;
+}
+
+[data-theme="f"] .dashboard-sidebar-brand-icon {
+  filter: grayscale(1) contrast(1.3);
+}
+
+[data-theme="f"] .dashboard-sidebar-brand-title,
+[data-theme="f"] .dashboard-sidebar-brand-subtitle {
+  color: #211d18;
+  text-shadow: 1px 1px rgb(255 255 255 / 22%);
+}
+
+[data-theme="f"] .dashboard-sidebar-nav {
+  padding-top: 1.5rem;
+}
+
+[data-theme="f"] .dashboard-nav-heading {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  color: #f6ebcf;
+  background: rgb(39 29 20 / 72%);
+  opacity: 1;
+  transform: rotate(-1deg);
+}
+
+[data-theme="f"] .dashboard-sidebar-nav a {
+  color: #2c2118;
+  background: linear-gradient(100deg, rgb(190 143 82 / 94%), rgb(153 105 57 / 92%));
+  border: 1px solid #4b311d;
+  box-shadow: 2px 3px 0 rgb(35 22 12 / 45%);
+}
+
+[data-theme="f"] .dashboard-sidebar-nav li:nth-child(even) a {
+  transform: rotate(0.6deg);
+}
+
+[data-theme="f"] .dashboard-sidebar-nav a:hover,
+[data-theme="f"] .dashboard-sidebar-nav a[aria-current="page"] {
+  color: #fff5d9;
+  background: #45352a;
+  border-color: #e0c796;
+}
+
+[data-theme="f"] .dashboard-user-status {
+  margin: 0.7rem;
+  color: #2b2118;
+  background: rgb(139 96 53 / 94%);
+  border: 2px solid #402a18;
+  box-shadow: 3px 4px 0 rgb(31 19 10 / 48%);
+  transform: rotate(0.5deg);
+}
+
+[data-theme="f"] .dashboard-user-avatar {
+  color: #f5e9c9;
+  background: #44352b;
+  box-shadow: none;
+}
