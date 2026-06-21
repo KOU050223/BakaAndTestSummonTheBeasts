@@ -15,7 +15,9 @@ type SidebarProps = {
 export function Sidebar({
   user,
   isOpen = true,
-  onToggle = () => undefined,
+  onToggle = () => {
+    // 制御なしで単体利用する場合は何もしない。
+  },
 }: SidebarProps) {
   const pathname = usePathname();
   const sections = NAV_BY_ROLE[user.role];
@@ -34,8 +36,8 @@ export function Sidebar({
         onClick={onToggle}
         aria-label={isOpen ? "ナビゲーションを閉じる" : "ナビゲーションを開く"}
         aria-expanded={isOpen}
-        className={`dashboard-sidebar-toggle absolute top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-[var(--dashboard-border)] bg-[var(--dashboard-sidebar)] text-[var(--dashboard-text)] shadow-md transition-[left,right,transform] duration-300 hover:bg-[var(--dashboard-accent-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--dashboard-accent)] ${
-          isOpen ? "-right-4" : "left-3"
+        className={`dashboard-sidebar-toggle absolute top-4 z-20 flex h-[var(--dashboard-sidebar-toggle-size)] w-[var(--dashboard-sidebar-toggle-size)] items-center justify-center rounded-full border border-[var(--dashboard-border)] bg-[var(--dashboard-sidebar)] text-[var(--dashboard-text)] shadow-md transition-[left,right,transform] duration-300 hover:bg-[var(--dashboard-accent-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--dashboard-accent)] ${
+          isOpen ? "-right-4" : "left-[var(--dashboard-sidebar-toggle-left)]"
         }`}
       >
         <svg
@@ -52,47 +54,51 @@ export function Sidebar({
         </svg>
       </button>
 
-      {isOpen && (
-        <div className="flex min-h-0 w-64 flex-1 flex-col overflow-hidden">
-          {/* ブランド */}
-          <div className="dashboard-sidebar-brand flex items-center gap-2.5 border-b border-[var(--dashboard-border)] px-5 py-4 pr-8">
-            <span className="dashboard-sidebar-brand-icon text-2xl">📚</span>
-            <div className="flex flex-col leading-tight">
-              <span className="dashboard-sidebar-brand-title text-base font-black tracking-wide text-[var(--dashboard-text)]">
-                試験召喚システム
-              </span>
-              <span className="dashboard-sidebar-brand-subtitle text-[0.6rem] tracking-[0.3em] text-[var(--dashboard-muted)] opacity-70">
-                SHIKEN SHOUKAN
-              </span>
-            </div>
-          </div>
-
-          {/* ナビゲーション */}
-          <nav className="dashboard-sidebar-nav flex-1 overflow-y-auto px-3 py-4">
-            {sections.map((section) => (
-              <NavSection
-                key={section.heading}
-                label={section.heading}
-                items={section.items}
-                pathname={pathname}
-              />
-            ))}
-          </nav>
-
-          {user.role === "school_admin" && (
-            <span
-              aria-hidden="true"
-              className="admin-sidebar-secret px-5 pb-2 text-right text-xl"
-              title="管理者ダッシュボード"
-            >
-              🕶️
+      <div
+        aria-hidden={!isOpen}
+        inert={!isOpen}
+        className={`flex min-h-0 w-64 flex-1 flex-col overflow-hidden transition-opacity duration-300 ${
+          isOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+      >
+        {/* ブランド */}
+        <div className="dashboard-sidebar-brand flex items-center gap-2.5 border-b border-[var(--dashboard-border)] px-5 py-4 pr-8">
+          <span className="dashboard-sidebar-brand-icon text-2xl">📚</span>
+          <div className="flex flex-col leading-tight">
+            <span className="dashboard-sidebar-brand-title text-base font-black tracking-wide text-[var(--dashboard-text)]">
+              試験召喚システム
             </span>
-          )}
-
-          {/* ログイン状況 */}
-          <UserStatusCard user={user} />
+            <span className="dashboard-sidebar-brand-subtitle text-[0.6rem] tracking-[0.3em] text-[var(--dashboard-muted)] opacity-70">
+              SHIKEN SHOUKAN
+            </span>
+          </div>
         </div>
-      )}
+
+        {/* ナビゲーション */}
+        <nav className="dashboard-sidebar-nav flex-1 overflow-y-auto px-3 py-4">
+          {sections.map((section) => (
+            <NavSection
+              key={section.heading}
+              label={section.heading}
+              items={section.items}
+              pathname={pathname}
+            />
+          ))}
+        </nav>
+
+        {user.role === "school_admin" && (
+          <span
+            aria-hidden="true"
+            className="admin-sidebar-secret px-5 pb-2 text-right text-xl"
+            title="管理者ダッシュボード"
+          >
+            🕶️
+          </span>
+        )}
+
+        {/* ログイン状況 */}
+        <UserStatusCard user={user} />
+      </div>
     </aside>
   );
 }

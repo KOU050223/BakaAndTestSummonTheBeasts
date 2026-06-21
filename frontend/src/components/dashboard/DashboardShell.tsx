@@ -27,7 +27,9 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
       />
       <main
         className={`min-w-0 flex-1 overflow-y-auto p-6 transition-[padding] duration-300 ${
-          isSidebarOpen ? "" : "pl-16"
+          isSidebarOpen
+            ? ""
+            : "pl-[var(--dashboard-sidebar-toggle-clearance)]"
         }`}
       >
         {children}
