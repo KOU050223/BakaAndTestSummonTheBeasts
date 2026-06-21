@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { Sidebar } from "./Sidebar";
 import type { User } from "@/lib/api/types";
 
@@ -33,6 +34,30 @@ const schoolAdminUser: User = {
 };
 
 describe("Sidebar", () => {
+  it("ボタンでサイドバーを閉じるよう通知する", async () => {
+    const user = userEvent.setup();
+    const onToggle = vi.fn();
+    render(<Sidebar user={studentUser} isOpen onToggle={onToggle} />);
+
+    const button = screen.getByRole("button", { name: "ナビゲーションを閉じる" });
+    expect(button).toHaveAttribute("aria-expanded", "true");
+
+    await user.click(button);
+    expect(onToggle).toHaveBeenCalledOnce();
+  });
+
+  it("閉じている場合はナビゲーションを非表示・操作不能にする", () => {
+    render(<Sidebar user={studentUser} isOpen={false} onToggle={vi.fn()} />);
+
+    expect(
+      screen.getByRole("button", { name: "ナビゲーションを開く" }),
+    ).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
+    expect(screen.getByRole("navigation", { hidden: true }).parentElement).toHaveAttribute(
+      "inert",
+    );
+  });
+
   it("ロールに対応するタブを描画する（生徒は5タブ）", () => {
     render(<Sidebar user={studentUser} />);
 
