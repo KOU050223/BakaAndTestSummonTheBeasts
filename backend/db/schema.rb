@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_21_000004) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_21_000005) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -164,6 +164,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_21_000004) do
     t.index ["subject"], name: "index_exams_on_subject"
   end
 
+  create_table "push_subscriptions", force: :cascade do |t|
+    t.string "auth_key", null: false
+    t.datetime "created_at", null: false
+    t.string "endpoint", null: false
+    t.string "p256dh_key", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["endpoint"], name: "index_push_subscriptions_on_endpoint", unique: true
+    t.index ["user_id"], name: "index_push_subscriptions_on_user_id"
+  end
+
   create_table "school_classes", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "grade", default: 2, null: false
@@ -228,6 +239,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_21_000004) do
   add_foreign_key "exam_questions", "exams"
   add_foreign_key "exams", "school_classes"
   add_foreign_key "exams", "users", column: "created_by_id"
+  add_foreign_key "push_subscriptions", "users"
   add_foreign_key "scores", "exams"
   add_foreign_key "scores", "users", column: "student_id"
   add_foreign_key "summon_statuses", "users", column: "student_id"
