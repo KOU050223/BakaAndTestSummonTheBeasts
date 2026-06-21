@@ -153,6 +153,7 @@ function TeacherStudentList() {
               {classes.map((c) => (
                 <button
                   key={c.id}
+                  type="button"
                   onClick={() => setSelectedClassId(c.id)}
                   className={`px-4 py-1.5 text-sm rounded-sm border transition-colors ${
                     c.id === activeClassId
@@ -206,7 +207,7 @@ function StudentRow({ student }: { student: ClassStudent }) {
       <td className="px-5 py-3 text-gray-900 font-semibold">
         {student.name}
         {student.leader && (
-          <span className="ml-2 text-xs text-amber-700 font-bold bg-amber-100 px-1.5 py-0.5 rounded-sm">👑 委員長</span>
+          <span className="ml-2 text-xs text-amber-700 font-bold bg-amber-100 px-1.5 py-0.5 rounded-sm">👑 クラス代表</span>
         )}
       </td>
       <td className="px-5 py-3 text-right text-sky-700 font-bold">

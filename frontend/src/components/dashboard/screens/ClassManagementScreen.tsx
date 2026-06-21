@@ -346,7 +346,7 @@ function StudentRow({
           {student.name}
           {student.leader && (
             <span className="rounded-sm bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-amber-700 ring-1 ring-amber-400/40">
-              リーダー
+              クラス代表
             </span>
           )}
         </span>
@@ -404,7 +404,7 @@ function StudentRow({
               onClick={() => onSetLeader(student.id)}
               className="rounded-sm border border-amber-400 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 transition-colors hover:bg-amber-100 disabled:opacity-50"
             >
-              リーダーに設定
+              クラス代表に設定
             </button>
           )}
         </div>
