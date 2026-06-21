@@ -63,6 +63,35 @@
   box-shadow: none;
 }
 
+/* 試召戦争の主要導線は、テーマ背景に埋もれない用途別の色で区別する。 */
+.dashboard-theme .dashboard-sidebar-nav a[data-nav-tone="danger"] {
+  color: #fff7ed;
+  background: #8b1e1e;
+  border-color: #fca5a5;
+  box-shadow: 0 2px 0 rgb(69 10 10 / 45%);
+}
+
+.dashboard-theme .dashboard-sidebar-nav a[data-nav-tone="record"] {
+  color: #f0f9ff;
+  background: #1e4f78;
+  border-color: #7dd3fc;
+  box-shadow: 0 2px 0 rgb(8 47 73 / 45%);
+}
+
+.dashboard-theme .dashboard-sidebar-nav a[data-nav-tone="danger"]:hover,
+.dashboard-theme .dashboard-sidebar-nav a[data-nav-tone="danger"][aria-current="page"] {
+  color: #fff;
+  background: #641515;
+  border-color: #fed7aa;
+}
+
+.dashboard-theme .dashboard-sidebar-nav a[data-nav-tone="record"]:hover,
+.dashboard-theme .dashboard-sidebar-nav a[data-nav-tone="record"][aria-current="page"] {
+  color: #fff;
+  background: #123b5b;
+  border-color: #bae6fd;
+}
+
 .theme-panel {
   border-radius: var(--dashboard-radius);
   transform: var(--dashboard-panel-transform);

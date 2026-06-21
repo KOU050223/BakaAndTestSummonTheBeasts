@@ -73,8 +73,9 @@ export default function RootLayout({
       lang="ja"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <Script id="adobe-fonts" strategy="beforeInteractive" async>
-        {`(function(d) {
+      <head>
+        <Script id="adobe-fonts" strategy="beforeInteractive" async>
+          {`(function(d) {
   var config = {
     kitId: "qav4qsc",
     scriptTimeout: 3000,
@@ -101,7 +102,8 @@ export default function RootLayout({
   };
   s.parentNode.insertBefore(tk, s);
 })(document);`}
-      </Script>
+        </Script>
+      </head>
       <body className="min-h-full flex flex-col">
         <QueryProvider>{children}</QueryProvider>
       </body>
