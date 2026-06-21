@@ -18,18 +18,23 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
   return (
     <div
       data-theme={theme}
-      className="dashboard-theme flex min-h-screen font-[family-name:var(--dashboard-font)] text-[var(--dashboard-text)]"
+      className="dashboard-theme flex min-h-screen flex-col font-[family-name:var(--dashboard-font)] text-[var(--dashboard-text)] sm:flex-row"
     >
       <Sidebar
         user={user}
         isOpen={isSidebarOpen}
         onToggle={() => setIsSidebarOpen((isOpen) => !isOpen)}
+        onNavigate={() => {
+          if (window.matchMedia("(max-width: 639px)").matches) {
+            setIsSidebarOpen(false);
+          }
+        }}
       />
       <main
         className={`min-w-0 flex-1 overflow-y-auto p-6 transition-[padding] duration-300 ${
           isSidebarOpen
             ? ""
-            : "pl-[var(--dashboard-sidebar-toggle-clearance)]"
+            : "sm:pl-[var(--dashboard-sidebar-toggle-clearance)]"
         }`}
       >
         {children}

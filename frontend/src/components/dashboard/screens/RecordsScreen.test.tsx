@@ -55,6 +55,28 @@ describe("RecordsScreen", () => {
     expect(screen.getByText("2年Aクラス vs 2年Bクラス")).toBeInTheDocument();
   });
 
+  it("検索欄の入力文字とプレースホルダーを黒で表示する", () => {
+    mockUseCurrentUser.mockReturnValue({
+      user: { id: 1, name: "霧島翔子", role: "student" },
+    });
+    render(<RecordsScreen />);
+
+    expect(
+      screen.getByRole("searchbox", { name: "ユーザー名または科目で検索" }),
+    ).toHaveClass("text-black", "placeholder:text-black");
+  });
+
+  it("状態フィルターの文字を黒で表示する", () => {
+    mockUseCurrentUser.mockReturnValue({
+      user: { id: 1, name: "霧島翔子", role: "student" },
+    });
+    render(<RecordsScreen />);
+
+    for (const name of ["すべて", "進行中", "承認待ち", "完了"]) {
+      expect(screen.getByRole("button", { name })).toHaveClass("text-black");
+    }
+  });
+
   it("教師には試召戦争ログを表示する", () => {
     mockUseCurrentUser.mockReturnValue({
       user: { id: 2, name: "文月学", role: "teacher" },

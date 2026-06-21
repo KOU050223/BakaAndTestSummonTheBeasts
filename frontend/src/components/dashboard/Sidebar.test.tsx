@@ -38,12 +38,23 @@ describe("Sidebar", () => {
     render(<Sidebar user={studentUser} />);
 
     expect(screen.getByRole("complementary")).toHaveClass(
-      "sticky",
-      "top-0",
-      "h-dvh",
+      "sm:sticky",
+      "sm:top-0",
+      "sm:h-dvh",
     );
     expect(screen.getByTestId("user-status").parentElement).toHaveClass(
       "flex-1",
+    );
+  });
+
+  it("モバイルで閉じた場合は開閉ボタン用の上段だけを残す", () => {
+    render(<Sidebar user={studentUser} isOpen={false} onToggle={vi.fn()} />);
+
+    expect(screen.getByRole("complementary")).toHaveClass(
+      "h-16",
+      "w-full",
+      "sm:h-dvh",
+      "sm:w-0",
     );
   });
 
@@ -57,6 +68,16 @@ describe("Sidebar", () => {
 
     await user.click(button);
     expect(onToggle).toHaveBeenCalledOnce();
+  });
+
+  it("ナビゲーションを選ぶと画面遷移を通知する", async () => {
+    const user = userEvent.setup();
+    const onNavigate = vi.fn();
+    render(<Sidebar user={studentUser} onNavigate={onNavigate} />);
+
+    await user.click(screen.getByRole("link", { name: /宣戦布告/ }));
+
+    expect(onNavigate).toHaveBeenCalledOnce();
   });
 
   it("閉じている場合はナビゲーションを非表示・操作不能にする", () => {
@@ -92,6 +113,22 @@ describe("Sidebar", () => {
 
     const inactive = screen.getByRole("link", { name: /答案を提出/ });
     expect(inactive).not.toHaveAttribute("aria-current");
+  });
+
+  it("宣戦布告と戦績を用途別の色で強調できるようにする", () => {
+    render(<Sidebar user={studentUser} />);
+
+    expect(screen.getByRole("link", { name: /宣戦布告/ })).toHaveAttribute(
+      "data-nav-tone",
+      "danger",
+    );
+    expect(screen.getByRole("link", { name: /戦績/ })).toHaveAttribute(
+      "data-nav-tone",
+      "record",
+    );
+    expect(screen.getByRole("link", { name: /バトル/ })).not.toHaveAttribute(
+      "data-nav-tone",
+    );
   });
 
   it("管理者には全体成績へのリンクを表示する", () => {

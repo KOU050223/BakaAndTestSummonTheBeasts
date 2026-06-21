@@ -10,6 +10,7 @@ type SidebarProps = {
   user: User;
   isOpen?: boolean;
   onToggle?: () => void;
+  onNavigate?: () => void;
 };
 
 export function Sidebar({
@@ -18,6 +19,7 @@ export function Sidebar({
   onToggle = () => {
     // 制御なしで単体利用する場合は何もしない。
   },
+  onNavigate,
 }: SidebarProps) {
   const pathname = usePathname();
   const sections = NAV_BY_ROLE[user.role];
@@ -25,10 +27,10 @@ export function Sidebar({
   return (
     <aside
       data-state={isOpen ? "open" : "closed"}
-      className={`dashboard-sidebar sticky top-0 z-10 flex h-dvh shrink-0 self-start flex-col bg-[var(--dashboard-sidebar)] backdrop-blur-[var(--dashboard-blur)] transition-[width,border-color] duration-300 ease-in-out ${
+      className={`dashboard-sidebar relative z-10 flex shrink-0 flex-col bg-[var(--dashboard-sidebar)] backdrop-blur-[var(--dashboard-blur)] transition-[width,height,border-color] duration-300 ease-in-out sm:sticky sm:top-0 sm:h-dvh sm:self-start ${
         isOpen
-          ? "w-64 border-r border-[var(--dashboard-border)]"
-          : "w-0 border-r border-transparent"
+          ? "h-dvh w-full border-b border-[var(--dashboard-border)] sm:w-64 sm:border-r sm:border-b-0"
+          : "h-16 w-full border-b border-transparent sm:w-0 sm:border-r"
       }`}
     >
       <button
@@ -37,7 +39,9 @@ export function Sidebar({
         aria-label={isOpen ? "ナビゲーションを閉じる" : "ナビゲーションを開く"}
         aria-expanded={isOpen}
         className={`dashboard-sidebar-toggle absolute top-4 z-20 flex h-[var(--dashboard-sidebar-toggle-size)] w-[var(--dashboard-sidebar-toggle-size)] items-center justify-center rounded-full border border-[var(--dashboard-border)] bg-[var(--dashboard-sidebar)] text-[var(--dashboard-text)] shadow-md transition-[left,right,transform] duration-300 hover:bg-[var(--dashboard-accent-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--dashboard-accent)] ${
-          isOpen ? "-right-4" : "left-[var(--dashboard-sidebar-toggle-left)]"
+          isOpen
+            ? "right-4 sm:-right-4"
+            : "left-[var(--dashboard-sidebar-toggle-left)]"
         }`}
       >
         <svg
@@ -57,7 +61,7 @@ export function Sidebar({
       <div
         aria-hidden={!isOpen}
         inert={!isOpen}
-        className={`flex min-h-0 w-64 flex-1 flex-col overflow-hidden transition-opacity duration-300 ${
+        className={`flex min-h-0 w-full flex-1 flex-col overflow-hidden transition-opacity duration-300 sm:w-64 ${
           isOpen ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
       >
@@ -82,6 +86,7 @@ export function Sidebar({
               label={section.heading}
               items={section.items}
               pathname={pathname}
+              onNavigate={onNavigate}
             />
           ))}
         </nav>
@@ -107,9 +112,10 @@ type NavSectionProps = {
   label: string;
   items: NavItem[];
   pathname: string;
+  onNavigate?: () => void;
 };
 
-function NavSection({ label, items, pathname }: NavSectionProps) {
+function NavSection({ label, items, pathname, onNavigate }: NavSectionProps) {
   return (
     <div className="dashboard-nav-section mb-4">
       <p className="dashboard-nav-heading px-3 pb-1.5 text-[0.65rem] font-bold tracking-[0.25em] text-[var(--dashboard-muted)] opacity-60">
@@ -118,10 +124,18 @@ function NavSection({ label, items, pathname }: NavSectionProps) {
       <ul className="flex flex-col gap-1">
         {items.map((item) => {
           const isActive = pathname === item.href;
+          const navTone =
+            item.href === "/declare-war"
+              ? "danger"
+              : item.label === "戦績"
+                ? "record"
+                : undefined;
           return (
             <li key={item.href}>
               <Link
                 href={item.href}
+                onClick={onNavigate}
+                data-nav-tone={navTone}
                 aria-current={isActive ? "page" : undefined}
                 className={`flex items-center gap-2.5 rounded-sm px-3 py-2 text-sm font-semibold transition-all duration-150 ${
                   isActive

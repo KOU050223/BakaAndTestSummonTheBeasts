@@ -9,7 +9,7 @@
   --dashboard-accent: #f5e6b8;
   --dashboard-accent-soft: rgb(245 230 184 / 13%);
   --dashboard-border: #3f2a18;
-  --dashboard-font: "poprumcute", "Comic Sans MS", "Yu Gothic", cursive;
+  --dashboard-font: "ta-koigokoro", "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif;
   --dashboard-radius: 0.1rem;
   --dashboard-shadow: 5px 6px 0 rgb(41 27 15 / 50%), inset 0 0 45px rgb(67 42 20 / 30%);
   --dashboard-blur: 0px;

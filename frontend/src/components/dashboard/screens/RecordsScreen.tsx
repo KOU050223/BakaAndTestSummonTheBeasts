@@ -116,7 +116,10 @@ function BattleRecords({
         <div className="flex flex-col gap-3 border-b border-[var(--dashboard-border)] p-4 lg:flex-row lg:items-center lg:justify-between">
           <label className="relative block min-w-0 flex-1 lg:max-w-xl">
             <span className="sr-only">ユーザー名または科目で検索</span>
-            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--dashboard-muted)]">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--dashboard-muted)]"
+            >
               🔍
             </span>
             <input
@@ -124,7 +127,7 @@ function BattleRecords({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="ユーザー名・科目で検索…"
-              className="w-full rounded-md border border-[var(--dashboard-border)] bg-white/70 py-3 pl-11 pr-4 text-sm text-[var(--dashboard-text)] outline-none transition placeholder:text-[var(--dashboard-muted)] focus:border-[var(--dashboard-accent)] focus:ring-2 focus:ring-[var(--dashboard-accent-soft)]"
+              className="w-full rounded-md border border-[var(--dashboard-border)] bg-white/70 py-3 pl-11 pr-4 text-sm text-black outline-none transition placeholder:text-black focus:border-[var(--dashboard-accent)] focus:ring-2 focus:ring-[var(--dashboard-accent-soft)]"
             />
           </label>
 
@@ -142,10 +145,10 @@ function BattleRecords({
                 type="button"
                 aria-pressed={statusFilter === value}
                 onClick={() => setStatusFilter(value)}
-                className={`rounded-md border px-4 py-2 text-sm font-bold transition ${
+                className={`rounded-md border px-4 py-2 text-sm font-bold text-black transition ${
                   statusFilter === value
-                    ? "border-[var(--dashboard-accent)] bg-[var(--dashboard-accent)] text-white shadow-sm"
-                    : "border-[var(--dashboard-border)] bg-white/55 text-[var(--dashboard-text)] hover:bg-white/80"
+                    ? "border-[var(--dashboard-accent)] bg-[var(--dashboard-accent)] shadow-sm"
+                    : "border-[var(--dashboard-border)] bg-white/55 hover:bg-white/80"
                 }`}
               >
                 {label}
