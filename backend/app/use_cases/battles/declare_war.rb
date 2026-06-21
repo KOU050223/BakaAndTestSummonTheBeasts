@@ -22,11 +22,15 @@ class Battles::DeclareWar
   def call
     validate!
 
-    Battles::Create.new(
+    battle = Battles::Create.new(
       created_by: @created_by,
       subjects: @subjects,
       participants: participants
     ).call
+
+    notify_defender_students(battle)
+
+    battle
   end
 
   private
@@ -63,5 +67,19 @@ class Battles::DeclareWar
   def class_memberships(class_id)
     school_class = SchoolClass.find(class_id)
     school_class.class_memberships.joins(:user).where(users: { role: "student" }).to_a
+  end
+
+  def notify_defender_students(battle)
+    attacker_class = SchoolClass.find_by(id: @attacker_class_id)
+    attacker_name = attacker_class ? "#{attacker_class.grade}年#{attacker_class.name}" : "相手クラス"
+
+    defender_students.each do |membership|
+      WebPushService.notify_user(
+        user: membership.user,
+        title: "⚔️ 試召戦争が仕掛けられました！",
+        body: "#{attacker_name}から宣戦布告されました。バトル画面へ移動してください。",
+        url: "/wars/#{battle.id}/battle"
+      )
+    end
   end
 end
