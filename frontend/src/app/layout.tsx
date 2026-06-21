@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import { QueryProvider } from "@/lib/api/QueryProvider";
+import { PushNotificationSetup } from "@/components/notifications/PushNotificationSetup";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -104,7 +105,10 @@ export default function RootLayout({
 })(document);`}
       </Script>
       <body className="min-h-full flex flex-col">
-        <QueryProvider>{children}</QueryProvider>
+        <QueryProvider>
+          <PushNotificationSetup />
+          {children}
+        </QueryProvider>
       </body>
     </html>
   );
