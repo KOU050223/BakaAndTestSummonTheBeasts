@@ -125,27 +125,69 @@ RSpec.describe "Battles API", type: :request do
                 properties: {
                   battleId:     { type: :string },
                   subjects:     { type: :array, items: { type: :string } },
-                  status:       { type: :string },
-                  opponentName: { type: :string, nullable: true }
+                  status:       { type: :string, enum: Battle::STATUSES },
+                  opponentName: { type: :string, nullable: true },
+                  participantsLabel: { type: :string },
+                  winnerName: { type: :string, nullable: true },
+                  winnerTeamName: { type: :string, nullable: true },
+                  turnCount: { type: :integer },
+                  createdAt: { type: :string, format: "date-time" }
                 },
-                required: %w[battleId subjects status]
+                required: %w[battleId subjects status participantsLabel turnCount createdAt]
               }
             }
           },
           required: %w[battles]
 
-        before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
-        run_test!
+        let(:me) { create(:user) }
+        let!(:winner) { me }
+        let!(:loser) { create(:user, name: "対戦相手") }
+        let!(:battle) do
+          create(:battle, status: "finished", winner: winner, loser: loser, turn_count: 3).tap do |record|
+            create(:battle_field, battle: record, subject: "math")
+            create(:battle_player, battle: record, student: winner)
+            create(:battle_player, battle: record, student: loser)
+          end
+        end
+        before { cookies[:token] = JwtService.encode(user_id: me.id) }
+        run_test! do |response|
+          item = JSON.parse(response.body).fetch("battles").first
+          expect(item).to include(
+            "battleId" => battle.id.to_s,
+            "participantsLabel" => "#{winner.name} vs 対戦相手",
+            "winnerName" => winner.name,
+            "turnCount" => 3
+          )
+          expect(item.fetch("createdAt")).to be_present
+        end
+      end
+
+      response "200", "学校管理者は全バトルを取得できる" do
+        schema type: :object, properties: { battles: { type: :array } }, required: %w[battles]
+
+        let(:admin) { create(:user, :school_admin) }
+        let!(:battle) { create(:battle) }
+        before { cookies[:token] = JwtService.encode(user_id: admin.id) }
+        run_test! do |response|
+          ids = JSON.parse(response.body).fetch("battles").pluck("battleId")
+          expect(ids).to include(battle.id.to_s)
+        end
+      end
+
+      response "200", "教師は全バトルを取得できる" do
+        schema type: :object, properties: { battles: { type: :array } }, required: %w[battles]
+
+        let(:teacher) { create(:user, :teacher) }
+        let!(:battle) { create(:battle) }
+        before { cookies[:token] = JwtService.encode(user_id: teacher.id) }
+        run_test! do |response|
+          ids = JSON.parse(response.body).fetch("battles").pluck("battleId")
+          expect(ids).to include(battle.id.to_s)
+        end
       end
 
       response "401", "未認証" do
         schema "$ref" => "#/components/schemas/error"
-        run_test!
-      end
-
-      response "403", "権限なし（school_admin は禁止）" do
-        schema "$ref" => "#/components/schemas/error"
-        before { cookies[:token] = JwtService.encode(user_id: create(:user, :school_admin).id) }
         run_test!
       end
     end
@@ -310,6 +352,8 @@ RSpec.describe "Battles API", type: :request do
             battleId:  { type: :string },
             winnerId:  { type: :string, nullable: true },
             loserId:   { type: :string, nullable: true },
+            winnerTeamId: { type: :string, nullable: true },
+            loserTeamId:  { type: :string, nullable: true },
             turnCount: { type: :integer },
             logs: {
               type: :array,
@@ -329,13 +373,26 @@ RSpec.describe "Battles API", type: :request do
           required: %w[battleId turnCount logs]
 
         let(:battle) do
-          b = create(:battle, status: "finished", turn_count: 0)
+          b = create(
+            :battle,
+            status: "finished",
+            turn_count: 0,
+            winner: create(:user),
+            loser: create(:user),
+            winner_team: create(:school_class, name: "A組"),
+            loser_team: create(:school_class, name: "B組")
+          )
           create(:battle_player, battle: b, student: create(:user))
           b
         end
         let(:id) { battle.id.to_s }
         before { cookies[:token] = JwtService.encode(user_id: create(:user).id) }
-        run_test!
+        run_test! do |response|
+          body = JSON.parse(response.body)
+          expect(body["winnerTeamId"]).to eq(battle.winner_team_id.to_s)
+          expect(body["loserTeamId"]).to eq(battle.loser_team_id.to_s)
+          expect(body["loserId"]).to eq(battle.loser_id.to_s)
+        end
       end
 
       response "404", "バトルが存在しない" do

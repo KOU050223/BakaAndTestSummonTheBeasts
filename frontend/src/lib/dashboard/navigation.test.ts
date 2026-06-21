@@ -83,7 +83,7 @@ describe("navLabel", () => {
     expect(navLabel("teacher", "/exams")).toBe("試験作成");
     expect(navLabel("teacher", "/dashboard")).toBe("教師ダッシュボード");
     expect(navLabel("teacher", "/scores")).toBe("点数管理");
-    expect(navLabel("teacher", "/records")).toBe("生徒一覧");
+    expect(navLabel("teacher", "/records")).toBe("試召戦争ログ");
     expect(navLabel("student", "/records")).toBe("戦績");
     expect(navLabel("school_admin", "/classes")).toBe("クラス設定");
     expect(navLabel("school_admin", "/scores")).toBe("全体成績");

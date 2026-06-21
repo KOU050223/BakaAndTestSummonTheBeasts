@@ -1,101 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { LabelTag, Panel } from "@/components/ui";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
-import { NavPlaceholder } from "../NavPlaceholder";
-import { useClasses, useClassStudents } from "@/lib/classes/useClasses";
-import type { ClassStudent } from "@/lib/api/types";
+import { type BattleListItem, useBattles } from "@/lib/battle/useBattles";
+import { subjectLabel } from "@/lib/battle/subjectLabel";
 
 type BattleStatus = "waiting" | "active" | "finished";
-type BattleLogRow = {
-  battleId: number;
-  occurredAt: string;
-  challengerName: string;
-  defenderName: string;
-  subjectCode: string;
-  subjectLabel: string;
-  challengerScore: number | null;
-  defenderScore: number | null;
-  winnerName: string | null;
-  status: BattleStatus;
-};
+type BattleLogRow = BattleListItem;
 type StatusFilter = "all" | BattleStatus;
-
-const MOCK_BATTLE_LOGS: BattleLogRow[] = [
-  {
-    battleId: 1,
-    occurredAt: "2026-06-14T14:32:00+09:00",
-    challengerName: "吉井明久",
-    defenderName: "霧島翔子",
-    subjectCode: "math",
-    subjectLabel: "数学",
-    challengerScore: 50,
-    defenderScore: 0,
-    winnerName: "吉井明久",
-    status: "finished",
-  },
-  {
-    battleId: 2,
-    occurredAt: "2026-06-13T09:10:00+09:00",
-    challengerName: "木下秀吉",
-    defenderName: "山田太郎",
-    subjectCode: "japanese",
-    subjectLabel: "国語",
-    challengerScore: 58,
-    defenderScore: 61,
-    winnerName: "山田太郎",
-    status: "finished",
-  },
-  {
-    battleId: 3,
-    occurredAt: "2026-06-12T16:45:00+09:00",
-    challengerName: "島田美波",
-    defenderName: "佐藤花子",
-    subjectCode: "chemistry",
-    subjectLabel: "化学",
-    challengerScore: 67,
-    defenderScore: 52,
-    winnerName: "島田美波",
-    status: "finished",
-  },
-  {
-    battleId: 4,
-    occurredAt: "2026-06-12T11:20:00+09:00",
-    challengerName: "中村健太",
-    defenderName: "姫路瑞希",
-    subjectCode: "math",
-    subjectLabel: "数学",
-    challengerScore: 71,
-    defenderScore: 82,
-    winnerName: "姫路瑞希",
-    status: "finished",
-  },
-  {
-    battleId: 5,
-    occurredAt: "2026-06-11T13:05:00+09:00",
-    challengerName: "坂本雄二",
-    defenderName: "田村睦",
-    subjectCode: "english",
-    subjectLabel: "英語",
-    challengerScore: null,
-    defenderScore: null,
-    winnerName: null,
-    status: "active",
-  },
-  {
-    battleId: 6,
-    occurredAt: "2026-06-10T10:00:00+09:00",
-    challengerName: "吉井明久",
-    defenderName: "霧島翔子",
-    subjectCode: "math",
-    subjectLabel: "数学",
-    challengerScore: null,
-    defenderScore: null,
-    winnerName: null,
-    status: "waiting",
-  },
-];
 
 const STATUS_LABEL: Record<BattleLogRow["status"], string> = {
   waiting: "承認待ち",
@@ -111,148 +25,61 @@ const STATUS_CLASS: Record<BattleLogRow["status"], string> = {
 
 export function RecordsScreen() {
   const { user } = useCurrentUser();
+  const { battles, isLoading, isError } = useBattles();
 
   if (!user) return null;
-  if (user.role === "teacher") return <TeacherStudentList />;
-  if (user.role !== "school_admin") {
-    return <NavPlaceholder role={user.role} href="/records" />;
-  }
-
-  return <AdminBattleLog />;
-}
-
-// ─── 教師：生徒一覧 ──────────────────────────────────────────────────────────
-
-function TeacherStudentList() {
-  const { classes, isLoading: classesLoading } = useClasses();
-  const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
-
-  const activeClassId = selectedClassId ?? classes?.[0]?.id ?? null;
-  const { students, isLoading: studentsLoading, isError } = useClassStudents(activeClassId ?? undefined);
-
-  const activeClass = classes?.find((c) => c.id === activeClassId);
 
   return (
-    <div className="mx-auto mt-6 max-w-4xl flex flex-col gap-5">
-      <Panel>
-        <div className="flex items-center gap-3 border-b border-sky-400/40 bg-gradient-to-r from-sky-400/20 to-sky-400/5 px-5 py-4">
-          <LabelTag variant="info">教師</LabelTag>
-          <h1 className="text-xl font-black tracking-wide text-white [text-shadow:0_0_10px_rgba(56,189,248,0.7)]">
-            生徒一覧
-          </h1>
-        </div>
-
-        {/* クラス選択 */}
-        <div className="px-5 py-4 border-b border-sky-400/20">
-          {classesLoading ? (
-            <p className="text-slate-400 text-sm animate-pulse">読み込み中...</p>
-          ) : !classes || classes.length === 0 ? (
-            <p className="text-slate-400 text-sm">クラスがありません</p>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {classes.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setSelectedClassId(c.id)}
-                  className={`px-4 py-1.5 text-sm rounded-sm border transition-colors ${
-                    c.id === activeClassId
-                      ? "border-sky-500 bg-sky-100 text-sky-800 font-semibold"
-                      : "border-gray-300 bg-white text-gray-700 hover:bg-sky-50 hover:border-sky-400 hover:text-sky-700"
-                  }`}
-                >
-                  {c.grade}年{c.name}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* 生徒テーブル */}
-        {studentsLoading ? (
-          <p className="text-center text-sky-700 animate-pulse py-10 text-sm">読み込み中...</p>
-        ) : isError ? (
-          <p className="text-center text-red-600 py-10 text-sm">生徒一覧の取得に失敗しました</p>
-        ) : !students || students.length === 0 ? (
-          <div className="py-10 text-center">
-            <p className="text-4xl mb-3">👤</p>
-            <p className="text-gray-500 text-sm">
-              {activeClass ? `${activeClass.grade}年${activeClass.name}に生徒がいません` : "生徒がいません"}
-            </p>
-          </div>
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="border-b border-gray-200 text-left text-xs text-gray-600 bg-gray-50">
-              <tr>
-                <th className="px-5 py-3 font-semibold">生徒名</th>
-                <th className="px-5 py-3 font-semibold text-right">合計点</th>
-                <th className="px-5 py-3 font-semibold">得意科目</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {students.map((s) => (
-                <StudentRow key={s.id} student={s} />
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Panel>
-    </div>
+    <BattleRecords
+      battles={battles}
+      isLoading={isLoading}
+      isError={isError}
+      role={user.role}
+    />
   );
 }
 
-function StudentRow({ student }: { student: ClassStudent }) {
-  return (
-    <tr className="hover:bg-gray-50 transition-colors">
-      <td className="px-5 py-3 text-gray-900 font-semibold">
-        {student.name}
-        {student.leader && (
-          <span className="ml-2 text-xs text-amber-700 font-bold bg-amber-100 px-1.5 py-0.5 rounded-sm">👑 クラス代表</span>
-        )}
-      </td>
-      <td className="px-5 py-3 text-right text-sky-700 font-bold">
-        {student.totalScore.toLocaleString()}
-      </td>
-      <td className="px-5 py-3 text-gray-700">
-        {student.topSubject.name}
-        {student.topSubject.score > 0 && (
-          <span className="ml-1 text-gray-500 text-xs">{student.topSubject.score}点</span>
-        )}
-      </td>
-    </tr>
-  );
-}
-
-function AdminBattleLog() {
+function BattleRecords({
+  battles,
+  isLoading,
+  isError,
+  role,
+}: {
+  battles: BattleLogRow[];
+  isLoading: boolean;
+  isError: boolean;
+  role: "student" | "teacher" | "school_admin";
+}) {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const filteredBattles = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("ja-JP");
 
-    return MOCK_BATTLE_LOGS.filter((battle) => {
+    return battles.filter((battle) => {
       const matchesStatus =
         statusFilter === "all" || battle.status === statusFilter;
       const matchesQuery =
         normalizedQuery.length === 0 ||
         [
-          battle.challengerName,
-          battle.defenderName ?? "",
-          battle.subjectLabel,
+          battle.participantsLabel,
+          battle.winnerName ?? "",
+          battle.winnerTeamName ?? "",
+          ...battle.subjects.map(subjectLabel),
         ].some((value) =>
           value.toLocaleLowerCase("ja-JP").includes(normalizedQuery),
         );
 
       return matchesStatus && matchesQuery;
     });
-  }, [query, statusFilter]);
+  }, [battles, query, statusFilter]);
 
-  const activeCount = MOCK_BATTLE_LOGS.filter(
+  const activeCount = battles.filter(
     (battle) => battle.status === "active",
   ).length;
-  const waitingCount = MOCK_BATTLE_LOGS.filter(
+  const waitingCount = battles.filter(
     (battle) => battle.status === "waiting",
   ).length;
-  const finishedCount = MOCK_BATTLE_LOGS.filter(
+  const finishedCount = battles.filter(
     (battle) => battle.status === "finished",
   ).length;
 
@@ -261,20 +88,22 @@ function AdminBattleLog() {
       <Panel>
         <div className="border-b border-[var(--dashboard-border)] bg-[linear-gradient(90deg,var(--dashboard-accent-soft),transparent)] px-6 py-5">
           <div className="flex items-center gap-3">
-            <LabelTag variant="info">管理者</LabelTag>
+            <LabelTag variant="info">
+              {role === "student" ? "生徒" : role === "teacher" ? "教師" : "管理者"}
+            </LabelTag>
             <h1 className="text-2xl font-black tracking-wide text-[var(--dashboard-text)]">
-              試召戦争ログ
-            </h1> 
+              {role === "student" ? "戦績" : "試召戦争ログ"}
+            </h1>
           </div>
           <p className="mt-2 text-sm text-[var(--dashboard-muted)]">
-            全クラス間の試召戦争について、対戦者・科目・スコア・結果を確認できます。
+            保存された対戦の参加者・科目・ターン数・結果を確認できます。
           </p>
         </div>
 
         <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4">
           <SummaryCard
             label="総試合数"
-            value={MOCK_BATTLE_LOGS.length}
+            value={battles.length}
             tone="sky"
           />
           <SummaryCard label="進行中" value={activeCount} tone="red" />
@@ -326,7 +155,11 @@ function AdminBattleLog() {
         </div>
 
         <div className="overflow-x-auto">
-          {filteredBattles.length === 0 ? (
+          {isLoading ? (
+            <p className="py-16 text-center text-sm text-[var(--dashboard-accent)]">対戦履歴を読み込み中…</p>
+          ) : isError ? (
+            <p className="py-16 text-center text-sm text-red-300">対戦履歴の取得に失敗しました。</p>
+          ) : filteredBattles.length === 0 ? (
             <div className="py-16 text-center">
               <p className="text-4xl">⚔️</p>
               <p className="mt-3 text-sm text-[var(--dashboard-muted)]">
@@ -340,13 +173,13 @@ function AdminBattleLog() {
             >
               <thead className="border-b border-[var(--dashboard-border)] bg-[var(--dashboard-table-header-bg)] text-left text-xs uppercase tracking-wider text-[var(--dashboard-table-header-text)]">
                 <tr>
-                  <th className="px-5 py-4 font-bold">日時</th>
-                  <th className="px-5 py-4 font-bold">仕掛け側</th>
-                  <th className="px-5 py-4 font-bold">受け側</th>
+                  <th className="px-5 py-4 font-bold">作成日時</th>
+                  <th className="px-5 py-4 font-bold">対戦</th>
                   <th className="px-5 py-4 font-bold">科目</th>
-                  <th className="px-5 py-4 text-center font-bold">スコア</th>
+                  <th className="px-5 py-4 text-center font-bold">ターン数</th>
                   <th className="px-5 py-4 font-bold">結果</th>
                   <th className="px-5 py-4 font-bold">状態</th>
+                  <th className="px-5 py-4 font-bold">詳細</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--dashboard-border)]/25">
@@ -363,37 +196,35 @@ function AdminBattleLog() {
 }
 
 function BattleLogTableRow({ battle }: { battle: BattleLogRow }) {
-  const hasScore =
-    battle.challengerScore !== null && battle.defenderScore !== null;
+  const winner = battle.winnerTeamName ?? battle.winnerName;
   const result =
-    battle.status === "finished" && battle.winnerName
-      ? `${battle.winnerName} の勝利`
+    battle.status === "finished" && winner
+      ? `${winner} の勝利`
       : "—";
 
   return (
     <tr className="bg-white/28 text-[var(--dashboard-text)] transition hover:bg-white/55">
       <td className="whitespace-nowrap px-5 py-4 text-[var(--dashboard-muted)]">
-        {formatOccurredAt(battle.occurredAt)}
+        {formatOccurredAt(battle.createdAt)}
       </td>
       <td className="px-5 py-4 font-bold text-[var(--dashboard-text)]">
-        {battle.challengerName}
-      </td>
-      <td className="px-5 py-4 font-bold text-[var(--dashboard-text)]">
-        {battle.defenderName ?? "対戦相手未定"}
+        {battle.participantsLabel || "対戦相手未定"}
       </td>
       <td className="px-5 py-4">
-        <span className="inline-flex rounded-md border border-violet-800/30 bg-violet-100 px-2.5 py-1 font-bold text-violet-900">
-          {battle.subjectLabel}
-        </span>
+        <div className="flex flex-wrap gap-1.5">
+          {battle.subjects.map((subject) => (
+            <span key={subject} className="inline-flex rounded-md border border-violet-800/30 bg-violet-100 px-2.5 py-1 font-bold text-violet-900">
+              {subjectLabel(subject)}
+            </span>
+          ))}
+        </div>
       </td>
       <td className="whitespace-nowrap px-5 py-4 text-center font-black text-[var(--dashboard-text)]">
-        {hasScore
-          ? `${battle.challengerScore} vs ${battle.defenderScore}`
-          : "—"}
+        {battle.status === "finished" ? `${battle.turnCount}ターン` : "—"}
       </td>
       <td
         className={`whitespace-nowrap px-5 py-4 font-bold ${
-          battle.winnerName ? "text-emerald-800" : "text-[var(--dashboard-muted)]"
+          winner ? "text-emerald-800" : "text-[var(--dashboard-muted)]"
         }`}
       >
         {result}
@@ -404,6 +235,15 @@ function BattleLogTableRow({ battle }: { battle: BattleLogRow }) {
         >
           {STATUS_LABEL[battle.status]}
         </span>
+      </td>
+      <td className="px-5 py-4">
+        {battle.status === "finished" ? (
+          <Link href={`/wars/${battle.battleId}/result`} className="font-bold text-[var(--dashboard-accent)] hover:underline">
+            詳細
+          </Link>
+        ) : (
+          <span className="text-[var(--dashboard-muted)]">—</span>
+        )}
       </td>
     </tr>
   );

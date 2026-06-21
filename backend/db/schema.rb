@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_21_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_21_000004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -112,13 +112,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_21_000002) do
   create_table "battles", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "created_by_id", null: false
+    t.bigint "loser_id"
+    t.bigint "loser_team_id"
     t.string "status", default: "waiting", null: false
     t.integer "turn_count"
     t.datetime "updated_at", null: false
     t.bigint "winner_id"
+    t.bigint "winner_team_id"
     t.index ["created_by_id"], name: "index_battles_on_created_by_id"
+    t.index ["loser_id"], name: "index_battles_on_loser_id"
+    t.index ["loser_team_id"], name: "index_battles_on_loser_team_id"
     t.index ["status"], name: "index_battles_on_status"
     t.index ["winner_id"], name: "index_battles_on_winner_id"
+    t.index ["winner_team_id"], name: "index_battles_on_winner_team_id"
   end
 
   create_table "class_memberships", force: :cascade do |t|
@@ -212,7 +218,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_21_000002) do
   add_foreign_key "battle_players", "battles"
   add_foreign_key "battle_players", "users", column: "student_id"
   add_foreign_key "battle_summons", "battle_players"
+  add_foreign_key "battles", "school_classes", column: "loser_team_id"
+  add_foreign_key "battles", "school_classes", column: "winner_team_id"
   add_foreign_key "battles", "users", column: "created_by_id"
+  add_foreign_key "battles", "users", column: "loser_id"
   add_foreign_key "battles", "users", column: "winner_id"
   add_foreign_key "class_memberships", "school_classes"
   add_foreign_key "class_memberships", "users"

@@ -93,7 +93,7 @@ func (rt *roomRuntime) step() bool {
 	maps.Copy(conns, rt.conns)
 	finished := rt.room.Finished
 	winner, loser := rt.room.WinnerID, rt.room.LoserID
-	winnerTeam, loserTeam := rt.room.WinnerTeam, rt.room.LoserTeam
+	winnerTeam, loserTeam := playerTeamID(rt.room, winner), playerTeamID(rt.room, loser)
 	rt.mu.Unlock()
 
 	for _, c := range conns {
@@ -117,13 +117,26 @@ func (rt *roomRuntime) step() bool {
 // finish は結果を Rails へ冪等保存し、接続を閉じる。
 func (rt *roomRuntime) finish(ctx context.Context) {
 	rt.mu.Lock()
-	body := railsclient.FinishRequest{WinnerID: rt.room.WinnerID, LoserID: rt.room.LoserID, Logs: rt.logs}
+	body := railsclient.FinishRequest{
+		WinnerID: rt.room.WinnerID, LoserID: rt.room.LoserID,
+		WinnerTeam: playerTeamID(rt.room, rt.room.WinnerID),
+		LoserTeam:  playerTeamID(rt.room, rt.room.LoserID),
+		Logs:       rt.logs,
+	}
 	rt.mu.Unlock()
 
 	if rt.rails != nil {
 		_ = rt.rails.PostFinish(ctx, rt.room.BattleID, body)
 	}
 	rt.stop()
+}
+
+// playerTeamID は永続化対象のクラスIDを返す。無所属の1対1では空文字を返す。
+func playerTeamID(room *battle.Room, playerID string) string {
+	if player := room.Players[playerID]; player != nil {
+		return player.TeamID
+	}
+	return ""
 }
 
 // stop は tick ループを止め、接続を閉じる（多重呼び出し安全）。

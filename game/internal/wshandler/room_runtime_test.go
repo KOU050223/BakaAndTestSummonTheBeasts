@@ -65,6 +65,9 @@ func TestRuntimeStepRecordsLogsAndFinishes(t *testing.T) {
 		for _, m := range ca.messages {
 			if fm, ok := m.(FinishedMessage); ok && fm.WinnerID == "A" {
 				hasFinished = true
+				if fm.WinnerTeam != "" || fm.LoserTeam != "" {
+					t.Errorf("1対1ではクラス勝敗を通知しないはず: %+v", fm)
+				}
 			}
 		}
 		if !hasFinished {

@@ -267,6 +267,8 @@ React Frontendからバトルを作成します。作成後、React Battle UIは
   "battleId": "battle_1",
   "winnerId": "user_1",
   "loserId": "user_2",
+  "winnerTeamId": "class_1",
+  "loserTeamId": "class_2",
   "turnCount": 6,
   "logs": [
     {
@@ -335,6 +337,8 @@ Go Game Serverがバトル終了時に、勝敗とログをRailsへ送信しま�
 {
   "winnerId": "user_1",
   "loserId": "user_2",
+  "winnerTeam": "class_1",
+  "loserTeam": "class_2",
   "turnCount": 6,
   "logs": [
     {

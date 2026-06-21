@@ -72,14 +72,16 @@ func TestPostFinish(t *testing.T) {
 
 		c := New(ts.URL, "s3cret")
 		err := c.PostFinish(context.Background(), "11", FinishRequest{
-			WinnerID: "38",
-			LoserID:  "39",
-			Logs:     []FinishLog{{Turn: 1, ActorID: "38", TargetID: "39", Action: "attack", Damage: 20}},
+			WinnerID:   "38",
+			LoserID:    "39",
+			WinnerTeam: "class-a",
+			LoserTeam:  "class-b",
+			Logs:       []FinishLog{{Turn: 1, ActorID: "38", TargetID: "39", Action: "attack", Damage: 20}},
 		})
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if received.WinnerID != "38" || len(received.Logs) != 1 {
+		if received.WinnerID != "38" || received.WinnerTeam != "class-a" || received.LoserTeam != "class-b" || len(received.Logs) != 1 {
 			t.Errorf("payload not received correctly: %+v", received)
 		}
 	})
