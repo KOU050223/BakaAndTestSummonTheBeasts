@@ -41,6 +41,15 @@
   background-blend-mode: var(--dashboard-background-blend);
 }
 
+/* テーマ固有の直下要素装飾より優先し、開閉ボタンを常に所定位置へ配置する。 */
+.dashboard-theme .dashboard-sidebar > .dashboard-sidebar-toggle {
+  position: absolute;
+}
+
+.dashboard-theme .dashboard-sidebar[data-state="closed"] {
+  box-shadow: none;
+}
+
 .theme-panel {
   border-radius: var(--dashboard-radius);
   transform: var(--dashboard-panel-transform);
