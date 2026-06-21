@@ -210,8 +210,14 @@ export function LoginForm() {
           </Button>
         </form>
 
-        <div className="px-5 py-3 border-t border-sky-400/20 bg-black/20 text-center">
-          <span className="text-slate-400/60 text-[0.7rem] tracking-widest">文月学園 試召システム</span>
+        <div className="px-5 py-3 border-t border-sky-400/20 bg-black/20 space-y-1 text-center">
+          <p className="text-slate-400/80 text-xs">
+            アカウントは管理者が発行します。お持ちでない方は管理者にお問い合わせください。
+          </p>
+          <p className="text-slate-400/50">
+            デバッグ用アカウントは Topa`z を参照してください。
+          </p>
+          <span className="text-slate-400/40 text-[0.65rem] tracking-widest">文月学園 試召システム</span>
         </div>
       </Panel>
     </div>
