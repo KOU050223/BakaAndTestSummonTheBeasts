@@ -73,7 +73,7 @@ export default function RootLayout({
       lang="ja"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <Script id="adobe-fonts" strategy="beforeInteractive">
+      <Script id="adobe-fonts" strategy="beforeInteractive" async>
         {`(function(d) {
   var config = {
     kitId: "qav4qsc",
