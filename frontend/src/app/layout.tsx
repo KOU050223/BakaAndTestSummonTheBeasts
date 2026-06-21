@@ -30,7 +30,10 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   icons: {
-    icon: [{ url: "/site-icon.png", type: "image/png" }],
+    icon: [
+      { url: "/site-icon.ico", sizes: "any" },
+      { url: "/site-icon.svg", type: "image/svg+xml" },
+    ],
   },
   manifest: "/manifest.webmanifest",
   keywords: ["試験", "召喚獣", "学習", "教育", "試召戦争"],
@@ -48,8 +51,6 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/baka_kirei.png",
-        width: 130,
-        height: 165,
         alt: `${siteName}の召喚獣`,
       },
     ],
