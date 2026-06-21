@@ -46,7 +46,10 @@ describe("RootLayout", () => {
 
   it("サイトアイコンとWebアプリマニフェストを公開する", () => {
     expect(metadata.icons).toMatchObject({
-      icon: [{ url: "/site-icon.png", type: "image/png" }],
+      icon: [
+        { url: "/site-icon.ico", sizes: "any" },
+        { url: "/site-icon.svg", type: "image/svg+xml" },
+      ],
     });
     expect(metadata.manifest).toBe("/manifest.webmanifest");
   });
