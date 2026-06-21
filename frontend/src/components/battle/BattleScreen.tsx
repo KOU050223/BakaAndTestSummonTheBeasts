@@ -7,7 +7,11 @@ import { WaitingOverlay } from "./WaitingOverlay";
 import { BattleResultScreen } from "./BattleResultScreen";
 import { useBattleStore } from "@/lib/battle/battleStore";
 import { useBattleWebSocket } from "@/lib/battle/useBattleWebSocket";
+import { useVoiceSummon } from "@/lib/battle/useVoiceSummon";
 import { buildInputMessage, type MoveInput } from "@/lib/battle/wsSchema";
+
+// 音声でサモンを発火させるトリガー語。いずれかを含む発話で召喚する。
+const SUMMON_KEYWORDS = ["サモン", "召喚", "しょうかん"];
 
 // 入力送信レート（30Hz = サーバー tick に合わせる）。
 const INPUT_INTERVAL_MS = 1000 / 30;
@@ -67,6 +71,14 @@ export function BattleScreen({ battleId, token, currentUserId, onExit }: BattleS
     summonRef.current = true;
   }, []);
 
+  // 音声でのサモン。バトル開始後（state 受信済み）かつ未決着の間だけ常時リスニングする。
+  // トリガー語を検知したらボタンと同じく summonRef を立てる。
+  const { supported: voiceSupported, listening: voiceListening } = useVoiceSummon({
+    enabled: state !== null && finished === null,
+    keywords: SUMMON_KEYWORDS,
+    onTrigger: handleSummon,
+  });
+
   const self = state?.players[currentUserId];
 
   // 決着後は結果画面。N:N ではチーム単位で勝敗を判定する
@@ -94,6 +106,8 @@ export function BattleScreen({ battleId, token, currentUserId, onExit }: BattleS
           onMoveChange={handleMoveChange}
           onAttack={handleAttack}
           onSummon={handleSummon}
+          voiceSupported={voiceSupported}
+          voiceListening={voiceListening}
         />
       )}
     </div>
