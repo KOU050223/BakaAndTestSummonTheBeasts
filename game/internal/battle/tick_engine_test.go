@@ -137,6 +137,8 @@ func TestRoomCooldown(t *testing.T) {
 		}
 	})
 }
+
+func TestStepSummonOnlyInField(t *testing.T) {
 	t.Run("中立地帯では召喚できない", func(t *testing.T) {
 		r := newTestRoom()
 		// A を中立地帯へ移動させる。
