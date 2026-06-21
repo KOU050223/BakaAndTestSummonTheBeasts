@@ -75,7 +75,6 @@
   --dashboard-accent-soft: rgb(243 209 138 / 12%);
   --dashboard-border: rgb(194 151 82 / 48%);
 
-  position: relative;
   background:
     repeating-linear-gradient(90deg, transparent 0 58px, rgb(10 5 2 / 18%) 59px 62px),
     linear-gradient(100deg, #1d0d06, #4a2813 46%, #241108);

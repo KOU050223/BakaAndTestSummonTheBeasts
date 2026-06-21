@@ -46,6 +46,14 @@
   background-blend-mode: var(--dashboard-background-blend);
 }
 
+/* 各クラスのテーマフォントを、個別のフォント指定を含む全UI要素へ統一して適用する。 */
+.dashboard-theme,
+.dashboard-theme :where(*) {
+  font-family: var(--dashboard-font);
+  font-style: normal;
+  font-weight: 400;
+}
+
 /* テーマ固有の直下要素装飾より優先し、開閉ボタンを常に所定位置へ配置する。 */
 .dashboard-theme .dashboard-sidebar > .dashboard-sidebar-toggle {
   position: absolute;

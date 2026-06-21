@@ -34,6 +34,19 @@ const schoolAdminUser: User = {
 };
 
 describe("Sidebar", () => {
+  it("画面の高さに追従し、ユーザー情報を左下に保つ", () => {
+    render(<Sidebar user={studentUser} />);
+
+    expect(screen.getByRole("complementary")).toHaveClass(
+      "sticky",
+      "top-0",
+      "h-dvh",
+    );
+    expect(screen.getByTestId("user-status").parentElement).toHaveClass(
+      "flex-1",
+    );
+  });
+
   it("ボタンでサイドバーを閉じるよう通知する", async () => {
     const user = userEvent.setup();
     const onToggle = vi.fn();

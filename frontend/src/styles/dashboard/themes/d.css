@@ -1,16 +1,19 @@
 [data-theme="d"] {
   --dashboard-bg: linear-gradient(145deg, #aaa797, #858779 58%, #73776c);
-  --dashboard-surface: rgb(218 215 194 / 94%);
-  --dashboard-sidebar: #747567;
-  --dashboard-surface-soft: rgb(230 226 203 / 88%);
-  --dashboard-text: #383930;
-  --dashboard-muted: #6e6d5f;
-  --dashboard-accent: #5b6253;
-  --dashboard-accent-soft: rgb(91 98 83 / 13%);
-  --dashboard-border: #79796a;
-  --dashboard-font: "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif;
-  --dashboard-radius: 0.18rem;
-  --dashboard-shadow: 3px 5px 10px rgb(42 43 36 / 24%), inset 0 1px rgb(255 255 255 / 35%);
+  --dashboard-texture: url("/Dclass.png");
+  --dashboard-texture-size: cover;
+  --dashboard-background-blend: normal;
+  --dashboard-surface: rgb(232 229 207 / 94%);
+  --dashboard-sidebar: #173b31;
+  --dashboard-surface-soft: rgb(244 240 216 / 88%);
+  --dashboard-text: #293a33;
+  --dashboard-muted: #687269;
+  --dashboard-accent: #285747;
+  --dashboard-accent-soft: rgb(40 87 71 / 12%);
+  --dashboard-border: #6d725f;
+  --dashboard-font: "ta-kotodama-r", "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif;
+  --dashboard-radius: 0.45rem;
+  --dashboard-shadow: 0 10px 24px rgb(35 43 37 / 22%), inset 0 1px rgb(255 255 255 / 55%);
   --dashboard-blur: 0px;
   --dashboard-bar-bg: rgb(56 57 48 / 16%);
   --dashboard-score-good: #35624c;
@@ -25,21 +28,26 @@
 /* Dクラス: 色褪せた内装と、ひと昔前の事務用品。 */
 [data-theme="d"] .theme-panel {
   background:
-    linear-gradient(180deg, rgb(255 255 255 / 20%), transparent 24%),
-    repeating-linear-gradient(0deg, transparent 0 30px, rgb(86 85 70 / 3%) 31px),
+    linear-gradient(135deg, rgb(255 255 255 / 28%), transparent 30% 76%, rgb(35 75 62 / 5%)),
+    repeating-linear-gradient(0deg, transparent 0 31px, rgb(57 75 65 / 3%) 32px),
     var(--dashboard-surface);
+  border-width: 2px;
   border-style: solid;
+  border-color: #68705d;
   box-shadow: var(--dashboard-shadow);
 }
 
 [data-theme="d"] .theme-panel::after {
   position: absolute;
-  inset: 0;
+  inset: 4px;
   z-index: 0;
   pointer-events: none;
   content: "";
-  background: linear-gradient(105deg, rgb(255 255 255 / 10%), transparent 34%, rgb(73 73 61 / 6%));
-  border: 1px solid rgb(74 75 64 / 26%);
+  background:
+    linear-gradient(90deg, rgb(40 87 71 / 7%), transparent 18% 82%, rgb(40 87 71 / 5%)),
+    linear-gradient(180deg, rgb(255 255 255 / 12%), transparent 26%);
+  border: 1px solid rgb(40 87 71 / 22%);
+  border-radius: calc(var(--dashboard-radius) - 0.2rem);
 }
 
 [data-theme="d"] .theme-panel > * {
@@ -48,54 +56,66 @@
 }
 
 [data-theme="d"] .theme-card {
-  background: rgb(232 228 207 / 78%);
-  border-color: #929183;
-  box-shadow: inset 0 1px rgb(255 255 255 / 28%), 2px 3px 6px rgb(48 49 42 / 14%);
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 34%), transparent 38%),
+    rgb(239 235 210 / 88%);
+  border-color: #8a8d77;
+  box-shadow: inset 0 1px rgb(255 255 255 / 52%), 0 4px 10px rgb(40 49 42 / 13%);
+}
+
+[data-theme="d"] .theme-card:hover {
+  border-color: #3e695a;
+  box-shadow: inset 0 1px rgb(255 255 255 / 58%), 0 6px 14px rgb(31 55 46 / 18%);
 }
 
 [data-theme="d"] .dashboard-sidebar {
-  --dashboard-text: #e4e1ce;
-  --dashboard-muted: #c1bfac;
-  --dashboard-accent: #f0ecd6;
-  --dashboard-accent-soft: rgb(238 235 214 / 11%);
-  --dashboard-border: rgb(42 44 38 / 58%);
+  --dashboard-text: #f1f0dc;
+  --dashboard-muted: #c7cfb9;
+  --dashboard-accent: #fffbdc;
+  --dashboard-accent-soft: rgb(241 240 220 / 10%);
+  --dashboard-border: rgb(220 220 190 / 36%);
 
   background:
-    repeating-linear-gradient(0deg, transparent 0 40px, rgb(255 255 255 / 2%) 41px),
-    linear-gradient(100deg, #696b60, #7d7e70 48%, #5d6057);
-  box-shadow: inset -2px 0 rgb(35 36 31 / 28%), 4px 0 12px rgb(36 37 32 / 20%);
+    radial-gradient(circle at 18% 22%, rgb(255 255 235 / 5%) 0 1px, transparent 2px),
+    radial-gradient(circle at 74% 68%, rgb(255 255 235 / 4%) 0 1px, transparent 2px),
+    repeating-linear-gradient(2deg, transparent 0 45px, rgb(230 235 211 / 2%) 46px 47px),
+    linear-gradient(105deg, #0d2c25, #214b3d 48%, #12352b);
+  background-size: 43px 37px, 61px 53px, auto, auto;
+  box-shadow: inset -3px 0 rgb(5 22 17 / 48%), 6px 0 16px rgb(22 25 20 / 28%);
 }
 
 [data-theme="d"] .dashboard-sidebar-brand {
   margin: 0.6rem;
-  color: #33342d;
-  background: #c9c7b6;
-  border: 1px solid #55574f;
+  color: #f2efda;
+  background: rgb(9 39 31 / 72%);
+  border: 4px solid #76583a;
   border-radius: 0.15rem;
-  box-shadow: inset 0 1px rgb(255 255 255 / 30%), 2px 3px 5px rgb(31 32 28 / 22%);
+  box-shadow: inset 0 0 12px rgb(0 0 0 / 24%), 2px 3px 6px rgb(11 20 15 / 32%);
 }
 
 [data-theme="d"] .dashboard-sidebar-brand-title,
 [data-theme="d"] .dashboard-sidebar-brand-subtitle {
-  color: #383930;
+  color: #f2efda;
+  text-shadow: 0 0 1px rgb(255 255 255 / 55%);
 }
 
 [data-theme="d"] .dashboard-sidebar-nav a:hover,
 [data-theme="d"] .dashboard-sidebar-nav a[aria-current="page"] {
-  color: #f1eedc;
-  background: #4f574a;
-  border-color: #aaa997;
-  box-shadow: inset 0 0 8px rgb(26 29 24 / 20%);
+  color: #fffde8;
+  background: rgb(238 239 214 / 9%);
+  border-color: rgb(243 240 207 / 62%);
+  box-shadow: inset 0 0 10px rgb(4 22 17 / 30%), 0 0 4px rgb(239 239 211 / 10%);
 }
 
 [data-theme="d"] .dashboard-user-status {
   margin: 0.6rem;
-  background: rgb(65 68 59 / 38%);
-  border: 1px solid #4d4f47;
+  background: rgb(5 31 24 / 46%);
+  border: 1px solid rgb(225 224 194 / 28%);
+  box-shadow: inset 0 0 10px rgb(0 0 0 / 18%);
 }
 
 [data-theme="d"] .dashboard-user-avatar {
-  color: #e9e6d4;
-  background: #555c50;
-  box-shadow: none;
+  color: #f5f1d6;
+  background: #0b2921;
+  box-shadow: 0 0 0 2px rgb(226 221 184 / 46%);
 }

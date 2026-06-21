@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import { QueryProvider } from "@/lib/api/QueryProvider";
 import "./globals.css";
 
@@ -72,6 +73,37 @@ export default function RootLayout({
       lang="ja"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <Script id="adobe-fonts" strategy="beforeInteractive">
+          {`(function(d) {
+  var config = {
+    kitId: "qav4qsc",
+    scriptTimeout: 3000,
+    async: true
+  },
+  h = d.documentElement,
+  t = setTimeout(function() {
+    h.className = h.className.replace(/\\bwf-loading\\b/g, "") + " wf-inactive";
+  }, config.scriptTimeout),
+  tk = d.createElement("script"),
+  f = false,
+  s = d.getElementsByTagName("script")[0],
+  a;
+
+  h.className += " wf-loading";
+  tk.src = "https://use.typekit.net/" + config.kitId + ".js";
+  tk.async = true;
+  tk.onload = tk.onreadystatechange = function() {
+    a = this.readyState;
+    if (f || (a && a !== "complete" && a !== "loaded")) return;
+    f = true;
+    clearTimeout(t);
+    try { Typekit.load(config); } catch (e) {}
+  };
+  s.parentNode.insertBefore(tk, s);
+})(document);`}
+        </Script>
+      </head>
       <body className="min-h-full flex flex-col">
         <QueryProvider>{children}</QueryProvider>
       </body>

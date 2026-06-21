@@ -25,7 +25,7 @@ export function Sidebar({
   return (
     <aside
       data-state={isOpen ? "open" : "closed"}
-      className={`dashboard-sidebar relative z-10 flex shrink-0 flex-col bg-[var(--dashboard-sidebar)] backdrop-blur-[var(--dashboard-blur)] transition-[width,border-color] duration-300 ease-in-out ${
+      className={`dashboard-sidebar sticky top-0 z-10 flex h-dvh shrink-0 self-start flex-col bg-[var(--dashboard-sidebar)] backdrop-blur-[var(--dashboard-blur)] transition-[width,border-color] duration-300 ease-in-out ${
         isOpen
           ? "w-64 border-r border-[var(--dashboard-border)]"
           : "w-0 border-r border-transparent"
