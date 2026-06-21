@@ -22,16 +22,15 @@ type FieldZonesProps = {
 };
 
 // AR 床に科目フィールド円を 3D で描画する。
-// 各フィールドは中心 (centerX, centerZ)・半径 radius の薄い円盤として床面（y≈0）に置く。
-// この円内でのみ対応科目の召喚・戦闘が可能（仕様: battle.md）。
+// 各フィールドは中心 (centerX, centerZ)・半径 radius の薄い円盤として床面（y=0）に置く。
+// 各フィールド中心に (半径+10) のグリッド（battleArena.ts 参照）。
 export function FieldZones({ fields }: FieldZonesProps) {
   return (
     <>
       {fields.map((f) => (
         <mesh
           key={f.subject}
-          // 床面に水平に寝かせる（X軸 -90°）。わずかに浮かせて z-fighting を避ける。
-          position={[f.centerX, 0.01, f.centerZ]}
+          position={[f.centerX, 0.005, f.centerZ]}
           rotation={[-Math.PI / 2, 0, 0]}
         >
           <ringGeometry args={[f.radius * 0.92, f.radius, 48]} />

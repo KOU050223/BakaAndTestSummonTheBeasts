@@ -1,10 +1,15 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { NextConfig } from "next";
 
+const frontendRoot = path.dirname(fileURLToPath(import.meta.url));
+
 const nextConfig: NextConfig = {
-  // Next.js 16 は Turbopack がデフォルト。three.js / @pixiv/three-vrm は
-  // クライアント専用描画（"use client"）で使うため、追加の resolve 設定は不要。
-  // 空の turbopack 設定を置くことで、webpack カスタム設定との競合警告も避ける。
-  turbopack: {},
+  // リポジトリ直下の package-lock.json があると Turbopack が monorepo ルートを誤認識し、
+  // node_modules 解決や CSS @import が frontend 基準にならない。frontend を明示する。
+  turbopack: {
+    root: frontendRoot,
+  },
 };
 
 export default nextConfig;

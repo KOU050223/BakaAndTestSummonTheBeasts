@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { AnimationMixer, LoopOnce, LoopRepeat } from "three";
+import { AnimationMixer, LoopOnce, LoopRepeat, Vector3 } from "three";
 import type { AnimationAction, Group } from "three";
 import { VRM, VRMLoaderPlugin, VRMUtils } from "@pixiv/three-vrm";
 import {
@@ -11,47 +11,84 @@ import {
   VRMAnimationLoaderPlugin,
   VRMLookAtQuaternionProxy,
 } from "@pixiv/three-vrm-animation";
+import {
+  type AvatarAnimationProfile,
+  createCombatStanceClip,
+  getAvatarOverlayPolicy,
+} from "@/lib/battle/avatarAnimation";
+import { lerpAngleY } from "@/lib/battle/coords";
+import {
+  OverlayTransitionController,
+  isRecoverComplete,
+  type OverlayPlaybackDecision,
+} from "@/lib/battle/overlayTransition";
+import {
+  enforceBaseLayer,
+  getActiveOverlay,
+  reinforceMinimumPoseWeight,
+  shouldChainOverlayEarly,
+  silenceInactiveOverlays,
+  type AnimationLayerSlot,
+} from "@/lib/battle/threeAnimationGuard";
+import {
+  cloneOverlayClipForPingPong,
+  isOverlayClipFullyEnded,
+  playOverlayChain,
+  playOverlayFromBase,
+  recoverBaseFromOverlay,
+  reinforceBaseWeight,
+} from "@/lib/battle/threeOverlayPlayback";
+
+const AVATAR_LERP = 0.15;
+
+const EMPTY_LAYER_SLOT: AnimationLayerSlot = {
+  base: null,
+  overlays: [],
+  activeOverlayIndex: 0,
+};
 
 type VrmAvatarProps = {
-  // 読み込む VRM ファイルの URL（public 配下を想定）。
   url: string;
-  // ワールド座標。バトルでは Goサーバー権威の position をここへ渡す。
   position?: [number, number, number];
-  // Y軸回り（ラジアン）の向き。攻撃の正面判定と一致させる。
   rotationY?: number;
-  // 待機モーション（.vrma）の URL。常時ループ再生する。未指定なら再生しない。
+  animationProfile?: AvatarAnimationProfile;
   idleAnimationUrl?: string;
-  // 攻撃などのワンショットモーション（.vrma）の URL。
-  // この値が「変化した」タイミングで先頭から 1 回だけ再生し、終わると待機へ戻る。
-  // 同じ攻撃を連続で出す場合は、呼び出し側でキー（後述の actionKey）を変えること。
   actionAnimationUrl?: string;
-  // actionAnimationUrl と同じ URL を連続再生したいときの再トリガー用キー。
-  // 値が変わるたびにワンショットを頭から再生し直す。
   actionKey?: string | number;
 };
 
-// VRM モデルを読み込んで表示し、VRMA（VRM Animation）を再生するコンポーネント。
-// GLTFLoader に VRMLoaderPlugin / VRMAnimationLoaderPlugin を登録して
-// VRM 本体も .vrma も同じローダーで読み込む。
-// useFrame で毎フレーム mixer.update(delta) と vrm.update(delta) を呼ぶ。
 export function VrmAvatar({
   url,
   position = [0, 0, 0],
   rotationY = 0,
+  animationProfile = "showcase",
   idleAnimationUrl,
   actionAnimationUrl,
   actionKey,
 }: VrmAvatarProps) {
   const [vrm, setVrm] = useState<VRM | null>(null);
+  const [overlayReady, setOverlayReady] = useState(false);
+  const [baseReady, setBaseReady] = useState(false);
   const groupRef = useRef<Group>(null);
 
-  // AnimationMixer は VRM が読み込まれた後に生成する。
   const mixerRef = useRef<AnimationMixer | null>(null);
-  // 待機・アクションそれぞれの AnimationAction を保持する。
-  const idleActionRef = useRef<AnimationAction | null>(null);
-  const actionActionRef = useRef<AnimationAction | null>(null);
+  const layerSlotRef = useRef<AnimationLayerSlot>({ ...EMPTY_LAYER_SLOT });
+  const overlaySystemRef = useRef({
+    controller: new OverlayTransitionController(getAvatarOverlayPolicy("showcase")),
+  });
+  const onOverlayFinishedRef = useRef<((e: { action: AnimationAction }) => void) | null>(null);
+  const processedActionKeyRef = useRef<string | number | undefined>(undefined);
 
-  // GLTFLoader はマウント中で使い回す。VRM も VRMA も同じローダーで読める。
+  const targetPositionRef = useRef(new Vector3(...position));
+  const targetRotationYRef = useRef(rotationY);
+  const currentRotationYRef = useRef(rotationY);
+  const needsSnapRef = useRef(true);
+
+  useEffect(() => {
+    targetPositionRef.current.set(position[0], position[1], position[2]);
+    targetRotationYRef.current = rotationY;
+  }, [position, rotationY]);
+
   const loader = useMemo(() => {
     const l = new GLTFLoader();
     l.register((parser) => new VRMLoaderPlugin(parser));
@@ -59,7 +96,77 @@ export function VrmAvatar({
     return l;
   }, []);
 
-  // --- VRM 本体の読み込み ---
+  const getPolicy = () => getAvatarOverlayPolicy(animationProfile);
+
+  const detachOverlayFinishedListener = () => {
+    const mixer = mixerRef.current;
+    const handler = onOverlayFinishedRef.current;
+    if (mixer && handler) {
+      mixer.removeEventListener("finished", handler);
+      onOverlayFinishedRef.current = null;
+    }
+  };
+
+  const resetLayerSlot = () => {
+    layerSlotRef.current = { ...EMPTY_LAYER_SLOT };
+  };
+
+  const resetOverlaySystem = () => {
+    detachOverlayFinishedListener();
+    overlaySystemRef.current.controller.reset();
+    processedActionKeyRef.current = undefined;
+    resetLayerSlot();
+  };
+
+  const attachOverlayFinishedListener = () => {
+    const mixer = mixerRef.current;
+    const overlay = getActiveOverlay(layerSlotRef.current);
+    if (!mixer || !overlay) return;
+
+    detachOverlayFinishedListener();
+
+    const onFinished = (e: { action: AnimationAction }) => {
+      const active = getActiveOverlay(layerSlotRef.current);
+      if (!active || e.action !== active) return;
+      applyOverlayDecision(overlaySystemRef.current.controller.onOverlayEnded());
+    };
+    onOverlayFinishedRef.current = onFinished;
+    mixer.addEventListener("finished", onFinished);
+  };
+
+  const applyOverlayDecision = (decision: OverlayPlaybackDecision) => {
+    const slot = layerSlotRef.current;
+    const policy = getPolicy();
+    const controller = overlaySystemRef.current.controller;
+
+    switch (decision.kind) {
+      case "ignore":
+      case "queue":
+        break;
+      case "play_from_base":
+        playOverlayFromBase(slot, policy.enterOverlaySec);
+        controller.markOverlayStarted(decision.key);
+        attachOverlayFinishedListener();
+        break;
+      case "play_chain": {
+        const chainSec = decision.holdOutgoingEnd
+          ? policy.enterOverlaySec
+          : (policy.interruptOverlaySec ?? policy.enterOverlaySec * 0.5);
+        playOverlayChain(slot, chainSec);
+        controller.markOverlayStarted(decision.key);
+        attachOverlayFinishedListener();
+        break;
+      }
+      case "start_recover":
+        recoverBaseFromOverlay(slot, policy.exitOverlaySec);
+        break;
+    }
+  };
+
+  useEffect(() => {
+    overlaySystemRef.current.controller.setPolicy(getPolicy());
+  }, [animationProfile]);
+
   useEffect(() => {
     let disposed = false;
     let loaded: VRM | null = null;
@@ -69,18 +176,11 @@ export function VrmAvatar({
       (gltf) => {
         if (disposed) return;
         const loadedVrm = gltf.userData.vrm as VRM;
-        // パフォーマンス最適化（不要頂点・不要ジョイントの削除）。
         VRMUtils.removeUnnecessaryVertices(loadedVrm.scene);
         VRMUtils.removeUnnecessaryJoints(loadedVrm.scene);
-        // NOTE: VRMUtils.rotateVRM0 はこのプロジェクトの座標系では使わない。
-        // 元々 rotateVRM0 なしで正しい向きに表示されていたため、
-        // 呼ぶとモデルが 180 度逆を向いてしまう。
-        // フラスタムカリングで消えるのを防ぐ。
         loadedVrm.scene.traverse((obj) => {
           obj.frustumCulled = false;
         });
-        // lookAt アニメーションの再生に必要なプロキシを追加する。
-        // lookAt を持たない VRM もあるため存在する場合のみ。
         if (loadedVrm.lookAt) {
           const lookAtProxy = new VRMLookAtQuaternionProxy(loadedVrm.lookAt);
           lookAtProxy.name = "lookAtQuaternionProxy";
@@ -89,6 +189,8 @@ export function VrmAvatar({
 
         loaded = loadedVrm;
         mixerRef.current = new AnimationMixer(loadedVrm.scene);
+        resetOverlaySystem();
+        needsSnapRef.current = true;
         setVrm(loadedVrm);
       },
       undefined,
@@ -99,21 +201,23 @@ export function VrmAvatar({
 
     return () => {
       disposed = true;
+      resetOverlaySystem();
       mixerRef.current?.stopAllAction();
       mixerRef.current = null;
-      idleActionRef.current = null;
-      actionActionRef.current = null;
+      setOverlayReady(false);
+      setBaseReady(false);
       if (loaded) {
-        // GPU リソースを解放してメモリリークを防ぐ。
         VRMUtils.deepDispose(loaded.scene);
       }
     };
   }, [loader, url]);
 
-  // --- 待機モーション（ループ）の読み込み ---
   useEffect(() => {
-    if (!vrm || !mixerRef.current || !idleAnimationUrl) return;
+    if (animationProfile !== "showcase" || !vrm || !mixerRef.current || !idleAnimationUrl) {
+      return;
+    }
     let disposed = false;
+    setBaseReady(false);
 
     loader.load(
       idleAnimationUrl,
@@ -128,7 +232,8 @@ export function VrmAvatar({
         const action = mixerRef.current.clipAction(clip);
         action.setLoop(LoopRepeat, Infinity);
         action.play();
-        idleActionRef.current = action;
+        layerSlotRef.current.base = action;
+        setBaseReady(true);
       },
       undefined,
       (error) => {
@@ -138,21 +243,27 @@ export function VrmAvatar({
 
     return () => {
       disposed = true;
-      const action = idleActionRef.current;
-      if (action) {
-        action.stop();
-        mixerRef.current?.uncacheClip(action.getClip());
-        idleActionRef.current = null;
+      const base = layerSlotRef.current.base;
+      if (base) {
+        base.stop();
+        mixerRef.current?.uncacheClip(base.getClip());
+        layerSlotRef.current.base = null;
       }
+      setBaseReady(false);
     };
-  }, [vrm, loader, idleAnimationUrl]);
+  }, [vrm, loader, idleAnimationUrl, animationProfile]);
 
-  // --- アクションモーション（ワンショット）の読み込みと再生 ---
-  // actionAnimationUrl または actionKey が変化したら頭から 1 回再生する。
   useEffect(() => {
     if (!vrm || !mixerRef.current || !actionAnimationUrl) return;
     const mixer = mixerRef.current;
     let disposed = false;
+
+    setOverlayReady(false);
+    if (animationProfile === "combat") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reset base clip when overlay URL changes
+      setBaseReady(false);
+    }
+    resetOverlaySystem();
 
     loader.load(
       actionAnimationUrl,
@@ -160,66 +271,165 @@ export function VrmAvatar({
         if (disposed || !vrm) return;
         const vrmAnimation = gltf.userData.vrmAnimations?.[0];
         if (!vrmAnimation) {
-          console.warn("[VrmAvatar] no vrmAnimations in action:", actionAnimationUrl);
+          console.warn("[VrmAvatar] no vrmAnimations in overlay:", actionAnimationUrl);
           return;
         }
         const clip = createVRMAnimationClip(vrmAnimation, vrm);
-        const action = mixer.clipAction(clip);
-        action.setLoop(LoopOnce, 1);
-        // 再生終了後にポーズが戻らず、最後のフレームで止まるようにする。
-        action.clampWhenFinished = true;
-        actionActionRef.current = action;
+        const altClip = cloneOverlayClipForPingPong(clip);
+        const overlayA = mixer.clipAction(clip);
+        const overlayB = mixer.clipAction(altClip);
+        for (const overlay of [overlayA, overlayB]) {
+          overlay.setLoop(LoopOnce, 1);
+          overlay.clampWhenFinished = true;
+          overlay.zeroSlopeAtStart = true;
+          overlay.zeroSlopeAtEnd = true;
+        }
+        layerSlotRef.current = {
+          base: layerSlotRef.current.base,
+          overlays: [overlayA, overlayB],
+          activeOverlayIndex: 0,
+        };
 
-        const idle = idleActionRef.current;
-        if (idle) {
-          // 待機 → アクションへなめらかにクロスフェード。
-          action.reset();
-          action.crossFadeFrom(idle, 0.15, false);
-          action.play();
-        } else {
-          action.reset().play();
+        if (animationProfile === "combat") {
+          const stanceClip = createCombatStanceClip(clip);
+          const base = mixer.clipAction(stanceClip);
+          base.setLoop(LoopRepeat, Infinity);
+          base.play();
+          layerSlotRef.current.base = base;
+          setBaseReady(true);
         }
 
-        // 再生が終わったら待機へ戻す。
-        const onFinished = (e: { action: AnimationAction }) => {
-          if (e.action !== action) return;
-          const idleNow = idleActionRef.current;
-          if (idleNow) {
-            idleNow.reset();
-            idleNow.crossFadeFrom(action, 0.2, false);
-            idleNow.play();
-          }
-          mixer.removeEventListener("finished", onFinished);
-        };
-        mixer.addEventListener("finished", onFinished);
+        setOverlayReady(true);
       },
       undefined,
       (error) => {
-        console.error("[VrmAvatar] failed to load action vrma:", actionAnimationUrl, error);
+        console.error("[VrmAvatar] failed to load overlay vrma:", actionAnimationUrl, error);
       },
     );
 
     return () => {
       disposed = true;
-      const action = actionActionRef.current;
-      if (action) {
-        action.stop();
-        mixerRef.current?.uncacheClip(action.getClip());
-        actionActionRef.current = null;
+      const overlays = [...layerSlotRef.current.overlays];
+      const base = layerSlotRef.current.base;
+      detachOverlayFinishedListener();
+      for (const overlay of overlays) {
+        overlay.stop();
+        mixer.uncacheClip(overlay.getClip());
       }
+      if (base) {
+        base.stop();
+        mixer.uncacheClip(base.getClip());
+      }
+      resetLayerSlot();
+      overlaySystemRef.current.controller.reset();
+      if (animationProfile === "combat") {
+        setBaseReady(false);
+      }
+      setOverlayReady(false);
     };
-    // actionKey を依存に含めることで、同じ URL でも再トリガーできる。
-  }, [vrm, loader, actionAnimationUrl, actionKey]);
+  }, [vrm, loader, actionAnimationUrl, animationProfile]);
+
+  useEffect(() => {
+    const needsBase = animationProfile === "combat" || Boolean(idleAnimationUrl);
+    if (
+      actionKey === undefined ||
+      !overlayReady ||
+      (needsBase && !baseReady) ||
+      layerSlotRef.current.overlays.length === 0 ||
+      !mixerRef.current
+    ) {
+      return;
+    }
+    if (processedActionKeyRef.current === actionKey) {
+      return;
+    }
+    processedActionKeyRef.current = actionKey;
+
+    applyOverlayDecision(overlaySystemRef.current.controller.request(actionKey));
+  }, [actionKey, overlayReady, baseReady, animationProfile, idleAnimationUrl]);
 
   useFrame((_, delta) => {
+    if (groupRef.current) {
+      if (needsSnapRef.current) {
+        groupRef.current.position.copy(targetPositionRef.current);
+        groupRef.current.rotation.y = targetRotationYRef.current;
+        currentRotationYRef.current = targetRotationYRef.current;
+        needsSnapRef.current = false;
+      } else {
+        groupRef.current.position.lerp(targetPositionRef.current, AVATAR_LERP);
+        currentRotationYRef.current = lerpAngleY(
+          currentRotationYRef.current,
+          targetRotationYRef.current,
+          AVATAR_LERP,
+        );
+        groupRef.current.rotation.y = currentRotationYRef.current;
+      }
+    }
+
+    const slot = layerSlotRef.current;
+    const controller = overlaySystemRef.current.controller;
+    const policy = getPolicy();
+
+    // 連鎖保留あり: clip 終了「前」に crossFade 開始（終了瞬間の weight 落ち → T ポーズを防ぐ）
+    if (controller.phase === "overlay" && controller.hasPendingChain()) {
+      const overlay = getActiveOverlay(slot);
+      if (overlay) {
+        const clip = overlay.getClip();
+        if (
+          shouldChainOverlayEarly(
+            overlay.time,
+            clip.duration,
+            policy.enterOverlaySec,
+            true,
+          )
+        ) {
+          applyOverlayDecision(controller.onOverlayEnded());
+        }
+      }
+    }
+
     mixerRef.current?.update(delta);
+
+    enforceBaseLayer(slot);
+    silenceInactiveOverlays(slot);
+    reinforceMinimumPoseWeight(slot);
+
+    if (controller.phase === "overlay") {
+      const overlay = getActiveOverlay(slot);
+      if (
+        overlay &&
+        isOverlayClipFullyEnded(overlay, controller.hasPendingChain())
+      ) {
+        applyOverlayDecision(controller.onOverlayEnded());
+      }
+    }
+
+    if (controller.phase === "recovering") {
+      const recoveringOverlay = getActiveOverlay(slot);
+      if (
+        slot.base &&
+        recoveringOverlay &&
+        isRecoverComplete(
+          policy,
+          recoveringOverlay.getEffectiveWeight(),
+          slot.base.getEffectiveWeight(),
+        )
+      ) {
+        applyOverlayDecision(controller.onRecoverComplete());
+      }
+    }
+
+    if (controller.phase === "base") {
+      reinforceBaseWeight(slot);
+    }
+
     vrm?.update(delta);
   });
 
   if (!vrm) return null;
 
   return (
-    <group ref={groupRef} position={position} rotation={[0, rotationY, 0]}>
+    <group ref={groupRef}>
       <primitive object={vrm.scene} />
     </group>
   );

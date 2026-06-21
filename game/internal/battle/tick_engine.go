@@ -99,7 +99,7 @@ func (r *Room) applySummon(p *Player, in Input) {
 
 // applyAttack は攻撃入力を判定し、命中すれば対象の有効召喚獣にダメージを与える。
 func (r *Room) applyAttack(actorID string, actor *Player, in Input) (AttackEvent, bool) {
-	if !in.Attack || r.cooldowns[actorID] > 0 {
+	if !in.Attack {
 		return AttackEvent{}, false
 	}
 	attackerSummon := actor.ActiveSummon(r.Fields)
@@ -107,14 +107,20 @@ func (r *Room) applyAttack(actorID string, actor *Player, in Input) (AttackEvent
 		return AttackEvent{}, false // フィールド外・未召喚は攻撃不可
 	}
 
-	// ここまで来た時点で「攻撃を振った」とみなし、命中の有無に関わらず
-	// クライアントで攻撃モーションを再生させる。
+	if r.cooldowns[actorID] > 0 {
+		return AttackEvent{}, false
+	}
+
+	// クールダウンを通過した攻撃入力のみモーションを再生する（クライアントの attacking フラグ）。
 	actor.Attacking = true
+	cd := r.cooldown(attackerSummon)
 
 	// 自分以外で、攻撃範囲・正面条件を満たす対象のうち最も近い1体を選ぶ。
 	// map の反復順は非決定的なため、最近接で一意に決める（N:N の公平性）。
 	targetID, target, targetSummon := r.nearestTarget(actorID, actor)
 	if target == nil {
+		// 空振りでも攻撃間隔（クールタイム）を消費する。
+		r.cooldowns[actorID] = cd
 		return AttackEvent{}, false
 	}
 
@@ -123,7 +129,7 @@ func (r *Room) applyAttack(actorID string, actor *Player, in Input) (AttackEvent
 	if targetSummon.HP < 0 {
 		targetSummon.HP = 0
 	}
-	r.cooldowns[actorID] = r.cooldown(attackerSummon)
+	r.cooldowns[actorID] = cd
 	return AttackEvent{Turn: r.Tick, ActorID: actorID, TargetID: targetID, Damage: dmg}, true
 }
 

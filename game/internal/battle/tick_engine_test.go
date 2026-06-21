@@ -1,6 +1,9 @@
 package battle
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
 
 // テスト用に、math フィールドが原点を覆う Room を作る。
 func newTestRoom() *Room {
@@ -65,6 +68,72 @@ func TestStepAttackCooldown(t *testing.T) {
 		events := r.Step(map[string]Input{"A": {Attack: true}}) // クールダウン中
 		if len(events) != 0 {
 			t.Errorf("クールダウン中は攻撃できないはず: %d件", len(events))
+		}
+		if r.Players["A"].Attacking {
+			t.Error("クールダウン中は attacking フラグを立てない")
+		}
+	})
+
+	t.Run("クールダウン通過後の攻撃入力で attacking が立つ", func(t *testing.T) {
+		r := newTestRoom()
+		r.Players["A"].Summoned = true
+
+		r.Step(map[string]Input{"A": {Attack: true}})
+		if !r.Players["A"].Attacking {
+			t.Fatal("初回攻撃で attacking が立つはず")
+		}
+
+		// クールダウンを消化する（命中時 cd = 30-8 = 22 tick）
+		for r.cooldowns["A"] > 0 {
+			r.Step(map[string]Input{})
+		}
+
+		r.Step(map[string]Input{"A": {Attack: true}})
+		if !r.Players["A"].Attacking {
+			t.Error("クールダウン後の攻撃で attacking が立つはず")
+		}
+	})
+}
+
+func TestStepAttackCooldownOnMiss(t *testing.T) {
+	t.Run("空振りでもクールダウンが付き連続攻撃できない", func(t *testing.T) {
+		r := newTestRoom()
+		r.Players["A"].Summoned = true
+		r.Players["A"].Angle = math.Pi // B と逆を向く → 範囲内でも正面外
+
+		r.Step(map[string]Input{"A": {Attack: true}})
+		if r.cooldowns["A"] == 0 {
+			t.Fatal("空振りでもクールダウンが付くはず")
+		}
+		if !r.Players["A"].Attacking {
+			t.Error("空振りでも attacking が立つはず")
+		}
+
+		events := r.Step(map[string]Input{"A": {Attack: true}})
+		if len(events) != 0 {
+			t.Errorf("クールダウン中は攻撃できないはず: %d件", len(events))
+		}
+		if r.Players["A"].Attacking {
+			t.Error("クールダウン中は attacking フラグを立てない")
+		}
+	})
+}
+
+func TestRoomCooldown(t *testing.T) {
+	t.Run("素早さに反比例し下限を下回らない", func(t *testing.T) {
+		r := newTestRoom()
+		fast := &Summon{Speed: 8}
+		slow := &Summon{Speed: 0}
+		veryFast := &Summon{Speed: 100}
+
+		if got := r.cooldown(fast); got != 22 {
+			t.Errorf("Speed 8 → cd 22 のはず: %d", got)
+		}
+		if got := r.cooldown(slow); got != 30 {
+			t.Errorf("Speed 0 → cd 30 のはず: %d", got)
+		}
+		if got := r.cooldown(veryFast); got != r.Config.CooldownMin {
+			t.Errorf("下限 %d のはず: %d", r.Config.CooldownMin, got)
 		}
 	})
 }

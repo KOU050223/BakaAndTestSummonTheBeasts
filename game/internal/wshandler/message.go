@@ -46,7 +46,7 @@ type PlayerState struct {
 	Defeated       bool    `json:"defeated"` // 戦闘不能（HP0で場から除外）か。
 	CurrentSubject *string `json:"currentSubject"`
 	Summoned       bool    `json:"summoned"`
-	// Attacking はこの tick で攻撃を発動したか（クライアントの攻撃アニメ用）。
+	// Attacking はクールダウンを通過した攻撃入力があった tick で true（クライアントの攻撃アニメ用）。
 	Attacking bool                   `json:"attacking"`
 	Summons   map[string]SummonState `json:"summons"`
 }

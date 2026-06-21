@@ -1,11 +1,17 @@
 "use client";
 
-import { Suspense, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Grid } from "@react-three/drei";
 import * as THREE from "three";
 import { VrmAvatar } from "./VrmAvatar";
+import { BattleFloor } from "./BattleFloor";
 import { FieldZones } from "./FieldZones";
+import {
+  ARENA_GRID_CELL_SIZE,
+  ARENA_GRID_SECTION_SIZE,
+  computeGridHalfExtent,
+} from "@/lib/battle/battleArena";
 import type { StateMessage, PlayerState } from "@/lib/battle/wsSchema";
 import { goAngleToThreeRotationY } from "@/lib/battle/coords";
 
@@ -91,28 +97,29 @@ const ATTACK_VRMA_URL = "/VRMA_MotionPack/vrma/ban.vrma";
 type BattleAvatarProps = {
   position: [number, number, number];
   rotationY: number;
-  // サーバー権威の「この tick で攻撃を発動したか」。
+  // サーバー権威: クールダウンを通過した攻撃入力があった tick のみ true。
   attacking: boolean;
   // 現在の tick。攻撃モーションの再トリガーキーに使う。
   tick: number;
 };
 
-// 召喚済みプレイヤーの VRM アバター。
-// attacking が true になった tick を覚えておき、それを actionKey として
-// VrmAvatar に渡すことで攻撃モーションを 1 回だけ再生させる。
-// （attacking は 1 tick で false に戻るため、ここで「最後に攻撃した tick」を保持する）
 function BattleAvatar({ position, rotationY, attacking, tick }: BattleAvatarProps) {
   const [lastAttackTick, setLastAttackTick] = useState<number | null>(null);
-  if (attacking && tick !== lastAttackTick) {
-    setLastAttackTick(tick);
-  }
+
+  useEffect(() => {
+    if (attacking) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- server tick edge for actionKey
+      setLastAttackTick((prev) => (tick !== prev ? tick : prev));
+    }
+  }, [attacking, tick]);
+
   return (
     <VrmAvatar
       url={DEFAULT_VRM_URL}
       position={position}
       rotationY={rotationY}
-      idleAnimationUrl={IDLE_VRMA_URL}
-      actionAnimationUrl={lastAttackTick !== null ? ATTACK_VRMA_URL : undefined}
+      animationProfile="combat"
+      actionAnimationUrl={ATTACK_VRMA_URL}
       actionKey={lastAttackTick ?? undefined}
     />
   );
@@ -142,14 +149,22 @@ export function BattleScene({ state, currentUserId }: BattleSceneProps) {
       <ambientLight intensity={Math.PI * 0.5} />
       <directionalLight position={[1, 2, 1]} intensity={Math.PI} />
 
-      {/* 床のグリッド（AR では床面検出に置き換わる演出の暫定表現） */}
-      <Grid
-        args={[10, 10]}
-        cellColor="#3b4a6b"
-        sectionColor="#5b6ea3"
-        fadeDistance={18}
-        position={[0, 0, 0]}
-      />
+      {/* 床グリッド: ワールド XZ = サーバー座標。フィールド円と 1:1 整合 */}
+      {state ? (
+        <BattleFloor fields={state.fields} />
+      ) : (
+        <Grid
+          args={[computeGridHalfExtent(0) * 2, computeGridHalfExtent(0) * 2]}
+          cellSize={ARENA_GRID_CELL_SIZE}
+          sectionSize={ARENA_GRID_SECTION_SIZE}
+          cellColor="#3b4a6b"
+          sectionColor="#5b6ea3"
+          fadeDistance={computeGridHalfExtent(0) * 3}
+          fadeStrength={1}
+          fadeFrom={1}
+          position={[0, 0, 0]}
+        />
+      )}
 
       <Suspense fallback={null}>
         {state ? (
@@ -192,6 +207,7 @@ export function BattleScene({ state, currentUserId }: BattleSceneProps) {
               rotationY={Math.PI / 2}
               idleAnimationUrl={IDLE_VRMA_URL}
               actionAnimationUrl={ATTACK_VRMA_URL}
+              actionKey={0}
             />
             <VrmAvatar
               url={DEFAULT_VRM_URL}
