@@ -30,7 +30,7 @@ func DefaultConfig() Config {
 		AttackRange:  2.0,
 		FrontDot:     0.5,
 		CooldownBase: 30, // 基礎クール（30Hz）。旧 MVP 既定は 30（≈1秒）だったが体感を優先して短縮
-		CooldownMin:  6, // 下限 1 tick（旧既定 6）
+		CooldownMin:  6,  // 下限 1 tick（旧既定 6）
 	}
 }
 
