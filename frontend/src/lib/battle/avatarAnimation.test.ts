@@ -5,8 +5,10 @@ import { CHAINED_OVERLAY_POLICY } from "./overlayTransition";
 
 describe("createCombatStanceClip", () => {
   it("攻撃 clip 先頭からスタンス subclip を作る", () => {
-    const source = new AnimationClip("attack", 2, [
-      new NumberKeyframeTrack(".position[x]", [0, 1, 2], [0, 1, 2]),
+    const fps = 30;
+    const endFrame = 10;
+    const source = new AnimationClip("attack", endFrame / fps, [
+      new NumberKeyframeTrack(".position[x]", [0, 5 / fps, (endFrame - 1) / fps], [0, 1, 2]),
     ]);
     const stance = createCombatStanceClip(source);
     expect(stance.name).toBe("attack_combat_stance");

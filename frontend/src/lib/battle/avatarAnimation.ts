@@ -43,7 +43,7 @@ export function getAvatarOverlayPolicy(profile: AvatarAnimationProfile): Overlay
 
 export function createCombatStanceClip(source: AnimationClip): AnimationClip {
   const maxFrame = Math.max(1, Math.floor(source.duration * COMBAT_STANCE_FPS));
-  const endFrame = Math.min(COMBAT_STANCE_END_FRAME, maxFrame);
+  const endFrame = Math.max(1, Math.min(COMBAT_STANCE_END_FRAME, maxFrame));
   return AnimationUtils.subclip(
     source,
     `${source.name}_combat_stance`,
