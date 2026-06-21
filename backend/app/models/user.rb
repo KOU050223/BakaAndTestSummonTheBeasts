@@ -9,6 +9,7 @@ class User < ApplicationRecord
   has_many :scores, foreign_key: :student_id, dependent: :destroy
   has_many :summon_statuses, foreign_key: :student_id, dependent: :destroy
   has_many :battle_players, foreign_key: :student_id, dependent: :destroy
+  has_many :push_subscriptions, dependent: :destroy
 
   validates :name, presence: true
   validates :email, presence: true, uniqueness: { case_sensitive: false }, format: { with: URI::MailTo::EMAIL_REGEXP }
