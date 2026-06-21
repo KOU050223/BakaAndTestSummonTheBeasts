@@ -340,21 +340,21 @@ function StudentRow({
 
   return (
 
-    <tr className="border-b border-white/5 text-slate-200">
+    <tr className="border-b border-gray-200 text-gray-900">
       <td className="px-3 py-3 font-semibold">
         <span className="flex items-center gap-2">
           {student.name}
           {student.leader && (
-            <span className="rounded-sm bg-amber-400/20 px-1.5 py-0.5 text-xs font-bold text-amber-300 ring-1 ring-amber-400/40">
-              リーダー
+            <span className="rounded-sm bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-amber-700 ring-1 ring-amber-400/40">
+              クラス代表
             </span>
           )}
         </span>
       </td>
-      <td className="px-3 py-3 font-mono font-bold text-sky-200">
+      <td className="px-3 py-3 font-mono font-bold text-sky-700">
         {student.totalScore.toLocaleString()}
       </td>
-      <td className="px-3 py-3">
+      <td className="px-3 py-3 text-gray-700">
         {student.topSubject.name} {student.topSubject.score}点
       </td>
       <td className="px-3 py-3">
@@ -383,7 +383,7 @@ function StudentRow({
             <button
               type="button"
               onClick={() => setEditing(true)}
-              className="rounded-sm border border-sky-400/40 px-3 py-1 text-xs font-bold text-sky-200 transition-colors hover:bg-sky-400/15"
+              className="rounded-sm border border-sky-400 bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100"
             >
               クラス変更
             </button>
@@ -393,7 +393,7 @@ function StudentRow({
               type="button"
               disabled={isSettingLeader}
               onClick={() => onSetLeader(null)}
-              className="rounded-sm border border-amber-400/40 px-3 py-1 text-xs font-bold text-amber-300 transition-colors hover:bg-amber-400/15 disabled:opacity-50"
+              className="rounded-sm border border-amber-400 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 transition-colors hover:bg-amber-100 disabled:opacity-50"
             >
               解除
             </button>
@@ -402,9 +402,9 @@ function StudentRow({
               type="button"
               disabled={isSettingLeader}
               onClick={() => onSetLeader(student.id)}
-              className="rounded-sm border border-amber-400/40 px-3 py-1 text-xs font-bold text-amber-300 transition-colors hover:bg-amber-400/15 disabled:opacity-50"
+              className="rounded-sm border border-amber-400 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 transition-colors hover:bg-amber-100 disabled:opacity-50"
             >
-              リーダーに設定
+              クラス代表に設定
             </button>
           )}
         </div>

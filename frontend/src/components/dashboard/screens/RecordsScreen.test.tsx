@@ -13,11 +13,15 @@ vi.mock("../NavPlaceholder", () => ({
   NavPlaceholder: ({ role, href }: { role: string; href: string }) => {
     const titles: Record<string, string> = {
       "student:/records": "戦績",
-      "teacher:/records": "生徒一覧",
       "school_admin:/records": "試召戦争ログ",
     };
     return <h1>{titles[`${role}:${href}`] ?? href}</h1>;
   },
+}));
+
+vi.mock("@/lib/classes/useClasses", () => ({
+  useClasses: () => ({ classes: [], isLoading: false, isError: false }),
+  useClassStudents: () => ({ students: [], isLoading: false, isError: false }),
 }));
 
 describe("RecordsScreen", () => {

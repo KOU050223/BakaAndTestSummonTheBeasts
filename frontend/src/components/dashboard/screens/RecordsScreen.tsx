@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { LabelTag, Panel } from "@/components/ui";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
 import { NavPlaceholder } from "../NavPlaceholder";
+import { useClasses, useClassStudents } from "@/lib/classes/useClasses";
+import type { ClassStudent } from "@/lib/api/types";
 
 type BattleStatus = "waiting" | "active" | "finished";
 type BattleLogRow = {
@@ -111,11 +113,114 @@ export function RecordsScreen() {
   const { user } = useCurrentUser();
 
   if (!user) return null;
+  if (user.role === "teacher") return <TeacherStudentList />;
   if (user.role !== "school_admin") {
     return <NavPlaceholder role={user.role} href="/records" />;
   }
 
   return <AdminBattleLog />;
+}
+
+// ─── 教師：生徒一覧 ──────────────────────────────────────────────────────────
+
+function TeacherStudentList() {
+  const { classes, isLoading: classesLoading } = useClasses();
+  const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
+
+  const activeClassId = selectedClassId ?? classes?.[0]?.id ?? null;
+  const { students, isLoading: studentsLoading, isError } = useClassStudents(activeClassId ?? undefined);
+
+  const activeClass = classes?.find((c) => c.id === activeClassId);
+
+  return (
+    <div className="mx-auto mt-6 max-w-4xl flex flex-col gap-5">
+      <Panel>
+        <div className="flex items-center gap-3 border-b border-sky-400/40 bg-gradient-to-r from-sky-400/20 to-sky-400/5 px-5 py-4">
+          <LabelTag variant="info">教師</LabelTag>
+          <h1 className="text-xl font-black tracking-wide text-white [text-shadow:0_0_10px_rgba(56,189,248,0.7)]">
+            生徒一覧
+          </h1>
+        </div>
+
+        {/* クラス選択 */}
+        <div className="px-5 py-4 border-b border-sky-400/20">
+          {classesLoading ? (
+            <p className="text-slate-400 text-sm animate-pulse">読み込み中...</p>
+          ) : !classes || classes.length === 0 ? (
+            <p className="text-slate-400 text-sm">クラスがありません</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {classes.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setSelectedClassId(c.id)}
+                  className={`px-4 py-1.5 text-sm rounded-sm border transition-colors ${
+                    c.id === activeClassId
+                      ? "border-sky-500 bg-sky-100 text-sky-800 font-semibold"
+                      : "border-gray-300 bg-white text-gray-700 hover:bg-sky-50 hover:border-sky-400 hover:text-sky-700"
+                  }`}
+                >
+                  {c.grade}年{c.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* 生徒テーブル */}
+        {studentsLoading ? (
+          <p className="text-center text-sky-700 animate-pulse py-10 text-sm">読み込み中...</p>
+        ) : isError ? (
+          <p className="text-center text-red-600 py-10 text-sm">生徒一覧の取得に失敗しました</p>
+        ) : !students || students.length === 0 ? (
+          <div className="py-10 text-center">
+            <p className="text-4xl mb-3">👤</p>
+            <p className="text-gray-500 text-sm">
+              {activeClass ? `${activeClass.grade}年${activeClass.name}に生徒がいません` : "生徒がいません"}
+            </p>
+          </div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="border-b border-gray-200 text-left text-xs text-gray-600 bg-gray-50">
+              <tr>
+                <th className="px-5 py-3 font-semibold">生徒名</th>
+                <th className="px-5 py-3 font-semibold text-right">合計点</th>
+                <th className="px-5 py-3 font-semibold">得意科目</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {students.map((s) => (
+                <StudentRow key={s.id} student={s} />
+              ))}
+            </tbody>
+          </table>
+        )}
+      </Panel>
+    </div>
+  );
+}
+
+function StudentRow({ student }: { student: ClassStudent }) {
+  return (
+    <tr className="hover:bg-gray-50 transition-colors">
+      <td className="px-5 py-3 text-gray-900 font-semibold">
+        {student.name}
+        {student.leader && (
+          <span className="ml-2 text-xs text-amber-700 font-bold bg-amber-100 px-1.5 py-0.5 rounded-sm">👑 クラス代表</span>
+        )}
+      </td>
+      <td className="px-5 py-3 text-right text-sky-700 font-bold">
+        {student.totalScore.toLocaleString()}
+      </td>
+      <td className="px-5 py-3 text-gray-700">
+        {student.topSubject.name}
+        {student.topSubject.score > 0 && (
+          <span className="ml-1 text-gray-500 text-xs">{student.topSubject.score}点</span>
+        )}
+      </td>
+    </tr>
+  );
 }
 
 function AdminBattleLog() {
