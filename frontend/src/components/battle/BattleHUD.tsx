@@ -16,6 +16,10 @@ type BattleHUDProps = {
   onAttack: () => void;
   // 召喚トリガー。
   onSummon: () => void;
+  // このブラウザが音声サモン（WebSpeech API）に対応しているか。
+  voiceSupported?: boolean;
+  // 音声サモンが現在リスニング中か。
+  voiceListening?: boolean;
 };
 
 // プレイヤーが戦闘可能（脱落していない）かを返す。
@@ -63,7 +67,15 @@ function MoveButton({
 
 // バトルの操作 UI（HUD）。3D シーンの上に重ねて表示する。
 // 左下：方向パッド（前後左右）、右下：攻撃・サモン、上部：科目別 HP。
-export function BattleHUD({ self, players, onMoveChange, onAttack, onSummon }: BattleHUDProps) {
+export function BattleHUD({
+  self,
+  players,
+  onMoveChange,
+  onAttack,
+  onSummon,
+  voiceSupported = false,
+  voiceListening = false,
+}: BattleHUDProps) {
   const subjects = Object.entries(self.summons);
   const { ally, enemy } = teamSurvivorCounts(self, players);
   // 自分以外に味方がいる、または敵が複数いれば N:N とみなしチーム表示を出す。
@@ -125,10 +137,15 @@ export function BattleHUD({ self, players, onMoveChange, onAttack, onSummon }: B
 
         {/* アクション */}
         <div className="pointer-events-auto flex flex-col gap-2">
+          {/* サモンボタン。音声受付中はボタンの縁が緑に光る（リング＋パルス）。 */}
           <button
             type="button"
             onClick={onSummon}
-            className="h-14 w-20 rounded-full bg-indigo-500 font-bold text-white active:bg-indigo-600"
+            className={`h-14 w-20 rounded-full bg-indigo-500 font-bold text-white transition active:bg-indigo-600 ${
+              voiceSupported && voiceListening
+                ? "shadow-[0_0_12px_2px_rgba(16,185,129,0.7)] ring-2 ring-emerald-400"
+                : ""
+            }`}
           >
             サモン
           </button>
