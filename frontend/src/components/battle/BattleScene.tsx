@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { VrmAvatar } from "./VrmAvatar";
 import { BattleFloor } from "./BattleFloor";
 import { FieldZones } from "./FieldZones";
+import { SenseiModel } from "./SenseiModel";
 import {
   ARENA_GRID_CELL_SIZE,
   ARENA_GRID_SECTION_SIZE,
@@ -171,6 +172,14 @@ export function BattleScene({ state, currentUserId }: BattleSceneProps) {
           <>
             {/* 科目フィールド円 */}
             <FieldZones fields={state.fields} />
+            {/* 各科目フィールド円の中心に先生を立たせる。中心を向くようカメラ側（-Z）へ向ける */}
+            {state.fields.map((f) => (
+              <SenseiModel
+                key={f.subject}
+                position={[f.centerX, 0, f.centerZ]}
+                rotationY={Math.PI}
+              />
+            ))}
             {/* プレイヤーをサーバー権威の位置・向きで配置。召喚済みは VRM、未召喚は床マーカー */}
             {/* goAngleToThreeRotationY で Go 座標系 → Three.js 座標系に変換する */}
             {players.map(([userId, p]) => {
