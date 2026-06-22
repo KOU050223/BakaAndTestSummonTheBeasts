@@ -18,19 +18,6 @@ GitHub: https://github.com/KOU050223/BakaAndTestSummonTheBeasts
 概要は学力試験の点数をそのまま自身の能力値を持つ「召喚獣」として可視化し、クラス同士の対戦（試験召喚戦争）を可能にするシステムです。
 このプロダクトはこの試験召喚システムという作品内に出てくるものを現実で再現していくプロダクトです。
 
-## ハックツ終了までログインするメアドを公開します！ぜひデプロイリンクから遊んでみてください！
-
-[デプロイリンク](https://bakatest.uomi.site)
-生徒アカウント
-yoshii@example.com
-tsuchiya@example.com
-先生アカウント
-teacher@example.com
-管理者アカウント
-hogehoge@hogehoge.com
-
-geminiAPIがRPD20という制約上、デプロイ環境では Gemini API キーを環境変数に設定していないため、AI自動採点機能は本番環境では動作してないです。なのでお好きなテスト問題を手動で採点してください。
-
 ## リンク
 
 [デプロイ](https://bakatest.uomi.site)
