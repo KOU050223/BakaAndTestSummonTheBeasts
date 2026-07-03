@@ -35,7 +35,7 @@ jobs:
           working-directory: backend
 
       - name: Set up Task
-        uses: arduino/setup-task@v2
+        uses: arduino/setup-task@v3
 
       - name: Scan for security vulnerabilities
         run: task scan
@@ -55,7 +55,7 @@ jobs:
           working-directory: backend
 
       - name: Set up Task
-        uses: arduino/setup-task@v2
+        uses: arduino/setup-task@v3
 
       - name: Prepare RuboCop cache
         uses: actions/cache@v5
@@ -101,7 +101,7 @@ jobs:
           working-directory: backend
 
       - name: Set up Task
-        uses: arduino/setup-task@v2
+        uses: arduino/setup-task@v3
 
       - name: Run tests
         env:
